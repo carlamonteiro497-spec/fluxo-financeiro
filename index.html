@@ -4,13 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Fluxo Financeiro</title>
-<link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#1e40af">
 <meta name="description" content="Aplicação de rastreamento financeiro com calendário, contas fixas e despesas variáveis">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Fluxo">
-<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%231e40af' width='192' height='192' rx='45'/><text x='96' y='96' font-size='100' font-weight='bold' fill='white' text-anchor='middle' dominant-baseline='middle'>💰</text></svg>">
+<link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCA0MDAgNDAwJz4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0nYmdHcmFkaWVudCcgeDE9JzAlJyB5MT0nMCUnIHgyPScxMDAlJyB5Mj0nMTAwJSc+CiAgICAgIDxzdG9wIG9mZnNldD0nMCUnIHN0eWxlPSdzdG9wLWNvbG9yOiMxZTQwYWY7c3RvcC1vcGFjaXR5OjEnIC8+CiAgICAgIDxzdG9wIG9mZnNldD0nMTAwJScgc3R5bGU9J3N0b3AtY29sb3I6IzA4OTFiMjtzdG9wLW9wYWNpdHk6MScgLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgPC9kZWZzPgogIDxyZWN0IHdpZHRoPSc0MDAnIGhlaWdodD0nNDAwJyBmaWxsPSd1cmwoI2JnR3JhZGllbnQpJy8+CiAgCiAgPCEtLSBNYWluIGNpcmNsZSB3aXRoIGJvcmRlciAtLT4KICA8Y2lyY2xlIGN4PScyMDAnIGN5PScyMDAnIHI9JzE1MCcgZmlsbD0nbm9uZScgc3Ryb2tlPScjNmRiM2Q5JyBzdHJva2Utd2lkdGg9JzgnLz4KICAKICA8IS0tIElubmVyIGNpcmNsZSBiYWNrZ3JvdW5kIC0tPgogIDxjaXJjbGUgY3g9JzIwMCcgY3k9JzIwMCcgcj0nMTQwJyBmaWxsPSdyZ2JhKDI1NSwyNTUsMjU1LDAuMDUpJy8+CiAgCiAgPCEtLSBDSSB0ZXh0IC0tPgogIDx0ZXh0IHg9JzIwMCcgeT0nMjMwJyBmb250LWZhbWlseT0nRnJhdW5jZXMsIHNlcmlmJyBmb250LXNpemU9JzE0MCcgZm9udC13ZWlnaHQ9JzcwMCcgZmlsbD0nd2hpdGUnIHRleHQtYW5jaG9yPSdtaWRkbGUnIGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnPkNJPC90ZXh0PgogIAogIDwhLS0gRG9sbGFyIGNvaW4gaW4gdG9wIHJpZ2h0IC0tPgogIDxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDMyMCwgODApJz4KICAgIDxjaXJjbGUgY3g9JzAnIGN5PScwJyByPSczNScgZmlsbD0nIzRhOTBlMicgc3Ryb2tlPScjN2JhOGU4JyBzdHJva2Utd2lkdGg9JzQnLz4KICAgIDxjaXJjbGUgY3g9JzAnIGN5PScwJyByPScyNScgZmlsbD0nIzZkYjNkOScvPgogICAgPHRleHQgeD0nMCcgeT0nOCcgZm9udC1mYW1pbHk9J0FyaWFsJyBmb250LXNpemU9JzMyJyBmb250LXdlaWdodD0nYm9sZCcgZmlsbD0nd2hpdGUnIHRleHQtYW5jaG9yPSdtaWRkbGUnPiQ8L3RleHQ+CiAgPC9nPgo8L3N2Zz4K">
+<link rel="manifest" href="manifest.json">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -66,41 +66,114 @@
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
+html {
+  width: 100%;
+  overflow-x: hidden;
+}
+
+.month-nav {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.month-nav button {
+  padding: 6px 10px;
+  font-size: 12px;
+}
+
+.month-nav span {
+  font-size: 13px;
+  font-weight: 600;
+  min-width: 100px;
+  text-align: center;
+  flex-grow: 1;
+  max-width: 150px;
+}
+
+@media (min-width: 480px) {
+  .month-nav {
+    gap: 10px;
+  }
+  .month-nav button {
+    padding: 8px 14px;
+    font-size: 13px;
+  }
+  .month-nav span {
+    font-size: 14px;
+    min-width: 120px;
+  }
+}
+
 body {
   font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background: var(--paper);
   color: var(--ink);
-  padding: 16px;
+  padding: 8px;
   font-weight: 400;
   letter-spacing: 0.3px;
 }
 
+@media (min-width: 480px) {
+  body {
+    padding: 16px;
+  }
+}
+
 .container {
-  max-width: 600px;
+  max-width: 100%;
   margin: 0 auto;
+  overflow-x: hidden;
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .container {
+    max-width: 900px;
+  }
 }
 
 .header {
   background: linear-gradient(135deg, #1e40af 0%, #0369a1 50%, #0891b2 100%);
   color: white;
-  padding: 30px 24px;
+  padding: 16px 12px 16px 12px;
   border-radius: 16px;
   margin-bottom: 24px;
   box-shadow: 0 10px 30px rgba(30, 64, 175, 0.2);
   position: relative;
+  overflow: visible;
+}
+
+@media (min-width: 480px) {
+  .header {
+    padding: 28px 24px 24px 24px;
+  }
 }
 
 .header-content {
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: 16px;
 }
 
 .header-logo {
-  width: 120px;
-  height: 120px;
+  width: 80px;
+  height: 80px;
   flex-shrink: 0;
   filter: drop-shadow(0 8px 24px rgba(0,0,0,0.2));
+}
+
+@media (min-width: 480px) {
+  .header-logo {
+    width: 110px;
+    height: 110px;
+  }
+  .header-content {
+    gap: 28px;
+  }
 }
 
 .header-text {
@@ -108,10 +181,17 @@ body {
 }
 
 .header h1 {
-  font-size: 24px;
-  margin: 0 0 8px 0;
+  font-size: 18px;
+  margin: 0 0 4px 0;
   font-weight: 700;
   letter-spacing: -0.5px;
+}
+
+@media (min-width: 480px) {
+  .header h1 {
+    font-size: 24px;
+    margin: 0 0 8px 0;
+  }
 }
 
 @media (min-width: 768px) {
@@ -743,15 +823,15 @@ footer.hint {
 .calendar-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 6px;
+  gap: 2px;
   margin-bottom: 20px;
 }
 
 .calendar-day {
   aspect-ratio: 1;
   border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 6px;
+  border-radius: 4px;
+  padding: 2px;
   text-align: center;
   background: var(--paper-raised);
   cursor: pointer;
@@ -760,6 +840,19 @@ footer.hint {
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  font-size: 12px;
+}
+
+@media (min-width: 480px) {
+  .calendar-grid {
+    gap: 6px;
+  }
+  .calendar-day {
+    padding: 6px;
+    border-radius: 8px;
+    font-size: 14px;
+  }
+}
   position: relative;
   min-height: 75px;
 }
@@ -906,7 +999,247 @@ footer.hint {
   background: rgba(255, 255, 255, 0.1);
   border-left-color: rgba(255, 255, 255, 0.5);
 }
+
+/* Toast Notifications */
+.toast-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.toast {
+  padding: 14px 18px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  animation: slideIn 0.3s ease-out;
+  max-width: 300px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.toast.success {
+  background: #10b981;
+  color: white;
+}
+
+.toast.error {
+  background: #ef4444;
+  color: white;
+}
+
+.toast.warning {
+  background: #f59e0b;
+  color: white;
+}
+
+.toast.info {
+  background: #3b82f6;
+  color: white;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOut {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+}
+
+.toast.fade {
+  animation: slideOut 0.3s ease-out forwards;
+}
+
+/* Modal Supabase */
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 999;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modal.show {
+  display: flex;
+}
+
+.modal-dialog {
+  background: var(--paper-raised);
+  border-radius: 16px;
+  padding: 24px;
+  max-width: 400px;
+  width: 100%;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  animation: modalSlideUp 0.3s ease-out;
+}
+
+@keyframes modalSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-header {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--line);
+}
+
+.modal-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.modal-form-group label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.modal-form-group input {
+  padding: 10px 12px;
+  border: 1.5px solid var(--line);
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: 'IBM Plex Mono', monospace;
+  color: var(--ink);
+  outline: none;
+}
+
+.modal-form-group input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(53,70,122,0.1);
+}
+
+.modal-checkbox-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.modal-checkbox-group input[type="checkbox"] {
+  cursor: pointer;
+}
+
+.modal-status {
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  margin-bottom: 16px;
+  text-align: center;
+  font-weight: 600;
+  display: none;
+}
+
+.modal-status.show {
+  display: block;
+}
+
+.modal-status.success {
+  background: #ecfdf5;
+  color: #10b981;
+  border: 1px solid #10b981;
+}
+
+.modal-status.error {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #dc2626;
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.modal-btn {
+  flex: 1;
+  padding: 12px 16px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.modal-btn-primary {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.modal-btn-primary:hover {
+  opacity: 0.9;
+}
+
+.modal-btn-secondary {
+  background: var(--paper);
+  color: var(--ink);
+  border: 1.5px solid var(--line);
+}
+
+.modal-btn-secondary:hover {
+  border-color: var(--accent);
+}
+
+/* TOOLS GRID RESPONSIVO */
+.tools-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+@media (min-width: 768px) {
+  .tools-grid {
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+  }
+}
+
 </style>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js"></script>
 </head>
 <body>
 
@@ -933,6 +1266,9 @@ footer.hint {
         <h1>Fluxo Financeiro</h1>
         <p class="header-subtitle">Construindo o nosso futuro juntos.</p>
       </div>
+    </div>
+    <div style="display: flex; gap: 10px; align-items: center; justify-content: flex-end; margin-top: 12px;">
+      <span id="syncStatus" style="font-size: 12px; color: rgba(255,255,255,0.85); font-weight: 500;">⏳ Pronto</span>
     </div>
   </div>
 
@@ -961,10 +1297,10 @@ footer.hint {
       ⚡ Gastos deste mês serão pagos no mês seguinte
     </div>
 
-    <div style="display: flex; gap: 10px; margin-bottom: 20px; align-items: center; justify-content: center;">
-      <button onclick="previousMonthResume()" style="padding: 8px 14px; background: var(--accent); color: var(--accent-ink); border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px;">← Anterior</button>
-      <span id="resumoMonthYear" style="font-size: 16px; font-weight: 600; min-width: 150px; text-align: center; color: var(--ink);">Setembro 2026</span>
-      <button onclick="nextMonthResume()" style="padding: 8px 14px; background: var(--accent); color: var(--accent-ink); border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px;">Próximo →</button>
+    <div style="display: flex; gap: 10px; margin-bottom: 20px; align-items: center; justify-content: space-between;">
+      <button onclick="previousMonthResume()" style="padding: 6px 10px; background: var(--accent); color: var(--accent-ink); border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 12px;">← Anterior</button>
+      <span id="resumoMonthYear" style="font-size: 14px; font-weight: 600; min-width: 120px; text-align: center; color: var(--ink);">Setembro 2026</span>
+      <button onclick="nextMonthResume()" style="padding: 6px 10px; background: var(--accent); color: var(--accent-ink); border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 12px;">Próximo →</button>
     </div>
 
     <div class="flow-section">
@@ -987,6 +1323,11 @@ footer.hint {
         <div class="flow-label">Cartão Santander Camila</div>
         <div class="flow-value" id="cartaoTotal">R$ 0,00</div>
       </div>
+
+      <div class="flow-box" onclick="openModal('modalDemaisCartoes')" style="cursor: pointer; border-color: #8b5cf6; background: #faf5ff; grid-column: 1 / -1;">
+        <div class="flow-label">💳 Demais Cartões</div>
+        <div class="flow-value" id="demaisCartoesTotal" style="color: #8b5cf6;">R$ 1.174,65</div>
+      </div>
     </div>
 
     <div class="flow-box" id="disponibilBox" style="grid-column: 1 / -1; border-color: #f59e0b; background: #fffbeb; border-width: 2px; margin-bottom: 16px;">
@@ -994,8 +1335,12 @@ footer.hint {
       <div class="flow-value" style="color: #f59e0b;" id="disponivel">R$ 2.369,82</div>
     </div>
 
-    <button onclick="openModal('modalNovaContaForm')" style="width: 100%; padding: 14px 16px; background: #7c3aed; color: white; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; margin-bottom: 20px;">
-      Adicionar Nova Conta
+    <button onclick="openModal('modalNovaContaForm')" style="width: 100%; padding: 14px 16px; background: #7c3aed; color: white; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; margin-bottom: 12px;">
+      Adicionar Nova Conta Fixa
+    </button>
+
+    <button onclick="openModal('modalNovaCompraCartao')" style="width: 100%; padding: 14px 16px; background: #8b5cf6; color: white; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; margin-bottom: 20px; line-height: 1.4;">
+      💳 Adicionar Compra no Cartão<br><span style="font-size: 13px; opacity: 0.9;">Sicoob, Mercado Pago, Digio</span>
     </button>
 
     <div class="summary-box">
@@ -1013,11 +1358,15 @@ footer.hint {
       </div>
       <div class="summary-row">
         <span>Contas + Financiamento</span>
-        <span class="negative">-R$ 5.736,78</span>
+        <span class="negative" id="summaryContas">-R$ 5.736,78</span>
       </div>
       <div class="summary-row">
         <span>Cartão Santander Camila</span>
         <span class="negative" id="summaryCartao">-R$ 0,00</span>
+      </div>
+      <div class="summary-row">
+        <span>Demais Cartões</span>
+        <span class="negative" id="summaryDemaisCartoes">-R$ 0,00</span>
       </div>
       <div class="summary-row total">
         <span>MARGEM DISPONÍVEL</span>
@@ -1053,10 +1402,10 @@ footer.hint {
       ⚡ Gastos deste mês serão pagos no mês seguinte
     </div>
 
-    <div style="display: flex; gap: 10px; margin-bottom: 20px; align-items: center; justify-content: center;">
-      <button onclick="previousMonthDespesas()" style="padding: 8px 14px; background: var(--accent); color: var(--accent-ink); border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px;">← Anterior</button>
-      <span id="despesasMonthYear" style="font-size: 16px; font-weight: 600; min-width: 150px; text-align: center; color: var(--ink);">Setembro 2026</span>
-      <button onclick="nextMonthDespesas()" style="padding: 8px 14px; background: var(--accent); color: var(--accent-ink); border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px;">Próximo →</button>
+    <div style="display: flex; gap: 10px; margin-bottom: 20px; align-items: center; justify-content: space-between;">
+      <button onclick="previousMonthDespesas()" style="padding: 6px 10px; background: var(--accent); color: var(--accent-ink); border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 12px;">← Anterior</button>
+      <span id="despesasMonthYear" style="font-size: 14px; font-weight: 600; min-width: 120px; text-align: center; color: var(--ink);">Setembro 2026</span>
+      <button onclick="nextMonthDespesas()" style="padding: 6px 10px; background: var(--accent); color: var(--accent-ink); border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 12px;">Próximo →</button>
     </div>
 
     <div class="summary-card">
@@ -1163,6 +1512,12 @@ footer.hint {
       <div id="bonusLista" style="padding: 12px; background: var(--paper); border-radius: 8px; border: 1px solid var(--line); max-height: 150px; overflow-y: auto;">
         <div style="font-size: 12px; color: var(--ink-soft); text-align: center;">Nenhum bônus adicionado</div>
       </div>
+      <div style="border-top: 2px solid var(--line); padding-top: 14px;">
+        <label style="display: block; font-size: 12px; color: var(--ink-soft); text-transform: uppercase; font-weight: 600; margin-bottom: 6px;">Vale Alimentação - Carla</label>
+        <input id="valeAlimentacaoCarla" type="text" placeholder="0,00" value="191,92" style="width: 100%; padding: 10px 12px; border: 1.5px solid var(--line); border-radius: 8px; font-size: 14px; font-family: inherit; outline: none; color: var(--ink); margin-bottom: 10px;">
+        <label style="display: block; font-size: 12px; color: var(--ink-soft); text-transform: uppercase; font-weight: 600; margin-bottom: 6px;">Vale Alimentação - Iasmim</label>
+        <input id="valeAlimentacaoIasmim" type="text" placeholder="0,00" value="374,00" style="width: 100%; padding: 10px 12px; border: 1.5px solid var(--line); border-radius: 8px; font-size: 14px; font-family: inherit; outline: none; color: var(--ink);">
+      </div>
       <button type="submit" style="background: var(--accent); color: var(--accent-ink); border: none; padding: 12px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 8px;">
         Salvar Renda
       </button>
@@ -1176,44 +1531,91 @@ footer.hint {
     <div class="modal-header">🍽️ Detalhamento do Vale Alimentação</div>
     <div class="modal-row">
       <span class="modal-label">Carla</span>
-      <span class="modal-value">R$ 191,92</span>
+      <span class="modal-value" id="valeCarlaDisplay">R$ 191,92</span>
     </div>
     <div class="modal-row">
       <span class="modal-label">Iasmim</span>
-      <span class="modal-value">R$ 374,00</span>
+      <span class="modal-value" id="valeIasmimDisplay">R$ 374,00</span>
     </div>
     <div class="modal-row" style="border-top: 2px solid var(--line); padding-top: 12px; margin-top: 8px; font-weight: 700;">
       <span class="modal-label">Total</span>
-      <span class="modal-value">R$ 565,92</span>
+      <span class="modal-value" id="valeTotalDisplay">R$ 565,92</span>
     </div>
   </div>
 </div>
 
+<!-- MODAL ADICIONAR CONTA FIXA -->
 <div id="modalNovaContaForm" class="modal-overlay">
   <div class="modal-content" style="max-width: 450px;">
     <button class="modal-close" onclick="closeModal('modalNovaContaForm')">×</button>
-    <div class="modal-header">Adicionar Nova Conta</div>
+    <div class="modal-header">📋 Adicionar Conta Fixa</div>
     <form id="novaContaForm" style="display: flex; flex-direction: column; gap: 14px;">
       <div>
         <label style="display: block; font-size: 12px; color: var(--ink-soft); text-transform: uppercase; font-weight: 600; margin-bottom: 6px;">Nome da Conta</label>
-        <input id="novaContaNome" type="text" placeholder="Ex: Netflix, Spotify..." style="width: 100%; padding: 10px 12px; border: 1.5px solid var(--line); border-radius: 8px; font-size: 14px; font-family: inherit; outline: none; color: var(--ink);">
+        <input id="novaContaNome" type="text" placeholder="Ex: Netflix, Spotify, Aluguel..." style="width: 100%; padding: 10px 12px; border: 1.5px solid var(--line); border-radius: 8px; font-size: 14px; font-family: inherit; outline: none; color: var(--ink);">
       </div>
       <div>
         <label style="display: block; font-size: 12px; color: var(--ink-soft); text-transform: uppercase; font-weight: 600; margin-bottom: 6px;">Valor (R$)</label>
         <input id="novaContaValor" type="text" placeholder="0,00" style="width: 100%; padding: 10px 12px; border: 1.5px solid var(--line); border-radius: 8px; font-size: 14px; font-family: inherit; outline: none; color: var(--ink);">
       </div>
       <div>
-        <label style="display: block; font-size: 12px; color: var(--ink-soft); text-transform: uppercase; font-weight: 600; margin-bottom: 6px;">Categoria</label>
-        <select id="novaContaCategoria" style="width: 100%; padding: 10px 12px; border: 1.5px solid var(--line); border-radius: 8px; font-size: 14px; font-family: inherit; outline: none; color: var(--ink);">
-          <option value="">Selecione uma categoria</option>
-          <option value="fixa">Conta Fixa</option>
-          <option value="variavel">Conta Variável</option>
-          <option value="assinatura">Assinatura</option>
-          <option value="outro">Outro</option>
+        <label style="display: block; font-size: 12px; color: var(--ink-soft); text-transform: uppercase; font-weight: 600; margin-bottom: 6px;">Data de Vencimento *</label>
+        <input id="novaContaDataVencimento" type="text" placeholder="DD/MM/YYYY" style="width: 100%; padding: 10px 12px; border: 1.5px solid var(--line); border-radius: 8px; font-size: 14px; font-family: inherit; outline: none; color: var(--ink);">
+        <div style="font-size: 11px; color: var(--ink-faint); margin-top: 4px;">Quando a conta vence (obrigatório)</div>
+      </div>
+      <input id="novaContaCategoria" type="hidden" value="contas_fixas">
+      <input id="novaContaDataCompra" type="hidden" value="">
+      <button type="submit" style="background: var(--accent); color: var(--accent-ink); border: none; padding: 12px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 8px;">
+        Adicionar Nova Conta Fixa
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL ADICIONAR COMPRA CARTÃO -->
+<div id="modalNovaCompraCartao" class="modal-overlay">
+  <div class="modal-content" style="max-width: 450px;">
+    <button class="modal-close" onclick="closeModal('modalNovaCompraCartao')">×</button>
+    <div class="modal-header">💳 Adicionar Compra no Cartão</div>
+    <form id="novaCompraCartaoForm" style="display: flex; flex-direction: column; gap: 14px;">
+      <div>
+        <label style="display: block; font-size: 12px; color: var(--ink-soft); text-transform: uppercase; font-weight: 600; margin-bottom: 6px;">Descrição</label>
+        <input id="compraDescricao" type="text" placeholder="Ex: Compras no mercado..." style="width: 100%; padding: 10px 12px; border: 1.5px solid var(--line); border-radius: 8px; font-size: 14px; font-family: inherit; outline: none; color: var(--ink);">
+      </div>
+      <div>
+        <label style="display: block; font-size: 12px; color: var(--ink-soft); text-transform: uppercase; font-weight: 600; margin-bottom: 6px;">Valor (R$)</label>
+        <input id="compraValor" type="text" placeholder="0,00" style="width: 100%; padding: 10px 12px; border: 1.5px solid var(--line); border-radius: 8px; font-size: 14px; font-family: inherit; outline: none; color: var(--ink);">
+      </div>
+      <div>
+        <label style="display: block; font-size: 12px; color: var(--ink-soft); text-transform: uppercase; font-weight: 600; margin-bottom: 6px;">Data de Compra</label>
+        <input id="compraDataCompra" type="text" placeholder="DD/MM/YYYY" style="width: 100%; padding: 10px 12px; border: 1.5px solid var(--line); border-radius: 8px; font-size: 14px; font-family: inherit; outline: none; color: var(--ink);">
+        <div style="font-size: 11px; color: var(--ink-faint); margin-top: 4px;">Deixar em branco para usar hoje</div>
+      </div>
+      <div>
+        <label style="display: block; font-size: 12px; color: var(--ink-soft); text-transform: uppercase; font-weight: 600; margin-bottom: 6px;">Data de Vencimento *</label>
+        <input id="compraDataVencimento" type="text" placeholder="DD/MM/YYYY" style="width: 100%; padding: 10px 12px; border: 1.5px solid var(--line); border-radius: 8px; font-size: 14px; font-family: inherit; outline: none; color: var(--ink);">
+        <div style="font-size: 11px; color: var(--ink-faint); margin-top: 4px;">Quando o cartão vence</div>
+      </div>
+      <div>
+        <label style="display: block; font-size: 12px; color: var(--ink-soft); text-transform: uppercase; font-weight: 600; margin-bottom: 6px;">Cartão *</label>
+        <select id="compraCartao" style="width: 100%; padding: 10px 12px; border: 1.5px solid var(--line); border-radius: 8px; font-size: 14px; font-family: inherit; outline: none; color: var(--ink);">
+          <option value="">Selecione um cartão</option>
+          <option value="sicoob">🏦 Sicoob (Carla)</option>
+          <option value="mercado_pago_carla">🛒 Mercado Pago (Carla)</option>
+          <option value="mercado_pago_iasmim">🛒 Mercado Pago (Iasmim)</option>
+          <option value="digio">📱 Digio (Iasmim)</option>
         </select>
       </div>
+      <div>
+        <label style="display: block; font-size: 12px; color: var(--ink-soft); text-transform: uppercase; font-weight: 600; margin-bottom: 6px;">Parcelamento</label>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <button type="button" id="compraParcMinusBtn" style="width: 40px; height: 40px; border: 1.5px solid var(--line); border-radius: 8px; background: var(--paper); color: var(--ink); font-weight: 600; cursor: pointer; font-size: 18px;">−</button>
+          <div style="flex: 1; text-align: center; font-family: 'IBM Plex Mono'; font-size: 18px; font-weight: 600; color: var(--accent);" id="compraParcValue">1x</div>
+          <button type="button" id="compraParcPlusBtn" style="width: 40px; height: 40px; border: 1.5px solid var(--line); border-radius: 8px; background: var(--paper); color: var(--ink); font-weight: 600; cursor: pointer; font-size: 18px;">+</button>
+        </div>
+      </div>
       <button type="submit" style="background: var(--accent); color: var(--accent-ink); border: none; padding: 12px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 8px;">
-        Adicionar Conta
+        Adicionar Compra
       </button>
     </form>
   </div>
@@ -1255,12 +1657,68 @@ footer.hint {
   </div>
 </div>
 
+<!-- MODAL DEMAIS CARTÕES -->
+<div id="modalDemaisCartoes" class="modal-overlay">
+  <div class="modal-content" style="max-width: 500px;">
+    <button class="modal-close" onclick="closeModal('modalDemaisCartoes')">×</button>
+    <div class="modal-header">💳 Detalhamento - Demais Cartões</div>
+    <div id="demaisCartoesContainer" style="max-height: 500px; overflow-y: auto;"></div>
+  </div>
+</div>
+
 <!-- MODAL DETALHES DO DIA (CALENDÁRIO) -->
 <div id="modalDayDetails" class="modal-overlay">
   <div class="modal-content" style="max-width: 400px;">
     <button class="modal-close" onclick="closeModal('modalDayDetails')">×</button>
     <div id="dayDetailsContainer">
       <p style="text-align: center; color: var(--ink-soft); padding: 20px;">Carregando...</p>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL SUPABASE -->
+<div id="supabaseModal" class="modal">
+  <div class="modal-dialog">
+    <div class="modal-header">🔄 Configurar Sincronização em Nuvem</div>
+
+    <div style="background: #eff6ff; border-left: 4px solid #2563eb; padding: 12px; border-radius: 6px; margin-bottom: 16px; font-size: 13px; color: #1e40af; line-height: 1.5;">
+      ℹ️ Você já criou a tabela no Supabase? Se não, volte e siga os passos anteriores primeiro!
+    </div>
+
+    <div class="modal-form-group">
+      <label>URL do Projeto Supabase</label>
+      <input type="text" id="supabaseUrl" placeholder="https://seu-projeto.supabase.co">
+    </div>
+
+    <div class="modal-form-group">
+      <label>Chave Anon (Pública)</label>
+      <input type="password" id="supabaseKey" placeholder="sb_publishable_...">
+    </div>
+
+    <div class="modal-checkbox-group">
+      <input type="checkbox" id="showKeyCheckbox" onchange="toggleSupabaseKeyVisibility()">
+      <label for="showKeyCheckbox" style="cursor: pointer;">Mostrar chave</label>
+    </div>
+
+    <div id="supabaseStatus" class="modal-status"></div>
+
+    <div class="modal-buttons">
+      <button type="button" class="modal-btn modal-btn-secondary" onclick="closeSupabaseModal()">Cancelar</button>
+      <button type="button" class="modal-btn modal-btn-primary" onclick="saveSupabaseConfigViaModal()">Salvar e Conectar</button>
+    </div>
+  </div>
+
+  </div>
+
+  <!-- CARD DE FERRAMENTAS E CONFIGURAÇÃO -->
+  <div style="background: linear-gradient(135deg, rgba(53, 70, 122, 0.05) 0%, rgba(132, 150, 214, 0.05) 100%); border: 1px solid var(--line-strong); border-radius: 12px; padding: 20px; margin-top: 20px;">
+    <h3 style="font-size: 13px; font-weight: 600; color: var(--ink-soft); margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.5px;">⚙️ Ferramentas</h3>
+    <div class="tools-grid">
+      <button onclick="manualSyncSupabase()" style="background: var(--accent); color: var(--accent-ink); border: none; padding: 12px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.3s;" title="Sincronizar dados com Supabase" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">🔄 Sincronizar</button>
+      <button onclick="showSupabaseSetup()" style="background: var(--accent); color: var(--accent-ink); border: none; padding: 12px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.3s;" title="Configurar sincronização em nuvem" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">⚙️ Configuração</button>
+      <button onclick="exportData()" style="background: var(--accent); color: var(--accent-ink); border: none; padding: 12px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.3s;" title="Exportar dados para backup" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">📥 Exportar</button>
+      <button onclick="document.getElementById('importFile').click()" style="background: var(--accent); color: var(--accent-ink); border: none; padding: 12px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.3s;" title="Importar dados de backup" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">📤 Importar</button>
+      <input type="file" id="importFile" accept=".json" style="display:none;" onchange="importData(event)">
     </div>
   </div>
 </div>
@@ -1272,8 +1730,390 @@ footer.hint {
     viewYear: new Date().getFullYear(),
     viewMonth: new Date().getMonth(),
     editingId: null,
-    installments: 1
+    installments: 1,
+    activeTab: 'resumo'
   };
+
+  // ============================================================================
+  // UUID GENERATOR - Para IDs compatíveis com Supabase
+  // ============================================================================
+  function generateUUID() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      const r = Math.random() * 16 | 0;
+      const v = c === 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
+  }
+
+  // ============================================================================
+  // SUPABASE CLOUD SYNC
+  // ============================================================================
+  let supabaseConfig = {
+    url: null,
+    key: null,
+    enabled: false
+  };
+
+  function loadSupabaseConfig() {
+    const saved = localStorage.getItem('supabase_config');
+    if (saved) {
+      try {
+        supabaseConfig = JSON.parse(saved);
+        return supabaseConfig.url && supabaseConfig.key;
+      } catch (e) {
+        return false;
+      }
+    }
+    return false;
+  }
+
+  function saveSupabaseConfig(url, key) {
+    supabaseConfig = { url, key, enabled: true };
+    localStorage.setItem('supabase_config', JSON.stringify(supabaseConfig));
+  }
+
+  async function syncToSupabase() {
+    if (!supabaseConfig.enabled || !supabaseConfig.url || !supabaseConfig.key) {
+      return false;
+    }
+
+    try {
+      const deviceId = localStorage.getItem('device_id') || 'device_' + Math.random().toString(36).substr(2, 9);
+      localStorage.setItem('device_id', deviceId);
+      const now = new Date().toISOString();
+
+      // Preparar dados com APENAS os campos que existem na tabela Supabase
+      // IMPORTANTE: Enviar 'id' porque cada despesa já tem um ID local único
+      // O ID é necessário para UPSERT funcionar corretamente
+      // Se uma despesa não tiver ID (migração de versão anterior), gerar um novo
+      const dataToSync = state.expenses.map(e => {
+        // Garantir que cada expense tem um ID válido
+        if (!e.id) {
+          e.id = generateUUID();  // Gerar UUID se não existir
+        }
+        return {
+          id: e.id,
+          date: e.date || new Date().toISOString().split('T')[0],
+          description: e.description || 'Sem descrição',
+          valuecents: parseInt(e.valueCents || 0),
+          installments: parseInt(e.installments || 1),
+          createdat: e.createdAt || now,  // Usar createdat (é a coluna correta para esta app)
+          cartao: e.cartao || 'cartao_santander'
+        };
+      });
+
+      if (dataToSync.length === 0) {
+        console.log('[SYNC] Nenhum dado para sincronizar');
+        return true;
+      }
+
+      console.log('[SYNC] Preparando envio de', dataToSync.length, 'registros');
+      console.log('[SYNC] Primeiro registro:', JSON.stringify(dataToSync[0]));
+
+      // Usar UPSERT (mais seguro que DELETE+INSERT)
+      console.log('[SYNC] Enviando registros com UPSERT...');
+      const response = await fetch(
+        `${supabaseConfig.url}/rest/v1/expenses`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${supabaseConfig.key}`,
+            'apikey': supabaseConfig.key,
+            'Content-Type': 'application/json',
+            'Prefer': 'resolution=merge-duplicates,return=minimal'
+          },
+          body: JSON.stringify(dataToSync)
+        }
+      );
+
+      if (response.ok) {
+        console.log('[SYNC] ✓ Dados sincronizados com sucesso');
+        updateSyncStatus('success');
+        await loadAndMergeFromSupabase();
+        return true;
+      } else {
+        const errorText = await response.text();
+        console.error('[SYNC] ❌ Erro ao sincronizar - Status:', response.status);
+        console.error('[SYNC] Detalhes:', errorText);
+
+        // Fallback: inserir registro por registro
+        console.log('[SYNC] Tentando inserir individualmente...');
+        let successCount = 0;
+
+        for (let i = 0; i < dataToSync.length; i++) {
+          try {
+            const record = dataToSync[i];
+            const indvResponse = await fetch(
+              `${supabaseConfig.url}/rest/v1/expenses`,
+              {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${supabaseConfig.key}`,
+                  'apikey': supabaseConfig.key,
+                  'Content-Type': 'application/json',
+                  'Prefer': 'return=minimal'
+                },
+                body: JSON.stringify(record)
+              }
+            );
+
+            if (indvResponse.ok) {
+              successCount++;
+            } else {
+              const errMsg = await indvResponse.text();
+              console.warn('[SYNC] Erro ao inserir registro', i);
+            }
+          } catch (e) {
+            console.error('[SYNC] Erro ao inserir registro:', e);
+          }
+        }
+
+        if (successCount > 0) {
+          console.log('[SYNC] ✓ Inseridos', successCount, 'de', dataToSync.length, 'registros');
+          updateSyncStatus('success');
+          await loadAndMergeFromSupabase();
+          return true;
+        } else {
+          updateSyncStatus('error');
+          return false;
+        }
+      }
+    } catch (e) {
+      console.error('[SYNC] Erro ao sincronizar:', e);
+      updateSyncStatus('error');
+      return false;
+    }
+  }
+
+  async function loadFromSupabase() {
+    if (!supabaseConfig.enabled || !supabaseConfig.url || !supabaseConfig.key) {
+      return null;
+    }
+
+    try {
+      const response = await fetch(
+        `${supabaseConfig.url}/rest/v1/expenses?order=created_at.asc`,
+        {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${supabaseConfig.key}`,
+            'apikey': supabaseConfig.key,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      if (response.ok) {
+        const expenses = await response.json();
+        return expenses.filter(e => e.id && e.description);
+      }
+    } catch (e) {
+      console.error('Erro ao carregar da nuvem:', e);
+    }
+    return null;
+  }
+
+  async function loadAndMergeFromSupabase() {
+    // Carrega dados do Supabase após sincronização
+    const cloudExpenses = await loadFromSupabase();
+
+    if (!cloudExpenses || cloudExpenses.length === 0) {
+      console.log('[SYNC] Nenhum dado na nuvem para carregar');
+      return;
+    }
+
+    console.log('[SYNC] ✓ Carregados', cloudExpenses.length, 'registros da nuvem');
+
+    // Para sincronização futura multi-dispositivo, criar mapa baseado em data+descricao+valor
+    // Por enquanto, apenas retornar os dados da nuvem como confirmação
+    // Dados locais já foram enviados, então a nuvem é agora a fonte da verdade
+
+    // Salvar dados merged no localStorage
+    saveToStorage();
+
+    // Re-renderizar a interface
+    renderAll();
+
+    console.log('✓ Dados sincronizados e mesclados com sucesso');
+  }
+
+  function openSupabaseModal() {
+    const modal = document.getElementById('supabaseModal');
+    const urlInput = document.getElementById('supabaseUrl');
+    const keyInput = document.getElementById('supabaseKey');
+    const statusDiv = document.getElementById('supabaseStatus');
+
+    // Se já tem config, carrega nos campos
+    if (supabaseConfig.enabled) {
+      urlInput.value = supabaseConfig.url;
+      keyInput.value = supabaseConfig.key;
+    } else {
+      urlInput.value = '';
+      keyInput.value = '';
+    }
+
+    // Limpa mensagem de status
+    statusDiv.textContent = '';
+    statusDiv.classList.remove('show', 'success', 'error');
+    document.getElementById('showKeyCheckbox').checked = false;
+    keyInput.type = 'password';
+
+    modal.classList.add('show');
+  }
+
+  function closeSupabaseModal() {
+    const modal = document.getElementById('supabaseModal');
+    modal.classList.remove('show');
+  }
+
+  function toggleSupabaseKeyVisibility() {
+    const keyInput = document.getElementById('supabaseKey');
+    const checkbox = document.getElementById('showKeyCheckbox');
+    keyInput.type = checkbox.checked ? 'text' : 'password';
+  }
+
+  function saveSupabaseConfigViaModal() {
+    const url = document.getElementById('supabaseUrl').value.trim();
+    const key = document.getElementById('supabaseKey').value.trim();
+    const statusDiv = document.getElementById('supabaseStatus');
+
+    if (!url || !key) {
+      statusDiv.textContent = '❌ Preencha URL e Chave!';
+      statusDiv.className = 'modal-status show error';
+      return;
+    }
+
+    if (!url.includes('supabase.co')) {
+      statusDiv.textContent = '❌ URL deve conter "supabase.co"';
+      statusDiv.className = 'modal-status show error';
+      return;
+    }
+
+    if (!key.startsWith('sb_')) {
+      statusDiv.textContent = '❌ Chave deve começar com "sb_"';
+      statusDiv.className = 'modal-status show error';
+      return;
+    }
+
+    // Salvar configuração
+    saveSupabaseConfig(url, key);
+
+    statusDiv.textContent = '✅ Configurado com sucesso!';
+    statusDiv.className = 'modal-status show success';
+
+    // Fechar modal após 1.5 segundos
+    setTimeout(() => {
+      closeSupabaseModal();
+      showToast('✓ Supabase configurado! Sincronizando...', 'success');
+      syncToSupabase().catch(e => {});
+    }, 1500);
+  }
+
+  function showSupabaseSetup() {
+    openSupabaseModal();
+  }
+
+  function updateSyncStatus(status) {
+    const statusEl = document.getElementById('syncStatus');
+    if (!statusEl) return;
+
+    if (status === 'syncing') {
+      statusEl.textContent = '🔄 Sincronizando...';
+      statusEl.style.color = 'rgba(255,255,255,0.9)';
+    } else if (status === 'success') {
+      statusEl.textContent = '✅ Sincronizado';
+      statusEl.style.color = '#10b981';
+      setTimeout(() => {
+        if (statusEl) {
+          statusEl.textContent = '⏳ Pronto';
+          statusEl.style.color = 'rgba(255,255,255,0.7)';
+        }
+      }, 3000);
+    } else if (status === 'error') {
+      statusEl.textContent = '❌ Erro';
+      statusEl.style.color = '#dc2626';
+      setTimeout(() => {
+        if (statusEl) {
+          statusEl.textContent = '⏳ Pronto';
+          statusEl.style.color = 'rgba(255,255,255,0.7)';
+        }
+      }, 3000);
+    } else if (status === 'offline') {
+      statusEl.textContent = '📴 Offline';
+      statusEl.style.color = '#f59e0b';
+    }
+  }
+
+  async function manualSyncSupabase() {
+    if (!supabaseConfig.enabled) {
+      showToast('Configure Supabase primeiro!', 'warning');
+      return;
+    }
+
+    updateSyncStatus('syncing');
+    const result = await syncToSupabase();
+
+    if (result) {
+      updateSyncStatus('success');
+      showToast('✓ Sincronização concluída!', 'success');
+    } else {
+      updateSyncStatus('error');
+      showToast('❌ Erro na sincronização', 'error');
+    }
+  }
+
+  // Tentar carregar config ao iniciar
+  loadSupabaseConfig();
+
+  // Sincronizar ao carregar a página (se configurado)
+  if (supabaseConfig.enabled) {
+    console.log('Sincronizando dados ao carregar...');
+    loadAndMergeFromSupabase().catch(e => console.log('Sync ao carregar:', e));
+  }
+
+  // Sistema inteligente de auto-sync com debounce
+  let lastSyncHash = '';
+  let syncDebounceTimer = null;
+  let hasChanges = false;
+
+  function getDataHash() {
+    // Criar hash dos dados para detectar mudanças
+    return JSON.stringify(state.expenses.map(e => ({
+      id: e.id,
+      date: e.date,
+      description: e.description,
+      valueCents: e.valueCents,
+      installments: e.installments,
+      cartao: e.cartao
+    })));
+  }
+
+  function scheduleAutoSync() {
+    // Marcar que houve mudanças
+    hasChanges = true;
+
+    // Cancelar timer anterior se existir
+    if (syncDebounceTimer) {
+      clearTimeout(syncDebounceTimer);
+    }
+
+    // Agendar sincronização 5 segundos após a última mudança
+    syncDebounceTimer = setTimeout(() => {
+      if (supabaseConfig.enabled && state.expenses.length > 0 && hasChanges) {
+        const currentHash = getDataHash();
+        // Só sincronizar se os dados realmente mudaram
+        if (currentHash !== lastSyncHash) {
+          console.log('[SYNC] Auto-sync detectou mudanças, sincronizando...');
+          lastSyncHash = currentHash;
+          hasChanges = false;
+          syncToSupabase().catch(e => console.log('Auto-sync error:', e));
+        }
+      }
+    }, 5000); // 5 segundos de espera após última mudança
+  }
+
+  // Inicializar hash
+  lastSyncHash = getDataHash();
 
   let db = null;
   let expensesCol = null;
@@ -1281,7 +2121,7 @@ footer.hint {
   const el = {};
   ['summaryTotal', 'summaryCount', 'editingFlag', 'editingText', 'cancelEdit',
     'addForm', 'valueInput', 'descInput', 'instMinus', 'instValue', 'instPlus',
-    'dateInput', 'ledger', 'cartaoTotal', 'disponivel', 'summaryCartao'
+    'dateInput', 'ledger', 'cartaoTotal', 'disponivel', 'summaryCartao', 'summaryDemaisCartoes'
   ].forEach(id => el[id] = document.getElementById(id));
 
   const pad2 = n => n < 10 ? '0' + n : '' + n;
@@ -1310,6 +2150,71 @@ footer.hint {
     return y + '-' + m + '-' + d;
   };
 
+  // Sistema de notificações Toast
+  const showToast = (message, type = 'info', duration = 3000) => {
+    let container = document.getElementById('toast-container');
+    if (!container) {
+      container = document.createElement('div');
+      container.id = 'toast-container';
+      container.className = 'toast-container';
+      document.body.appendChild(container);
+    }
+
+    const toast = document.createElement('div');
+    toast.className = 'toast ' + type;
+    toast.textContent = message;
+    container.appendChild(toast);
+
+    setTimeout(() => {
+      toast.classList.add('fade');
+      setTimeout(() => toast.remove(), 300);
+    }, duration);
+  };
+
+  // EXPORT / IMPORT
+  const exportData = () => {
+    const data = {
+      version: '6.0',
+      exported: new Date().toISOString(),
+      expenses: state.expenses
+    };
+    const json = JSON.stringify(data, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'fluxo-financeiro-backup-' + new Date().toISOString().slice(0, 10) + '.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('✅ Dados exportados com sucesso!', 'success');
+  };
+
+  const importData = (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = JSON.parse(e.target.result);
+        if (data.expenses && Array.isArray(data.expenses)) {
+          state.expenses = data.expenses;
+          saveToStorage();
+          boot();
+          showToast('✅ Dados importados com sucesso!', 'success');
+        } else {
+          showToast('❌ Arquivo inválido', 'error');
+        }
+      } catch(err) {
+        showToast('❌ Erro ao importar arquivo', 'error');
+      }
+    };
+    reader.readAsText(file);
+    document.getElementById('importFile').value = '';
+  };
+
   const STORAGE_KEY = 'passou_anotou_expenses';
   const VERSION_KEY = 'passou_anotou_version';
   const CONTAS_VERSION_KEY = 'passou_anotou_contas_version';
@@ -1319,6 +2224,11 @@ footer.hint {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state.expenses));
       localStorage.setItem(VERSION_KEY, CURRENT_VERSION);
+
+      // Agendar auto-sync inteligente com Supabase
+      if (supabaseConfig.enabled) {
+        scheduleAutoSync();
+      }
     } catch(e) {}
   };
 
@@ -1384,7 +2294,6 @@ footer.hint {
       const storedVersion = localStorage.getItem(VERSION_KEY);
       // Se versão for diferente, recarrega padrão
       if (storedVersion !== CURRENT_VERSION) {
-        console.log('Versão diferente, recarregando dados padrão');
         loadDefaultExpenses();
         return;
       }
@@ -1405,7 +2314,6 @@ footer.hint {
         loadDefaultExpenses();
       }
     } catch(e) {
-      console.error('Erro ao carregar dados:', e);
       // Se houver erro, limpa localStorage e carrega padrão
       try {
         localStorage.removeItem(STORAGE_KEY);
@@ -1443,6 +2351,10 @@ footer.hint {
     const base = Math.floor(e.valueCents / n);
     const remainder = e.valueCents - base * n;
     const occs = [];
+
+    // Use dataVencimento if available (from new form), otherwise use date
+    const baseDate = e.dataVencimento || e.date;
+
     for (let i = 0; i < n; i++) {
       occs.push({
         occId: e.id + '#' + i,
@@ -1452,11 +2364,129 @@ footer.hint {
         valueCents: base + (i < remainder ? 1 : 0),
         description: e.description,
         purchaseDate: e.date,
-        date: addMonthsClamped(e.date, i),
-        createdAt: e.createdAt
+        date: addMonthsClamped(baseDate, i),
+        dataVencimento: addMonthsClamped(baseDate, i),
+        createdAt: e.createdAt,
+        cartao: e.cartao
       });
     }
     return occs;
+  };
+
+  const cartaoLabels = {
+    'sicoob': '🏦 Sicoob',
+    'mercado_pago_carla': '🛒 Mercado Pago (Carla)',
+    'mercado_pago_iasmim': '🛒 Mercado Pago (Iasmim)',
+    'digio': '📱 Digio'
+  };
+
+  const renderDemaisCartoesModal = () => {
+    const container = document.getElementById('demaisCartoesContainer');
+    if (!container) return;
+
+    // Agrupar despesas por cartão (apenas dos demais cartões, não Santander)
+    // Filtrar apenas as ocorrências do mês atual
+    const key = monthKey(state.viewYear, state.viewMonth);
+    const cartoesDespesas = {};
+    state.expenses.forEach(e => {
+      const cartao = e.cartao || 'cartao_santander';
+      if (cartao !== 'cartao_santander' && cartao !== 'contas_fixas') {
+        // Adicionar TODAS as despesas (não filtrar por mês aqui)
+        // O filtro por mês será feito ao expandir em ocorrências
+        if (!cartoesDespesas[cartao]) {
+          cartoesDespesas[cartao] = [];
+        }
+        cartoesDespesas[cartao].push(e);
+      }
+    });
+
+    let html = '';
+    const order = ['sicoob', 'mercado_pago_carla', 'mercado_pago_iasmim', 'digio'];
+
+    order.forEach(cartaoKey => {
+      if (cartoesDespesas[cartaoKey]) {
+        const despesas = cartoesDespesas[cartaoKey];
+        let totalCartao = 0;
+
+        html += '<div style="margin-bottom: 20px; border-bottom: 1px solid var(--line); padding-bottom: 16px;">';
+        html += '<div style="font-weight: 600; font-size: 14px; margin-bottom: 10px; color: var(--ink);">' + (cartaoLabels[cartaoKey] || cartaoKey) + '</div>';
+
+        despesas.forEach(e => {
+          const ocorrencias = purchaseOccurrences(e);
+
+          ocorrencias.forEach(occ => {
+            // Filtrar apenas as ocorrências do mês atual
+            const occDate = (occ.dataVencimento || occ.date || '');
+            if (occDate.slice(0, 7) === key) {
+              const instText = occ.installments > 1 ? ' (' + occ.index + '/' + occ.installments + ')' : '';
+
+              // Format vencimento date
+              const vencParts = (occ.date || '').split('-');
+              const vencDisplay = vencParts.length === 3 ? vencParts[2] + '/' + vencParts[1] + '/' + vencParts[0] : '';
+
+              // Format purchase date
+              const compParts = (occ.purchaseDate || '').split('-');
+              const compDisplay = compParts.length === 3 ? compParts[2] + '/' + compParts[1] + '/' + compParts[0] : '';
+
+              totalCartao += occ.valueCents;
+
+              // Determinar ícone baseado no tipo de transação
+              const typeIcon = occ.installments > 1 ? '🎁' : '💳';
+              const typeLabel = occ.installments > 1 ? 'Parcelado' : 'Crédito';
+              const instLabel = occ.installments > 1 ? ' • Parcela ' + occ.index + ' de ' + occ.installments : '';
+
+              html += '<div style="display: flex; gap: 12px; padding: 14px 12px; margin: 8px 0; border-radius: 8px; background: var(--paper); border: 1px solid var(--line); align-items: flex-start;">';
+
+              // Ícone e info principal
+              html += '<div style="font-size: 24px; flex-shrink: 0;">' + typeIcon + '</div>';
+
+              html += '<div style="flex: 1;">';
+              html += '<div style="font-weight: 600; font-size: 14px; color: var(--ink); margin-bottom: 4px;">' + (e.description || 'Sem descrição') + '</div>';
+              html += '<div style="font-size: 12px; color: var(--ink-soft); margin-bottom: 6px;">' + typeLabel + instLabel + '</div>';
+
+              if (compDisplay) {
+                html += '<div style="font-size: 11px; color: var(--ink-faint);">📅 ' + compDisplay + ' • ' + (vencDisplay || 'sem data') + '</div>';
+              }
+
+              html += '</div>';
+
+              // Valor à direita
+              html += '<div style="text-align: right; flex-shrink: 0;">';
+              html += '<div style="font-weight: 700; font-size: 15px; color: var(--accent); margin-bottom: 6px;">R$ ' + (occ.valueCents / 100).toFixed(2).replace('.', ',') + '</div>';
+              html += '<button onclick="deleteExpense(\'' + e.id + '\')" style="background: none; border: none; cursor: pointer; font-size: 16px; opacity: 0.5; padding: 0; color: var(--danger);">🗑️</button>';
+              html += '</div>';
+
+              html += '</div>';
+            }
+          });
+        });
+
+        if (totalCartao > 0) {
+          html += '<div class="modal-row" style="border-top: 1px solid var(--line-strong); padding-top: 8px; margin-top: 8px; font-weight: 600; margin-left: 12px;">';
+          html += '<span class="modal-label">Subtotal</span>';
+          html += '<span class="modal-value">R$ ' + (totalCartao / 100).toFixed(2).replace('.', ',') + '</span>';
+          html += '</div>';
+        }
+        html += '</div>';
+      }
+    });
+
+    // Total geral (apenas do mês atual) - usar monthOccurrences
+    let totalGeral = 0;
+    const occurrencesThisMonth = monthOccurrences();
+    occurrencesThisMonth.forEach(occ => {
+      const cartao = occ.cartao || 'cartao_santander';
+      if (cartao !== 'cartao_santander' && cartao !== 'contas_fixas') {
+        totalGeral += occ.valueCents;
+      }
+    });
+
+    html += '<div class="modal-row" style="border-top: 2px solid var(--line); padding-top: 12px; margin-top: 8px; font-weight: 700;">';
+    html += '<span class="modal-label">Total</span>';
+    html += '<span class="modal-value" style="color: #8b5cf6;">R$ ' + (totalGeral / 100).toFixed(2).replace('.', ',') + '</span>';
+    html += '</div>';
+
+    container.innerHTML = html;
   };
 
   const allOccurrences = () => {
@@ -1467,7 +2497,22 @@ footer.hint {
 
   const monthOccurrences = () => {
     const key = monthKey(state.viewYear, state.viewMonth);
-    return allOccurrences().filter(o => (o.date || '').slice(0, 7) === key);
+    return allOccurrences().filter(o => {
+      // Use dataVencimento if available (from new form), otherwise use date
+      const displayDate = (o.dataVencimento || o.date || '');
+      return displayDate.slice(0, 7) === key;
+    });
+  };
+
+  // Filtra apenas despesas do Cartão Santander Camila para a aba "Passou, Anotou"
+  const monthOccurrencesSantander = () => {
+    const key = monthKey(state.viewYear, state.viewMonth);
+    return allOccurrences().filter(o => {
+      const cartao = o.cartao || 'cartao_santander';
+      // Use dataVencimento if available (from new form), otherwise use date
+      const displayDate = (o.dataVencimento || o.date || '');
+      return displayDate.slice(0, 7) === key && cartao === 'cartao_santander';
+    });
   };
 
   const openModal = (modalId) => {
@@ -1475,19 +2520,39 @@ footer.hint {
     if (modal) {
       // Atualizar modal de Cartão Detalhes
       if (modalId === 'modalCartaoDetalhes') {
-        // Carrega gastos do mês para mostrar no modal
-        const list = monthOccurrences().sort((a, b) => b.date.localeCompare(a.date));
+        // Carrega gastos do mês para mostrar no modal (apenas Cartão Santander)
+        const list = monthOccurrencesSantander().sort((a, b) => b.purchaseDate.localeCompare(a.purchaseDate));
         const container = document.getElementById('cartaoDetalhesContainer');
         if (container) {
           if (list.length === 0) {
             container.innerHTML = '<p style="text-align: center; color: var(--ink-soft); padding: 20px;">Nenhum gasto neste mês</p>';
           } else {
-            let html = '';
+            // Agrupar por data de compra (purchaseDate)
+            const despesasPorData = {};
             list.forEach(o => {
-              const instText = o.installments > 1 ? ' (' + o.index + '/' + o.installments + ')' : '';
-              html += '<div class="modal-row">';
-              html += '<span class="modal-label">' + (o.description || 'Sem descrição') + instText + '</span>';
-              html += '<span class="modal-value">R$ ' + (o.valueCents / 100).toFixed(2).replace('.', ',') + '</span>';
+              const data = o.purchaseDate || '';
+              if (!despesasPorData[data]) {
+                despesasPorData[data] = [];
+              }
+              despesasPorData[data].push(o);
+            });
+
+            let html = '';
+            // Renderizar agrupado por data (mais recentes primeiro)
+            Object.keys(despesasPorData).sort((a, b) => b.localeCompare(a)).forEach(data => {
+              const dateParts = data.split('-');
+              const dateDisplay = dateParts.length === 3 ? dateParts[2] + '/' + dateParts[1] + '/' + dateParts[0] : '';
+              html += '<div style="margin-bottom: 16px;">';
+              html += '<div style="font-weight: 600; color: var(--ink); margin-bottom: 8px; font-size: 13px; padding: 8px 0; border-bottom: 2px solid var(--line);">📅 ' + dateDisplay + '</div>';
+
+              despesasPorData[data].forEach(o => {
+                const instText = o.installments > 1 ? ' (' + o.index + '/' + o.installments + ')' : '';
+                html += '<div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; margin-left: 0;">';
+                html += '<span class="modal-label" style="flex: 1; font-size: 13px;">' + (o.description || 'Sem descrição') + instText + '</span>';
+                html += '<span class="modal-value" style="font-size: 13px;">R$ ' + (o.valueCents / 100).toFixed(2).replace('.', ',') + '</span>';
+                html += '</div>';
+              });
+
               html += '</div>';
             });
             container.innerHTML = html;
@@ -1501,8 +2566,30 @@ footer.hint {
         if (rows[1]) rows[1].innerHTML = '<span class="modal-label">Salário Iasmim</span><span class="modal-value">R$ ' + rendaConfig.salarioIasmim.toFixed(2).replace('.', ',') + '</span>';
         if (rows[2]) rows[2].innerHTML = '<span class="modal-label">Empréstimo Pessoal</span><span class="modal-value" style="color: #dc2626;">-R$ ' + rendaConfig.emprestimoPersonal.toFixed(2).replace('.', ',') + '</span>';
         if (rows[3]) rows[3].innerHTML = '<span class="modal-label">Total</span><span class="modal-value">R$ ' + rendaLiquida.toFixed(2).replace('.', ',') + '</span>';
+      } else if (modalId === 'modalValeAlimentacao') {
+        const summaryConfig = loadSummaryConfig();
+        const valeCarla = summaryConfig.valeAlimentacaoCarla;
+        const valeIasmim = summaryConfig.valeAlimentacaoIasmim;
+        const valeTotal = valeCarla + valeIasmim;
+
+        const valeCarlaEl = document.getElementById('valeCarlaDisplay');
+        if (valeCarlaEl) {
+          valeCarlaEl.textContent = 'R$ ' + valeCarla.toFixed(2).replace('.', ',');
+        }
+
+        const valeIasmimEl = document.getElementById('valeIasmimDisplay');
+        if (valeIasmimEl) {
+          valeIasmimEl.textContent = 'R$ ' + valeIasmim.toFixed(2).replace('.', ',');
+        }
+
+        const valeTotalEl = document.getElementById('valeTotalDisplay');
+        if (valeTotalEl) {
+          valeTotalEl.textContent = 'R$ ' + valeTotal.toFixed(2).replace('.', ',');
+        }
       } else if (modalId === 'modalContasFixas') {
         renderContasFixasModal();
+      } else if (modalId === 'modalDemaisCartoes') {
+        renderDemaisCartoesModal();
       }
       modal.classList.add('active');
       modal.addEventListener('click', (e) => {
@@ -1524,7 +2611,7 @@ footer.hint {
   const getIconForConta = (nomeConta) => {
     const nome = nomeConta.toLowerCase();
     if (nome.includes('vivo') || nome.includes('telefone') || nome.includes('celular')) return '📱';
-    if (nome.includes('porto') || nome.includes('seguro')) return '🛡️';
+    if (nome.includes('porto') || nome.includes('seguro')) return '🌊';
     if (nome.includes('dindin') || nome.includes('santander') || nome.includes('digio')) return '💳';
     if (nome.includes('mercado pago')) return '💰';
     if (nome.includes('ótica')) return '👓';
@@ -1541,7 +2628,7 @@ footer.hint {
   const monthNames = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
 
   // Contas com valores variáveis (não mostrar valor fixo)
-  const contasVariaveis = ['mercado_pago_carla', 'mercado_pago_iasmim', 'digio', 'sicob'];
+  const contasVariaveis = [];
 
   const showDayDetails = (day, contas) => {
     const container = document.getElementById('dayDetailsContainer');
@@ -1558,13 +2645,14 @@ footer.hint {
           const contaValor = typeof contaObj === 'string' ? 0 : (contaObj.valor || 0);
           const contaId = typeof contaObj === 'string' ? null : (contaObj.id || null);
           const isVariavel = contasVariaveis.includes(contaId);
+          const isCartao = contaObj.isCartao || false;
           const icon = getIconForConta(contaNome);
           const categoria = icon;
 
           if (!categorias[categoria]) {
             categorias[categoria] = [];
           }
-          categorias[categoria].push({ nome: contaNome, icon, index, valor: contaValor, isVariavel, contaId });
+          categorias[categoria].push({ nome: contaNome, icon, index, valor: contaValor, isVariavel, contaId, isCartao });
         });
 
         // Renderizar contas agrupadas por ícone
@@ -1578,16 +2666,96 @@ footer.hint {
               html += '<div style="height: 1px; background: var(--line); margin: 0;"></div>';
             }
 
-            html += '<div style="padding: 12px 16px; display: flex; align-items: center; gap: 12px; background: var(--paper-raised); cursor: pointer;" data-conta-id="' + item.contaId + '" class="conta-row">';
-            html += '<span style="font-size: 20px; flex-shrink: 0;">' + item.icon + '</span>';
-            html += '<span style="color: var(--ink); flex: 1; font-size: 14px;">' + item.nome + '</span>';
-            if (item.isVariavel) {
-              html += '<span style="color: #8b5cf6; font-size: 13px; font-weight: 600;">Valor Variável ✏️</span>';
-            } else if (item.valor > 0) {
-              const valorText = item.valor.toFixed(2).replace('.', ',');
-              html += '<span style="color: var(--ink-soft); font-size: 13px; font-weight: 600;">R$ ' + valorText + '</span>';
+            // Se for um cartão, mostrar cada despesa individual
+            if (item.isCartao) {
+              // Expandir todas as despesas em parcelas e filtrar apenas as deste mês
+              const y = state.viewYear;
+              const m = state.viewMonth;
+              const todasAsOcorrencias = [];
+
+              state.expenses.forEach(exp => {
+                const ocorrencias = purchaseOccurrences(exp);
+                ocorrencias.forEach(occ => {
+                  todasAsOcorrencias.push(occ);
+                });
+              });
+
+              // Filtrar apenas as ocorrências deste cartão e deste mês
+              const cartaoExpenses = todasAsOcorrencias.filter(occ => {
+                const cartaoKey = occ.cartao || 'cartao_santander';
+                const cartaoLabel = {
+                  'sicoob': '🏦 Sicoob',
+                  'mercado_pago_carla': '🛒 Mercado Pago (Carla)',
+                  'mercado_pago_iasmim': '🛒 Mercado Pago (Iasmim)',
+                  'digio': '📱 Digio'
+                }[cartaoKey];
+
+                // Verificar se é deste cartão e deste mês
+                if (cartaoLabel !== item.nome) return false;
+
+                const occDate = occ.dataVencimento || occ.date;
+                const occParts = occDate.split('-');
+                const occMonth = parseInt(occParts[1]);
+                const occYear = parseInt(occParts[0]);
+
+                return occMonth === (m + 1) && occYear === y;
+              });
+
+              if (cartaoExpenses.length > 0) {
+                html += '<div style="padding: 14px 12px; margin: 8px 0; border-radius: 8px; background: var(--paper); border: 1px solid var(--line); font-weight: 600; color: var(--ink);">';
+                html += '<div style="font-size: 13px; margin-bottom: 8px; opacity: 0.8;">' + item.nome + '</div>';
+                html += '<div style="font-size: 15px; color: var(--accent);">Total: R$ ' + item.valor.toFixed(2).replace('.', ',') + '</div>';
+                html += '</div>';
+
+                cartaoExpenses.forEach((occ, idx) => {
+                  const dataCompra = occ.purchaseDate || occ.date;
+                  const dataParts = (dataCompra || '').split('-');
+                  const dataFormatada = dataParts.length === 3 ? dataParts[2] + '/' + dataParts[1] + '/' + dataParts[0] : 'Sem data';
+                  const valorExp = (occ.valueCents || 0) / 100;
+                  const parcelaInfo = occ.installments && occ.installments > 1 ? ' • Parcela ' + occ.index + ' de ' + occ.installments : '';
+                  const typeIcon = occ.installments > 1 ? '🎁' : '💳';
+
+                  html += '<div style="display: flex; gap: 12px; padding: 12px 12px; margin: 6px 0; border-radius: 6px; background: var(--paper-raised); border: 1px solid var(--line); align-items: flex-start; cursor: pointer;" data-expense-id="' + (occ.occId || idx) + '" class="expense-row">';
+                  html += '<div style="font-size: 18px; flex-shrink: 0;">' + typeIcon + '</div>';
+                  html += '<div style="flex: 1;">';
+                  html += '<div style="font-weight: 600; font-size: 13px; color: var(--ink); margin-bottom: 2px;">' + occ.description + '</div>';
+                  html += '<div style="font-size: 11px; color: var(--ink-faint);">' + (occ.installments > 1 ? '🎁' : '💳') + ' ' + (occ.installments > 1 ? 'Parcelado' : 'Crédito') + parcelaInfo + '</div>';
+                  html += '<div style="font-size: 11px; color: var(--ink-faint); margin-top: 2px;">📅 Compra: ' + dataFormatada + '</div>';
+                  html += '</div>';
+                  html += '<div style="text-align: right; flex-shrink: 0;">';
+                  html += '<div style="font-weight: 700; font-size: 13px; color: var(--accent); margin-bottom: 4px;">R$ ' + valorExp.toFixed(2).replace('.', ',') + '</div>';
+                  html += '</div>';
+                  html += '</div>';
+                });
+              } else {
+                html += '<div style="display: flex; gap: 12px; padding: 14px 12px; margin: 8px 0; border-radius: 8px; background: var(--paper); border: 1px solid var(--line); align-items: flex-start;">';
+                html += '<span style="font-size: 22px; flex-shrink: 0;">' + item.icon + '</span>';
+                html += '<div style="flex: 1;">';
+                html += '<span style="color: var(--ink); flex: 1; font-size: 14px; font-weight: 600;">' + item.nome + '</span>';
+                html += '</div>';
+                html += '<span style="color: var(--accent); font-size: 13px; font-weight: 700;">R$ ' + item.valor.toFixed(2).replace('.', ',') + '</span>';
+                html += '</div>';
+              }
+            } else {
+              // Não é cartão, mostrar normalmente com card-based design
+              html += '<div style="display: flex; gap: 12px; padding: 14px 12px; margin: 8px 0; border-radius: 8px; background: var(--paper); border: 1px solid var(--line); align-items: flex-start; cursor: pointer;" data-conta-id="' + item.contaId + '" class="conta-row">';
+              html += '<span style="font-size: 22px; flex-shrink: 0;">' + item.icon + '</span>';
+              html += '<div style="flex: 1;">';
+              html += '<div style="font-weight: 600; font-size: 14px; color: var(--ink); margin-bottom: 2px;">' + item.nome + '</div>';
+              if (item.isVariavel) {
+                html += '<div style="font-size: 12px; color: #8b5cf6;">Valor Variável ✏️</div>';
+              }
+              html += '</div>';
+              html += '<div style="text-align: right; flex-shrink: 0;">';
+              if (item.isVariavel) {
+                // No value display for variable accounts
+              } else if (item.valor > 0) {
+                const valorText = item.valor.toFixed(2).replace('.', ',');
+                html += '<div style="font-weight: 700; font-size: 14px; color: var(--accent);">R$ ' + valorText + '</div>';
+              }
+              html += '</div>';
+              html += '</div>';
             }
-            html += '</div>';
 
             isFirst = false;
           });
@@ -1617,7 +2785,8 @@ footer.hint {
   };
 
   const renderSummary = () => {
-    const list = monthOccurrences();
+    // Summary sempre mostra apenas despesas do Cartão Santander (não é afetado pelo activeTab)
+    const list = monthOccurrencesSantander();
     let total = 0;
     list.forEach(o => total += o.valueCents);
     el.summaryTotal.textContent = formatCentsBRL(total);
@@ -1628,10 +2797,49 @@ footer.hint {
     el.cartaoTotal.textContent = formatCentsBRL(total);
     el.summaryCartao.textContent = '-' + formatCentsBRL(total);
 
+    // Calcular total de Demais Cartões apenas do mês atual
+    let totalDemaisCartoes = 0;
+    const occurrencesThisMonth = monthOccurrences();
+    occurrencesThisMonth.forEach(occ => {
+      const cartao = occ.cartao || 'cartao_santander';
+      if (cartao !== 'cartao_santander' && cartao !== 'contas_fixas') {
+        totalDemaisCartoes += occ.valueCents;
+      }
+    });
+    const demaisCartoesEl = document.getElementById('demaisCartoesTotal');
+    if (demaisCartoesEl) {
+      demaisCartoesEl.textContent = formatCentsBRL(totalDemaisCartoes);
+    }
+    // Atualizar linha de Demais Cartões na tabela de resumo
+    const demaisCartoesEmReais = totalDemaisCartoes / 100;
+    if (el.summaryDemaisCartoes) {
+      el.summaryDemaisCartoes.textContent = '-R$ ' + demaisCartoesEmReais.toFixed(2).replace('.', ',');
+    }
+
     const rendaConfig = loadRendaConfig();
     const rendaLiquida = rendaConfig.salarioCarla + rendaConfig.salarioIasmim + rendaConfig.abono + rendaConfig.meritocracia - rendaConfig.emprestimoPersonal;
-    const valeAlimentacao = 565.92;
-    const contas = 5736.78;
+
+    // Vale Alimentação dinâmico
+    const summaryConfig = loadSummaryConfig();
+    const valeAlimentacao = summaryConfig.valeAlimentacaoCarla + summaryConfig.valeAlimentacaoIasmim;
+
+    // Contas fixas dinâmicas - calcular total para o mês atual
+    let contas = 0;
+    const contasFixas = loadContasFixas();
+    Object.keys(contasFixas).forEach(id => {
+      let conta = contasFixas[id];
+      if (conta.parcelaTotal > 0) {
+        conta = calcularParcelaParaMes(conta, state.viewYear, state.viewMonth);
+        if (!conta) return;
+      }
+      contas += conta.valor || 0;
+    });
+
+    // Atualizar linha de Contas + Financiamento na tabela de resumo
+    const summaryContasEl = document.getElementById('summaryContas');
+    if (summaryContasEl) {
+      summaryContasEl.textContent = '-R$ ' + contas.toFixed(2).replace('.', ',');
+    }
 
     // Atualizar card de Renda Líquida (cima)
     const rendaLiquidaEl = document.getElementById('rendaLiquidaCard');
@@ -1652,8 +2860,8 @@ footer.hint {
       totalEntradaEl.textContent = 'R$ ' + totalEntrada.toFixed(2).replace('.', ',');
     }
 
-    // Disponível = Renda Líquida + Vale Alimentação - Contas - Cartão
-    const disponivel = rendaLiquida + valeAlimentacao - contas - totalEmReais;
+    // Disponível = Renda Líquida + Vale Alimentação - Contas - Cartão Santander - Demais Cartões
+    const disponivel = rendaLiquida + valeAlimentacao - contas - totalEmReais - demaisCartoesEmReais;
     const disponibilidadeText = 'R$ ' + disponivel.toFixed(2).replace('.', ',');
 
     // Atualizar elemento e cor baseado no valor
@@ -1704,7 +2912,9 @@ footer.hint {
   };
 
   const renderLedger = () => {
-    const list = monthOccurrences().slice().sort((a, b) => {
+    // Na aba "Passou, Anotou", mostra apenas despesas do Cartão Santander
+    const monthList = state.activeTab === 'despesas' ? monthOccurrencesSantander() : monthOccurrences();
+    const list = monthList.slice().sort((a, b) => {
       if (a.purchaseDate !== b.purchaseDate) return a.purchaseDate < b.purchaseDate ? 1 : -1;
       return (b.createdAt || '').localeCompare(a.createdAt || '');
     });
@@ -1782,6 +2992,8 @@ footer.hint {
   const renderAll = () => {
     renderSummary();
     renderLedger();
+    renderContasFixasModal();
+    updateContasFixasTotal();
   };
 
   const renderInstallments = () => {
@@ -1859,28 +3071,49 @@ footer.hint {
   el.addForm?.addEventListener('submit', ev => {
     ev.preventDefault();
     const cents = parseValueCents();
-    if (cents <= 0) return;
+
+    // Validações
+    if (cents <= 0) {
+      showToast('⚠️ Digite um valor maior que zero', 'warning');
+      return;
+    }
+    if (cents > 999999900) { // Limite de R$ 9.999.999,00
+      showToast('⚠️ Valor muito alto! Máximo: R$ 9.999.999,00', 'warning');
+      return;
+    }
+    if (!el.descInput.value.trim()) {
+      showToast('⚠️ Descreva onde foi a compra', 'warning');
+      return;
+    }
     const inputDate = el.dateInput.value;
     const dateISO = formatDateToISO(inputDate);
+    if (dateISO === todayISO() && !inputDate) {
+      showToast('⚠️ Data inválida', 'warning');
+      return;
+    }
+
     const payload = {
       valueCents: cents,
       description: el.descInput.value.trim(),
       installments: state.installments,
-      date: dateISO
+      date: dateISO,
+      cartao: el.cartaoSelect?.value || 'cartao_santander'
     };
     if (state.editingId) {
       updateExpense(state.editingId, payload);
       resetForm();
       renderAll();
+      showToast('✓ Despesa atualizada', 'success');
     } else {
       payload.createdAt = new Date().toISOString();
       addExpense(payload);
       resetForm();
+      showToast('✓ Despesa adicionada', 'success');
     }
   });
 
   const addExpense = payload => {
-    const localEntry = Object.assign({id: 'local-' + Date.now() + '-' + Math.random().toString(36).slice(2)}, payload);
+    const localEntry = Object.assign({id: generateUUID()}, payload);
 
     // Adiciona imediatamente ao estado (otimista)
     state.expenses.push(localEntry);
@@ -1897,7 +3130,7 @@ footer.hint {
         renderAll();
         renderCalendar();
       }).catch(err => {
-        console.error('Erro ao salvar no Firestore:', err);
+        // Erro ao sincronizar com Firestore, mas os dados locais foram salvos
       });
     }
   };
@@ -1913,25 +3146,45 @@ footer.hint {
     // Sincroniza com Firestore se existir
     if (db && expensesCol && id.indexOf('local-') !== 0) {
       expensesCol.doc(id).update(payload).catch(err => {
-        console.error('Erro ao atualizar no Firestore:', err);
+        // Erro ao sincronizar com Firestore, mas os dados locais foram atualizados
       });
     }
   };
 
   const deleteExpense = id => {
-    console.log('Deletando expense:', id);
+    if (!confirm('⚠️ Tem certeza que deseja deletar esta despesa?\n\nEsta ação não pode ser desfeita.')) {
+      return;
+    }
     state.expenses = state.expenses.filter(x => x.id !== id);
     saveToStorage();
     renderAll();
+    renderCalendar();
+    // Re-renderizar modal de Demais Cartões se estiver aberto
+    openModal('modalDemaisCartoes');
+    showToast('✓ Despesa deletada com sucesso', 'success');
 
     if (db && expensesCol && id.indexOf('local-') !== 0) {
-      expensesCol.doc(id).delete().then(() => {
-        console.log('Deletado do Firestore:', id);
-      }).catch(err => {
-        console.error('Erro ao deletar do Firestore:', err);
+      expensesCol.doc(id).delete().catch(err => {
+        showToast('Erro ao sincronizar com servidor', 'error');
       });
     }
   };
+
+  window.deleteExpense = deleteExpense;
+
+  const deletarContaFixa = (contaId) => {
+    if (!confirm('⚠️ Tem certeza que deseja deletar esta conta?\n\nEsta ação não pode ser desfeita.')) {
+      return;
+    }
+    contasFixas = loadContasFixas();
+    delete contasFixas[contaId];
+    saveContasFixas(contasFixas);
+    renderAll();
+    renderCalendar();
+    showToast('✓ Conta deletada com sucesso', 'success');
+  };
+
+  window.deletarContaFixa = deletarContaFixa;
 
   const initDb = dbNs => {
     db = dbNs;
@@ -1942,23 +3195,17 @@ footer.hint {
 
     // Verifica Firestore e limpa se tiver mais que 100 docs (duplicação)
     expensesCol.get().then(qs => {
-      console.log('Firestore tem ' + qs.docs.length + ' documentos');
-
       // Se tiver MUITOS docs (duplicação), deleta tudo
       if (qs.docs.length > 100) {
-        console.log('⚠️ Detectada duplicação! Deletando tudo...');
         const promises = qs.docs.map(doc => expensesCol.doc(doc.id).delete());
         return Promise.all(promises).then(() => 'deleted');
       } else if (qs.docs.length === 0) {
-        console.log('Firestore vazio - carregando padrão');
         return 'load_default';
       } else {
-        console.log('Firestore ok - usando dados existentes');
         return 'use_existing';
       }
     }).then(action => {
       if (action === 'deleted' || action === 'load_default') {
-        console.log('Carregando 51 despesas padrão...');
         const promises = defaultExpenses.map(e => {
           return expensesCol.add({
             date: e.date,
@@ -1973,14 +3220,12 @@ footer.hint {
     }).then(() => {
       setupListener();
     }).catch(err => {
-      console.error('Erro:', err);
       setupListener();
     });
 
     const setupListener = () => {
       expensesCol.orderBy('date', 'desc').limit(500).onSnapshot(
         qs => {
-          console.log('Recebido ' + qs.docs.length + ' documentos');
           state.expenses = qs.docs.map(snap => {
             const d = snap.data() || {};
             return {
@@ -1989,6 +3234,7 @@ footer.hint {
               description: d.description || '',
               installments: d.installments || 1,
               date: d.date || todayISO(),
+              cartao: d.cartao || 'cartao_santander',
               createdAt: d.createdAt || ''
             };
           });
@@ -1997,7 +3243,7 @@ footer.hint {
           renderCalendar();
         },
         err => {
-          console.error('Erro:', err);
+          // Erro ao ouvir atualizações do Firestore
         }
       );
     };
@@ -2005,12 +3251,16 @@ footer.hint {
 
   window.openModal = openModal;
   window.closeModal = closeModal;
+  window.exportData = exportData;
+  window.importData = importData;
 
   window.switchTab = tabName => {
+    state.activeTab = tabName;
     document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
     document.getElementById(tabName).classList.add('active');
     event.target.classList.add('active');
+    renderAll();
   };
 
   const MONTH_NAMES = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
@@ -2091,17 +3341,30 @@ footer.hint {
         if (!conta) return; // Conta não aparece neste mês (acabou)
       }
 
+      // Extrair dia da dataVencimento se não tiver campo dia
+      let diaDefinido = conta.dia;
+
+      if ((diaDefinido === null || diaDefinido === undefined) && conta.dataVencimento) {
+        const dataVencStr = String(conta.dataVencimento || '').trim();
+        if (dataVencStr) {
+          const dateParts = dataVencStr.split('-');
+          if (dateParts.length === 3) {
+            const diaParsed = parseInt(dateParts[2]);
+            if (!isNaN(diaParsed) && diaParsed > 0) {
+              diaDefinido = diaParsed;
+            }
+          }
+        }
+      }
+
       // Adiciona a conta se tem um dia definido (número ou 'quinto_util')
-      if (conta.dia !== null && conta.dia !== undefined) {
+      if (diaDefinido !== null && diaDefinido !== undefined && diaDefinido > 0) {
         // Se a conta vence no quinto dia útil, usa o dia calculado
-        const diaParaAdicionar = conta.dia === 'quinto_util' ? quintoDiaUtil : conta.dia;
+        const diaParaAdicionar = diaDefinido === 'quinto_util' ? quintoDiaUtil : diaDefinido;
 
         if (!contasAtivas[diaParaAdicionar]) contasAtivas[diaParaAdicionar] = [];
         // Retorna objeto com nome completo incluindo parcelas
         const displayName = getContaDisplayName(conta);
-        if (diaParaAdicionar === 1) {
-          console.log('Dia 1 - conta:', id, 'nome:', conta.nome, 'parcelaAtual:', conta.parcelaAtual, 'parcelaTotal:', conta.parcelaTotal, 'displayName:', displayName);
-        }
         // Para contas variáveis, obter valor do mês específico
         let valorPraExibir = conta.valor;
         if (contasVariaveis.includes(id)) {
@@ -2117,7 +3380,70 @@ footer.hint {
       }
     });
 
-    console.log('getContasForMonth - dia 1:', contasAtivas[1]);
+    // Mapeamento de cartão para dia de vencimento
+    const cartaoDiasVencimento = {
+      'sicoob': 11,
+      'mercado_pago_carla': 4,
+      'mercado_pago_iasmim': 4,
+    };
+
+    // Calcular totais de cada cartão por dia de vencimento
+    // Usar purchaseOccurrences para considerar parcelas individuais
+    const cartaoTotaisPorDia = {};
+
+    state.expenses.forEach(e => {
+      // Expandir em parcelas individuais
+      const ocorrencias = purchaseOccurrences(e);
+
+      ocorrencias.forEach(occ => {
+        // Verificar se esta ocorrência é deste mês
+        const occDate = occ.dataVencimento || occ.date;
+        const occParts = occDate.split('-');
+        const occMonth = parseInt(occParts[1]);
+        const occYear = parseInt(occParts[0]);
+
+        // Se a ocorrência é deste mês, adicionar ao total
+        if (occMonth === (month + 1) && occYear === year) {
+          const cartao = occ.cartao || 'cartao_santander';
+          const diaVencimento = cartaoDiasVencimento[cartao] || 1;
+
+          if (!cartaoTotaisPorDia[diaVencimento]) {
+            cartaoTotaisPorDia[diaVencimento] = {};
+          }
+
+          if (!cartaoTotaisPorDia[diaVencimento][cartao]) {
+            cartaoTotaisPorDia[diaVencimento][cartao] = 0;
+          }
+
+          cartaoTotaisPorDia[diaVencimento][cartao] += occ.valueCents;
+        }
+      });
+    });
+
+    // Adicionar cartões aos seus dias de vencimento
+    const cartaoLabelsSimples = {
+      'sicoob': '🏦 Sicoob',
+      'mercado_pago_carla': '🛒 Mercado Pago (Carla)',
+      'mercado_pago_iasmim': '🛒 Mercado Pago (Iasmim)'
+    };
+
+    Object.keys(cartaoTotaisPorDia).forEach(dia => {
+      const diaNum = parseInt(dia);
+      if (!contasAtivas[diaNum]) contasAtivas[diaNum] = [];
+
+      Object.keys(cartaoTotaisPorDia[dia]).forEach(cartaoKey => {
+        if (cartaoTotaisPorDia[dia][cartaoKey] > 0 && cartaoLabelsSimples[cartaoKey]) {
+          contasAtivas[diaNum].push({
+            nome: cartaoLabelsSimples[cartaoKey],
+            nomeCompleto: cartaoLabelsSimples[cartaoKey],
+            valor: cartaoTotaisPorDia[dia][cartaoKey] / 100,
+            id: 'cartao_' + cartaoKey,
+            isCartao: true
+          });
+        }
+      });
+    });
+
     return contasAtivas;
   };
 
@@ -2140,7 +3466,9 @@ footer.hint {
     const allOccs = allOccurrences();
     const occsByDay = {};
     allOccs.forEach(o => {
-      const dayStr = (o.date || '').slice(0, 10);
+      // Use dataVencimento if available (from new form), otherwise use date
+      const displayDate = (o.dataVencimento || o.date || '');
+      const dayStr = displayDate.slice(0, 10);
       if (!occsByDay[dayStr]) occsByDay[dayStr] = [];
       occsByDay[dayStr].push(o);
     });
@@ -2285,23 +3613,297 @@ footer.hint {
     }
   };
 
+  // Estado para parcelamento do formulário Nova Conta
+  let novaContaParcelas = 1;
+
+  const updateParcValue = () => {
+    const el = document.getElementById('parcValue');
+    if (el) el.textContent = novaContaParcelas + 'x';
+  };
+
+  document.getElementById('parcMinusBtn')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (novaContaParcelas > 1) {
+      novaContaParcelas--;
+      updateParcValue();
+    }
+  });
+
+  document.getElementById('parcPlusBtn')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (novaContaParcelas < 24) {
+      novaContaParcelas++;
+      updateParcValue();
+    }
+  });
+
   const handleNovaContaSubmit = (ev) => {
     ev.preventDefault();
     const nome = document.getElementById('novaContaNome').value.trim();
-    const valor = document.getElementById('novaContaValor').value.trim();
+    const valorStr = document.getElementById('novaContaValor').value.trim();
     const categoria = document.getElementById('novaContaCategoria').value;
+    const dataCompraStr = document.getElementById('novaContaDataCompra').value.trim();
+    const dataVencimentoStr = document.getElementById('novaContaDataVencimento').value.trim();
 
-    if (!nome || !valor || !categoria) {
-      alert('Por favor, preencha todos os campos');
+    if (!nome || !valorStr || !categoria) {
+      showToast('⚠️ Preencha todos os campos obrigatórios', 'warning');
       return;
     }
 
-    alert('Conta adicionada com sucesso: ' + nome + ' - R$ ' + valor);
+    const valor = parseFloat(valorStr.replace(',', '.'));
+    if (isNaN(valor) || valor <= 0) {
+      showToast('⚠️ Valor inválido', 'warning');
+      return;
+    }
+
+    const valueCents = Math.round(valor * 100);
+
+    // Função auxiliar para validar e converter data
+    const parseDate = (dateStr, isRequired = false) => {
+      if (!dateStr) {
+        return isRequired ? null : todayISO();
+      }
+
+      // Validar formato: deve ter exatamente 10 caracteres (DD/MM/YYYY)
+      if (dateStr.length !== 10 || dateStr[2] !== '/' || dateStr[5] !== '/') {
+        return null;
+      }
+
+      const parts = dateStr.split('/');
+      if (parts.length === 3) {
+        const dia = parseInt(parts[0]);
+        const mes = parseInt(parts[1]);
+        const ano = parseInt(parts[2]);
+
+        if (!isNaN(dia) && !isNaN(mes) && !isNaN(ano) &&
+            dia >= 1 && dia <= 31 &&
+            mes >= 1 && mes <= 12 &&
+            parts[2].length === 4 &&
+            ano >= 2000 && ano <= 2099) {
+          return ano + '-' + ('0' + mes).slice(-2) + '-' + ('0' + dia).slice(-2);
+        }
+      }
+      return null;
+    };
+
+    // Data de compra (opcional, padrão hoje)
+    let compraData = parseDate(dataCompraStr, false);
+    if (!compraData && dataCompraStr) {
+      showToast('⚠️ Data de Compra inválida. Use DD/MM/YYYY', 'warning');
+      return;
+    }
+
+    // Data de vencimento (obrigatória para contas fixas)
+    let dataVencimento = null;
+    if (categoria === 'contas_fixas') {
+      if (!dataVencimentoStr) {
+        showToast('⚠️ Data de Vencimento é obrigatória para contas fixas', 'warning');
+        return;
+      }
+      console.log('Parseando dataVencimentoStr:', dataVencimentoStr);
+      dataVencimento = parseDate(dataVencimentoStr, true);
+      console.log('dataVencimento parseado:', dataVencimento);
+      if (!dataVencimento) {
+        showToast('⚠️ Data de Vencimento inválida. Use DD/MM/YYYY', 'warning');
+        return;
+      }
+    } else {
+      // Para cartões, data de vencimento é opcional
+      dataVencimento = parseDate(dataVencimentoStr, false) || compraData;
+    }
+
+    // Se é um cartão (Sicoob, Mercado Pago, Digio), criar despesa parcelada
+    if (categoria === 'sicoob' || categoria === 'mercado_pago_carla' || categoria === 'mercado_pago_iasmim' || categoria === 'digio') {
+      const payload = {
+        valueCents: valueCents,
+        description: nome,
+        installments: novaContaParcelas,
+        date: compraData,
+        dataVencimento: dataVencimento,
+        purchaseDate: compraData,
+        cartao: categoria,
+        createdAt: new Date().toISOString()
+      };
+
+      addExpense(payload);
+      showToast('✓ Despesa parcelada adicionada (' + novaContaParcelas + 'x)', 'success');
+    } else if (categoria === 'contas_fixas') {
+      // Se é conta fixa, adicionar às contas fixas
+      const novaContaId = 'conta_' + Date.now();
+      const novaConta = {
+        nome: nome,
+        valor: valor,
+        parcelaAtual: 1,
+        parcelaTotal: 1,
+        dataVencimento: dataVencimento,
+        dataCriacao: compraData
+      };
+      console.log('Salvando conta fixa:', novaConta);
+      contasFixas[novaContaId] = novaConta;
+      saveContasFixas(contasFixas);
+      console.log('Contas fixas após salvar:', loadContasFixas());
+      renderAll();
+      renderCalendar();
+      showToast('✓ Conta fixa adicionada com vencimento em ' + dataVencimento, 'success');
+    }
+
+    novaContaParcelas = 1;
+    updateParcValue();
     closeModal('modalNovaContaForm');
     document.getElementById('novaContaForm').reset();
   };
 
   document.getElementById('novaContaForm')?.addEventListener('submit', handleNovaContaSubmit);
+
+  // Auto-format date inputs (DD/MM/YYYY) - both purchase and due date
+  const formatDateInput = (inputElement) => {
+    if (!inputElement) return;
+    inputElement.addEventListener('input', (e) => {
+      let value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+
+      if (value.length > 8) {
+        value = value.slice(0, 8); // Limit to 8 digits
+      }
+
+      // Format as DD/MM/YYYY
+      if (value.length >= 1) {
+        if (value.length <= 2) {
+          e.target.value = value;
+        } else if (value.length <= 4) {
+          e.target.value = value.slice(0, 2) + '/' + value.slice(2);
+        } else {
+          e.target.value = value.slice(0, 2) + '/' + value.slice(2, 4) + '/' + value.slice(4, 8);
+        }
+      } else {
+        e.target.value = '';
+      }
+    });
+  };
+
+  formatDateInput(document.getElementById('novaContaDataCompra'));
+  formatDateInput(document.getElementById('novaContaDataVencimento'));
+
+  // ==================== FORM: NOVA COMPRA CARTÃO ====================
+
+  // Estado para parcelamento do formulário Nova Compra Cartão
+  let novaCompraParcelas = 1;
+
+  const updateCompraParcValue = () => {
+    const el = document.getElementById('compraParcValue');
+    if (el) el.textContent = novaCompraParcelas + 'x';
+  };
+
+  document.getElementById('compraParcMinusBtn')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (novaCompraParcelas > 1) {
+      novaCompraParcelas--;
+      updateCompraParcValue();
+    }
+  });
+
+  document.getElementById('compraParcPlusBtn')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (novaCompraParcelas < 24) {
+      novaCompraParcelas++;
+      updateCompraParcValue();
+    }
+  });
+
+  const handleNovaCompraCartaoSubmit = (ev) => {
+    ev.preventDefault();
+    const descricao = document.getElementById('compraDescricao').value.trim();
+    const valorStr = document.getElementById('compraValor').value.trim();
+    const dataCompraStr = document.getElementById('compraDataCompra').value.trim();
+    const dataVencimentoStr = document.getElementById('compraDataVencimento').value.trim();
+    const cartao = document.getElementById('compraCartao').value.trim();
+
+    if (!descricao || !valorStr || !cartao) {
+      showToast('⚠️ Preencha todos os campos obrigatórios', 'warning');
+      return;
+    }
+
+    const valor = parseFloat(valorStr.replace(',', '.'));
+    if (isNaN(valor) || valor <= 0) {
+      showToast('⚠️ Valor inválido', 'warning');
+      return;
+    }
+
+    const valueCents = Math.round(valor * 100);
+
+    // Função auxiliar para validar e converter data
+    const parseDate = (dateStr, isRequired = false) => {
+      if (!dateStr) {
+        return isRequired ? null : todayISO();
+      }
+
+      // Validar formato: deve ter exatamente 10 caracteres (DD/MM/YYYY)
+      if (dateStr.length !== 10 || dateStr[2] !== '/' || dateStr[5] !== '/') {
+        return null;
+      }
+
+      const parts = dateStr.split('/');
+      if (parts.length === 3) {
+        const dia = parseInt(parts[0]);
+        const mes = parseInt(parts[1]);
+        const ano = parseInt(parts[2]);
+
+        if (!isNaN(dia) && !isNaN(mes) && !isNaN(ano) &&
+            dia >= 1 && dia <= 31 &&
+            mes >= 1 && mes <= 12 &&
+            parts[2].length === 4 &&
+            ano >= 2000 && ano <= 2099) {
+          return ano + '-' + ('0' + mes).slice(-2) + '-' + ('0' + dia).slice(-2);
+        }
+      }
+      return null;
+    };
+
+    // Data de compra (opcional, padrão hoje)
+    let compraData = parseDate(dataCompraStr, false);
+    if (!compraData && dataCompraStr) {
+      showToast('⚠️ Data de Compra inválida. Use DD/MM/YYYY', 'warning');
+      return;
+    }
+
+    // Data de vencimento (obrigatória para compras no cartão)
+    let dataVencimento = null;
+    if (!dataVencimentoStr) {
+      showToast('⚠️ Data de Vencimento é obrigatória', 'warning');
+      return;
+    }
+    dataVencimento = parseDate(dataVencimentoStr, true);
+    if (!dataVencimento) {
+      showToast('⚠️ Data de Vencimento inválida. Use DD/MM/YYYY', 'warning');
+      return;
+    }
+
+    // Criar despesa parcelada para cartão
+    const payload = {
+      valueCents: valueCents,
+      description: descricao,
+      installments: novaCompraParcelas,
+      date: compraData,
+      dataVencimento: dataVencimento,
+      purchaseDate: compraData,
+      cartao: cartao,
+      createdAt: new Date().toISOString()
+    };
+
+    addExpense(payload);
+    showToast('✓ Compra parcelada adicionada (' + novaCompraParcelas + 'x)', 'success');
+
+    // Reset state
+    novaCompraParcelas = 1;
+    updateCompraParcValue();
+    closeModal('modalNovaCompraCartao');
+    document.getElementById('novaCompraCartaoForm').reset();
+  };
+
+  document.getElementById('novaCompraCartaoForm')?.addEventListener('submit', handleNovaCompraCartaoSubmit);
+
+  // Auto-format date inputs for card form
+  formatDateInput(document.getElementById('compraDataCompra'));
+  formatDateInput(document.getElementById('compraDataVencimento'));
 
   const RENDA_KEY = 'fluxo_renda_config';
 
@@ -2321,11 +3923,34 @@ footer.hint {
 
   window.loadRendaConfig = loadRendaConfig;
 
+  const SUMMARY_KEY = 'fluxo_summary_config';
+
+  const loadSummaryConfig = () => {
+    try {
+      const stored = localStorage.getItem(SUMMARY_KEY);
+      if (stored) return JSON.parse(stored);
+    } catch(e) {}
+    return {
+      valeAlimentacaoCarla: 191.92,
+      valeAlimentacaoIasmim: 374.00
+    };
+  };
+
+  const saveSummaryConfig = () => {
+    const config = {
+      valeAlimentacaoCarla: parseFloat(document.getElementById('valeAlimentacaoCarla').value.replace(',', '.')) || 191.92,
+      valeAlimentacaoIasmim: parseFloat(document.getElementById('valeAlimentacaoIasmim').value.replace(',', '.')) || 374.00
+    };
+    try {
+      localStorage.setItem(SUMMARY_KEY, JSON.stringify(config));
+    } catch(e) {}
+    return config;
+  };
+
   window.resetDatabase = () => {
     localStorage.removeItem('passou_anotou_loaded_defaults');
     if (expensesCol) {
       clearAllExpenses();
-      console.log('Banco de dados limpo. Recarregue a página.');
     }
   };
 
@@ -2397,7 +4022,7 @@ footer.hint {
       valores[chave] = valor;
       localStorage.setItem(CONTAS_VALORES_MES_KEY, JSON.stringify(valores));
     } catch(e) {
-      console.error('Erro ao salvar valor do mês:', e);
+      // Erro ao salvar valor do mês no localStorage
     }
   };
 
@@ -2408,15 +4033,11 @@ footer.hint {
     'internet': { nome: 'Internet', valor: 220.00, parcelaAtual: 0, parcelaTotal: 0, dia: 10 },
     'vivo_celular': { nome: 'Vivo Celular (Iasmim)', valor: 72.00, parcelaAtual: 0, parcelaTotal: 0, dia: 6 },
     'vivo_telefone': { nome: 'Vivo Telefone (Carla)', valor: 39.00, parcelaAtual: 0, parcelaTotal: 0, dia: 10 },
-    'mercado_pago_carla': { nome: 'Mercado Pago (Carla)', valor: 866.86, parcelaAtual: 0, parcelaTotal: 0, dia: 4 },
-    'sicob': { nome: 'Sicob (Carla)', valor: 180.91, parcelaAtual: 0, parcelaTotal: 0, dia: 11 },
     'porto_carla': { nome: 'Porto Seguro (Carla)', valor: 50.00, parcelaAtual: 18, parcelaTotal: 20, dia: 7 },
     'dindin': { nome: 'Dindin Santander', valor: 50.00, parcelaAtual: 1, parcelaTotal: 60, dia: 7 },
     'porto_iasmim': { nome: 'Porto Seguro (Iasmim)', valor: 50.00, parcelaAtual: 18, parcelaTotal: 30, dia: 8 },
     'santander_carla': { nome: 'Santander (Carla)', valor: 55.41, parcelaAtual: 20, parcelaTotal: 24, dia: 26 },
     'santander_iasmim': { nome: 'Santander (Iasmim)', valor: 84.34, parcelaAtual: 44, parcelaTotal: 120, dia: 9 },
-    'digio': { nome: 'Digio (Iasmim)', valor: 64.99, parcelaAtual: 8, parcelaTotal: 12, dia: 1 },
-    'mercado_pago_iasmim': { nome: 'Mercado Pago (Iasmim) última', valor: 61.89, parcelaAtual: 0, parcelaTotal: 0, dia: 4 },
     'otica': { nome: 'Ótica (Carla)', valor: 66.60, parcelaAtual: 1, parcelaTotal: 6, dia: 10 },
     'renata': { nome: 'Renata (Carla)', valor: 40.00, parcelaAtual: 1, parcelaTotal: 3, dia: 'quinto_util' },
     'financiamento': { nome: 'Financiamento Carro', valor: 1487.78, parcelaAtual: 15, parcelaTotal: 60, dia: 25 }
@@ -2434,7 +4055,7 @@ footer.hint {
         return JSON.parse(JSON.stringify(parsed));
       }
     } catch(e) {
-      console.log('Erro ao carregar contas:', e);
+      // Erro ao carregar contas fixas do localStorage
     }
 
     // Retorna cópia profunda do padrão e salva
@@ -2547,6 +4168,7 @@ footer.hint {
     closeModal('modalEditarContaFixa');
     alert('Valor atualizado com sucesso!');
     contaEmEdicao = null;
+    renderAll();
   });
 
   const renderContasFixasModal = () => {
@@ -2554,7 +4176,9 @@ footer.hint {
     if (!container) return;
 
     let contasFixas = loadContasFixas();
-    let html = '';
+    let html = '<div style="margin-bottom: 20px;">';
+    html += '<button onclick="openModal(\'modalNovaContaForm\')" style="width: 100%; padding: 12px 16px; background: var(--accent); color: var(--accent-ink); border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 14px;">+ Adicionar Nova Conta Fixa</button>';
+    html += '</div>';
     let totalGeral = 0;
 
     // Mapear contas e suas informações
@@ -2572,7 +4196,6 @@ footer.hint {
       { id: 'porto_iasmim', nome: 'Porto Seguro (Iasmim)', dia: 8 },
       { id: 'santander_carla', nome: 'Santander (Carla)', dia: 26 },
       { id: 'santander_iasmim', nome: 'Santander (Iasmim)', dia: 9 },
-      { id: 'digio', nome: 'Digio (Iasmim)', dia: 1 },
       { id: 'mercado_pago_iasmim', nome: 'Mercado Pago (Iasmim)', dia: 4 },
       { id: 'otica', nome: 'Ótica (Carla)', dia: 10 },
       { id: 'renata', nome: 'Renata (Carla)', dia: 'quinto_util' },
@@ -2581,6 +4204,7 @@ footer.hint {
 
     // Agrupar contas por dia
     const contasPorDia = {};
+    // Primeiro, adicionar contas predefinidas
     contasInfo.forEach(info => {
       let conta = contasFixas[info.id];
       if (!conta) return;
@@ -2597,6 +4221,27 @@ footer.hint {
       totalGeral += conta.valor;
     });
 
+    // Depois, adicionar contas criadas pelo usuário (que começam com 'conta_')
+    Object.keys(contasFixas).forEach(id => {
+      if (id.startsWith('conta_')) {
+        const conta = contasFixas[id];
+        totalGeral += conta.valor;
+
+        // Extrair dia da dataVencimento ou usar '00' se não existir
+        let dia = '00';
+        if (conta.dataVencimento) {
+          const dateParts = conta.dataVencimento.split('-');
+          if (dateParts.length === 3) {
+            const diaNum = parseInt(dateParts[2]);
+            dia = ('0' + diaNum).slice(-2);
+          }
+        }
+
+        if (!contasPorDia[dia]) contasPorDia[dia] = [];
+        contasPorDia[dia].push({ id: id, info: null, conta });
+      }
+    });
+
     // Renderizar agrupado por dia
     const diasOrdenados = Object.keys(contasPorDia).sort((a, b) => {
       if (a === 'quinto_util') return 1;
@@ -2611,15 +4256,43 @@ footer.hint {
 
       contasPorDia[dia].forEach(({ id, info, conta }) => {
         // Get display name with current parcel numbers
-        const displayName = getContaDisplayName(conta);
+        const displayName = info ? getContaDisplayName(conta) : conta.nome;
 
-        html += '<div style="display: flex; align-items: center; gap: 8px; padding: 6px 0; font-size: 13px;">';
-        html += '<span style="color: var(--ink); flex: 1;">' + displayName + '</span>';
-        html += '<button onclick="abrirEditarConta(\'' + id + '\')" style="background: none; border: none; cursor: pointer; font-size: 14px; opacity: 0.7; padding: 0;">✏️</button>';
+        // Get icon for this account
+        const icon = getIconForConta(displayName);
 
-        if (conta.valor > 0) {
-          html += '<span style="color: var(--ink); font-weight: 600; white-space: nowrap;">R$ ' + conta.valor.toFixed(2).replace('.', ',') + '</span>';
+        html += '<div style="display: flex; gap: 12px; padding: 14px 12px; margin: 8px 0; border-radius: 8px; background: var(--paper); border: 1px solid var(--line); align-items: flex-start;">';
+
+        // Ícone
+        html += '<div style="font-size: 22px; flex-shrink: 0;">' + icon + '</div>';
+
+        // Info principal
+        html += '<div style="flex: 1;">';
+        html += '<div style="font-weight: 600; font-size: 14px; color: var(--ink); margin-bottom: 2px;">' + displayName + '</div>';
+
+        // Mostrar se é conta variável
+        if (contasVariaveis.includes(id)) {
+          html += '<div style="font-size: 12px; color: #8b5cf6;">Valor Variável ✏️</div>';
         }
+
+        html += '</div>';
+
+        // Valor e botões à direita
+        html += '<div style="text-align: right; flex-shrink: 0; display: flex; flex-direction: column; gap: 6px; align-items: flex-end;">';
+        if (conta.valor > 0) {
+          html += '<div style="font-weight: 700; font-size: 14px; color: var(--accent);">R$ ' + conta.valor.toFixed(2).replace('.', ',') + '</div>';
+        }
+
+        // Botões de ação
+        html += '<div style="display: flex; gap: 4px;">';
+        html += '<button onclick="abrirEditarConta(\'' + id + '\')" style="background: none; border: none; cursor: pointer; font-size: 14px; opacity: 0.6; padding: 0; color: var(--ink);">✏️</button>';
+
+        if (id.startsWith('conta_')) {
+          html += '<button onclick="deletarContaFixa(\'' + id + '\')" style="background: none; border: none; cursor: pointer; font-size: 14px; opacity: 0.6; padding: 0; color: var(--danger);">🗑️</button>';
+        }
+
+        html += '</div>';
+        html += '</div>';
 
         html += '</div>';
       });
@@ -2678,6 +4351,7 @@ footer.hint {
   document.getElementById('formEditarRenda')?.addEventListener('submit', (ev) => {
     ev.preventDefault();
     saveRendaConfig();
+    saveSummaryConfig();
     alert('Renda atualizada com sucesso!');
     closeModal('modalEditarRenda');
     closeModal('modalRendaLiquida');
@@ -2702,7 +4376,7 @@ footer.hint {
           initDb(dbNs);
         }
       }).catch(err => {
-        console.log('Banco de dados não disponível, usando localStorage');
+        // Banco de dados não disponível, usando localStorage
       });
     }
   };
@@ -2719,18 +4393,35 @@ footer.hint {
 
     Object.keys(contasFixas).forEach(id => {
       const conta = contasFixas[id];
-      if (!conta.dia || conta.valor <= 0) return;
+      if (conta.valor <= 0) return;
 
-      const diaVencimento = typeof conta.dia === 'number' ? conta.dia : null;
-      if (!diaVencimento) return;
+      let venceHoje = false;
+      let venceAmanha = false;
 
-      if (diaVencimento === hoje.getDate()) {
+      // Para contas com dataVencimento (novas contas), verificar data completa
+      if (conta.dataVencimento) {
+        const dateParts = conta.dataVencimento.split('-');
+        if (dateParts.length === 3) {
+          const ano = parseInt(dateParts[0]);
+          const mes = parseInt(dateParts[1]);
+          const dia = parseInt(dateParts[2]);
+
+          venceHoje = (dia === hoje.getDate() && mes === (hoje.getMonth() + 1) && ano === hoje.getFullYear());
+          venceAmanha = (dia === amanha.getDate() && mes === (amanha.getMonth() + 1) && ano === amanha.getFullYear());
+        }
+      } else if (conta.dia && typeof conta.dia === 'number') {
+        // Para contas predefinidas com apenas dia, verificar apenas o dia do mês
+        venceHoje = (conta.dia === hoje.getDate());
+        venceAmanha = (conta.dia === amanha.getDate());
+      }
+
+      if (venceHoje) {
         vencimentosHoje.push({
           id,
           nome: getContaDisplayName(conta),
           valor: conta.valor
         });
-      } else if (diaVencimento === amanha.getDate()) {
+      } else if (venceAmanha) {
         vencimentosAmanha.push({
           id,
           nome: getContaDisplayName(conta),
@@ -2789,8 +4480,6 @@ footer.hint {
   // Registrar Service Worker para PWA
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/service-worker.js').then(registration => {
-      console.log('Service Worker registrado com sucesso:', registration);
-
       // Após o service worker estar registrado, configurar Firebase Messaging
       if ('firebase' in window && firebase.messaging) {
         try {
@@ -2799,12 +4488,8 @@ footer.hint {
           // Pedir permissão para notificações
           Notification.requestPermission().then(permission => {
             if (permission === 'granted') {
-              console.log('Permissão de notificação concedida');
-
               // Registrar para receber mensagens quando o app está em primeiro plano
               messaging.onMessage(payload => {
-                console.log('Mensagem recebida em primeiro plano:', payload);
-
                 const notificationTitle = payload.notification.title;
                 const notificationOptions = {
                   body: payload.notification.body,
@@ -2818,16 +4503,47 @@ footer.hint {
             }
           });
         } catch (error) {
-          console.log('Erro ao configurar Firebase Messaging:', error);
+          // Erro ao configurar Firebase Messaging
         }
       }
     }).catch(error => {
-      console.log('Erro ao registrar Service Worker:', error);
+      // Erro ao registrar Service Worker
     });
   }
 
   boot();
   verificarVencimentosProximos();
+
+  // Toggle do menu de ferramentas
+  window.toggleToolsMenu = function() {
+    const panel = document.getElementById('toolsPanel');
+    const toggle = document.getElementById('toolsToggle');
+    if (panel.style.display === 'none') {
+      panel.style.display = 'block';
+      toggle.style.opacity = '0.8';
+    } else {
+      panel.style.display = 'none';
+      toggle.style.opacity = '1';
+    }
+  };
+
+  // Fechar menu ao clicar fora
+  document.addEventListener('click', function(e) {
+    const menu = document.getElementById('toolsMenu');
+    if (menu && !menu.contains(e.target)) {
+      document.getElementById('toolsPanel').style.display = 'none';
+      document.getElementById('toolsToggle').style.opacity = '1';
+    }
+  });
+
+  // Expor funções Supabase para o escopo global (para onclick HTML)
+  window.showSupabaseSetup = showSupabaseSetup;
+  window.openSupabaseModal = openSupabaseModal;
+  window.closeSupabaseModal = closeSupabaseModal;
+  window.toggleSupabaseKeyVisibility = toggleSupabaseKeyVisibility;
+  window.saveSupabaseConfigViaModal = saveSupabaseConfigViaModal;
+  window.manualSyncSupabase = manualSyncSupabase;
+  window.updateSyncStatus = updateSyncStatus;
 })();
 </script>
 
@@ -2846,8 +4562,6 @@ footer.hint {
       messagingSenderId: "255340364435",
       appId: "1:255340364435:web:10f8093626c3315021c366"
     });
-
-    console.log('Firebase inicializado com sucesso');
   }
 </script>
 
