@@ -1587,8 +1587,9 @@ footer.hint {
         <input id="compraDescricao" type="text" placeholder="Ex: Compras no mercado..." style="width: 100%; padding: 10px 12px; border: 1.5px solid var(--line); border-radius: 8px; font-size: 14px; font-family: inherit; outline: none; color: var(--ink);">
       </div>
       <div>
-        <label style="display: block; font-size: 12px; color: var(--ink-soft); text-transform: uppercase; font-weight: 600; margin-bottom: 6px;">Valor (R$)</label>
+        <label style="display: block; font-size: 12px; color: var(--ink-soft); text-transform: uppercase; font-weight: 600; margin-bottom: 6px;">Valor Total (R$) *</label>
         <input id="compraValor" type="text" placeholder="0,00" style="width: 100%; padding: 10px 12px; border: 1.5px solid var(--line); border-radius: 8px; font-size: 14px; font-family: inherit; outline: none; color: var(--ink);">
+        <div style="font-size: 11px; color: var(--ink-faint); margin-top: 4px;">Valor da compra inteira (será dividido pelas parcelas)</div>
       </div>
       <div>
         <label style="display: block; font-size: 12px; color: var(--ink-soft); text-transform: uppercase; font-weight: 600; margin-bottom: 6px;">Data de Compra</label>
@@ -2789,6 +2790,130 @@ footer.hint {
     openModal('modalDayDetails');
   };
 
+  const showDayDetailsComplete = (day, contas, expenses) => {
+    const container = document.getElementById('dayDetailsContainer');
+    if (container) {
+      const monthName = monthNames[state.viewMonth];
+      let html = '<h3 style="margin-bottom: 20px; color: var(--ink); font-size: 18px; font-weight: 700;">Dia ' + day + ' de ' + monthName + '</h3>';
+
+      // Mostrar despesas primeiro (se houver)
+      if (expenses && expenses.length > 0) {
+        const y = state.viewYear;
+        const m = state.viewMonth;
+
+        // Filtrar despesas por cartão
+        const byCard = {};
+        expenses.forEach(exp => {
+          const card = exp.cartao || 'cartao_santander';
+          if (!byCard[card]) byCard[card] = [];
+          byCard[card].push(exp);
+        });
+
+        html += '<div style="display: flex; flex-direction: column; gap: 0;">';
+
+        // Mostrar cada cartão
+        Object.keys(byCard).forEach((card, cardIdx) => {
+          const cardLabel = {
+            'cartao_santander': '🏦 Cartão Santander Camila',
+            'sicoob': '🏦 Sicoob',
+            'mercado_pago_carla': '🛒 Mercado Pago (Carla)',
+            'mercado_pago_iasmim': '🛒 Mercado Pago (Iasmim)',
+            'digio': '📱 Digio'
+          }[card] || card;
+
+          if (cardIdx > 0) {
+            html += '<div style="height: 1px; background: var(--line); margin: 0;"></div>';
+          }
+
+          const expsInCard = byCard[card];
+          let totalCard = 0;
+          expsInCard.forEach(e => totalCard += e.valueCents);
+
+          html += '<div style="padding: 14px 12px; margin: 8px 0; border-radius: 8px; background: var(--paper); border: 1px solid var(--line); font-weight: 600; color: var(--ink);">';
+          html += '<div style="font-size: 13px; margin-bottom: 8px; opacity: 0.8;">' + cardLabel + '</div>';
+          html += '<div style="font-size: 15px; color: var(--accent);">Total: R$ ' + (totalCard / 100).toFixed(2).replace('.', ',') + '</div>';
+          html += '</div>';
+
+          expsInCard.forEach((exp, idx) => {
+            const dataCompra = exp.purchaseDate || exp.date || '';
+            const dataParts = dataCompra.split('-');
+            const dataFormatada = dataParts.length === 3 ? dataParts[2] + '/' + dataParts[1] + '/' + dataParts[0] : 'Sem data';
+            const valorExp = (exp.valueCents || 0) / 100;
+            const parcelaInfo = exp.installments && exp.installments > 1 ? ' • Parcela ' + exp.index + ' de ' + exp.installments : '';
+            const typeIcon = exp.installments > 1 ? '🎁' : '💳';
+
+            html += '<div style="display: flex; gap: 12px; padding: 12px 12px; margin: 6px 0; border-radius: 6px; background: var(--paper-raised); border: 1px solid var(--line); align-items: flex-start; cursor: pointer;" data-expense-id="' + (exp.occId || idx) + '" class="expense-row">';
+            html += '<div style="font-size: 18px; flex-shrink: 0;">' + typeIcon + '</div>';
+            html += '<div style="flex: 1;">';
+            html += '<div style="font-weight: 600; font-size: 13px; color: var(--ink); margin-bottom: 2px;">' + exp.description + '</div>';
+            html += '<div style="font-size: 11px; color: var(--ink-faint);">' + (exp.installments > 1 ? '🎁' : '💳') + ' ' + (exp.installments > 1 ? 'Parcelado' : 'Crédito') + parcelaInfo + '</div>';
+            html += '<div style="font-size: 11px; color: var(--ink-faint); margin-top: 2px;">📅 Compra: ' + dataFormatada + '</div>';
+            html += '</div>';
+            html += '<div style="text-align: right; flex-shrink: 0;">';
+            html += '<div style="font-weight: 700; font-size: 13px; color: var(--accent); margin-bottom: 4px;">R$ ' + valorExp.toFixed(2).replace('.', ',') + '</div>';
+            html += '</div>';
+            html += '</div>';
+          });
+        });
+
+        html += '</div>';
+      }
+
+      // Mostrar contas fixas
+      if (contas && contas.length > 0) {
+        if (expenses && expenses.length > 0) {
+          html += '<div style="height: 1px; background: var(--line); margin: 12px 0;"></div>';
+        }
+
+        html += '<div style="display: flex; flex-direction: column; gap: 0;">';
+
+        contas.forEach((conta, idx) => {
+          const contaNome = typeof conta === 'string' ? conta : conta.nomeCompleto;
+          const contaValor = typeof conta === 'string' ? 0 : (conta.valor || 0);
+          const contaId = typeof conta === 'string' ? null : (conta.id || null);
+          const icon = getIconForConta(contaNome);
+
+          if (idx > 0) {
+            html += '<div style="height: 1px; background: var(--line); margin: 0;"></div>';
+          }
+
+          html += '<div style="display: flex; gap: 12px; padding: 14px 12px; margin: 8px 0; border-radius: 8px; background: var(--paper); border: 1px solid var(--line); align-items: flex-start; cursor: pointer;" data-conta-id="' + contaId + '" class="conta-row">';
+          html += '<span style="font-size: 22px; flex-shrink: 0;">' + icon + '</span>';
+          html += '<div style="flex: 1;">';
+          html += '<div style="font-weight: 600; font-size: 14px; color: var(--ink);">' + contaNome + '</div>';
+          html += '</div>';
+          html += '<div style="text-align: right; flex-shrink: 0;">';
+          html += '<div style="font-weight: 700; font-size: 14px; color: var(--accent);">R$ ' + contaValor.toFixed(2).replace('.', ',') + '</div>';
+          html += '</div>';
+          html += '</div>';
+        });
+
+        html += '</div>';
+      }
+
+      if ((!expenses || expenses.length === 0) && (!contas || contas.length === 0)) {
+        html += '<p style="text-align: center; color: var(--ink-soft);">Nenhuma conta ou despesa neste dia</p>';
+      }
+
+      container.innerHTML = html;
+
+      // Adicionar event listeners para editar valores de contas
+      if (contas && contas.length > 0) {
+        const contaRows = container.querySelectorAll('.conta-row');
+        contaRows.forEach(row => {
+          row.addEventListener('click', (e) => {
+            const contaId = row.getAttribute('data-conta-id');
+            const conta = contas.find(c => c.id === contaId);
+            if (conta) {
+              window.editarValorConta(contaId, conta.nomeCompleto, conta.valor);
+            }
+          });
+        });
+      }
+    }
+    openModal('modalDayDetails');
+  };
+
   const renderSummary = () => {
     // Summary sempre mostra apenas despesas do Cartão Santander (não é afetado pelo activeTab)
     const list = monthOccurrencesSantander();
@@ -3104,15 +3229,16 @@ footer.hint {
     }
     const inputDate = el.dateInput.value;
     const dateISO = formatDateToISO(inputDate);
-    if (dateISO === todayISO() && !inputDate) {
+    if (!inputDate || dateISO === 'NaN-NaN-NaN') {
       showToast('⚠️ Data inválida', 'warning');
       return;
     }
 
     // Parse dataVencimento (optional, defaults to date if not provided)
-    const dataVencimentoISO = el.dataVencimentoInput.value.trim()
-      ? formatDateToISO(el.dataVencimentoInput.value)
-      : dateISO;
+    let dataVencimentoISO = dateISO;
+    if (el.dataVencimentoInput && el.dataVencimentoInput.value.trim()) {
+      dataVencimentoISO = formatDateToISO(el.dataVencimentoInput.value);
+    }
 
     const payload = {
       valueCents: cents,
@@ -3120,7 +3246,7 @@ footer.hint {
       installments: state.installments,
       date: dateISO,
       dataVencimento: dataVencimentoISO,
-      cartao: el.cartaoSelect?.value || 'cartao_santander'
+      cartao: 'cartao_santander'
     };
     if (state.editingId) {
       updateExpense(state.editingId, payload);
@@ -3182,8 +3308,6 @@ footer.hint {
     saveToStorage();
     renderAll();
     renderCalendar();
-    // Re-renderizar modal de Demais Cartões se estiver aberto
-    openModal('modalDemaisCartoes');
     showToast('✓ Despesa deletada com sucesso', 'success');
 
     if (db && expensesCol && id.indexOf('local-') !== 0) {
@@ -3275,6 +3399,7 @@ footer.hint {
   window.openModal = openModal;
   window.closeModal = closeModal;
   window.exportData = exportData;
+  window.showDayDetailsComplete = showDayDetailsComplete;
   window.importData = importData;
 
   window.switchTab = tabName => {
@@ -3513,20 +3638,26 @@ footer.hint {
 
       dayEl.className = 'calendar-day';
       if (isToday) dayEl.classList.add('today');
-      if (hasContas) dayEl.classList.add('has-expenses');
+      if (hasExpenses || hasContas) dayEl.classList.add('has-expenses');
 
       let html = '<div class="calendar-day-circle"><span class="calendar-day-number">' + day + '</span></div>';
 
       dayEl.innerHTML = html;
 
       // Adicionar tooltip ao passar o mouse
-      if (hasContas) {
-        const tooltipTexto = contasAtivas[day].map(c => c.nomeCompleto || c).join('\n');
-        dayEl.title = tooltipTexto;
+      if (hasExpenses || hasContas) {
+        const tooltipItens = [];
+        if (hasContas) {
+          tooltipItens.push(...contasAtivas[day].map(c => c.nomeCompleto || c));
+        }
+        if (hasExpenses) {
+          tooltipItens.push(...occsByDay[dayStr].map(o => o.description || ''));
+        }
+        dayEl.title = tooltipItens.join('\n');
         // Adicionar evento de clique para mostrar modal
         dayEl.style.cursor = 'pointer';
         dayEl.addEventListener('click', () => {
-          showDayDetails(day, contasAtivas[day]);
+          showDayDetailsComplete(day, contasAtivas[day] || [], occsByDay[dayStr] || []);
         });
       }
 
@@ -3673,7 +3804,9 @@ footer.hint {
       return;
     }
 
-    const valor = parseFloat(valorStr.replace(',', '.'));
+    // Remover pontos de milhar e converter vírgula para ponto
+    const valorLimpo = valorStr.replace(/\./g, '').replace(',', '.');
+    const valor = parseFloat(valorLimpo);
     if (isNaN(valor) || valor <= 0) {
       showToast('⚠️ Valor inválido', 'warning');
       return;
@@ -3703,6 +3836,12 @@ footer.hint {
             mes >= 1 && mes <= 12 &&
             parts[2].length === 4 &&
             ano >= 2000 && ano <= 2099) {
+          // Validar se a data é válida no calendário
+          const date = new Date(ano, mes - 1, dia);
+          const isValidDate = date.getFullYear() === ano &&
+                              date.getMonth() === mes - 1 &&
+                              date.getDate() === dia;
+          if (!isValidDate) return null;
           return ano + '-' + ('0' + mes).slice(-2) + '-' + ('0' + dia).slice(-2);
         }
       }
@@ -3723,9 +3862,7 @@ footer.hint {
         showToast('⚠️ Data de Vencimento é obrigatória para contas fixas', 'warning');
         return;
       }
-      console.log('Parseando dataVencimentoStr:', dataVencimentoStr);
       dataVencimento = parseDate(dataVencimentoStr, true);
-      console.log('dataVencimento parseado:', dataVencimento);
       if (!dataVencimento) {
         showToast('⚠️ Data de Vencimento inválida. Use DD/MM/YYYY', 'warning');
         return;
@@ -3791,7 +3928,7 @@ footer.hint {
       // Format as DD/MM/YYYY
       if (value.length >= 1) {
         if (value.length <= 2) {
-          e.target.value = value;
+          e.target.value = value.slice(0, 2);
         } else if (value.length <= 4) {
           e.target.value = value.slice(0, 2) + '/' + value.slice(2);
         } else {
@@ -3834,80 +3971,70 @@ footer.hint {
 
   const handleNovaCompraCartaoSubmit = (ev) => {
     ev.preventDefault();
+
+    // Pegar valores do formulário
     const descricao = document.getElementById('compraDescricao').value.trim();
     const valorStr = document.getElementById('compraValor').value.trim();
     const dataCompraStr = document.getElementById('compraDataCompra').value.trim();
     const dataVencimentoStr = document.getElementById('compraDataVencimento').value.trim();
     const cartao = document.getElementById('compraCartao').value.trim();
 
-    if (!descricao || !valorStr || !cartao) {
-      showToast('⚠️ Preencha todos os campos obrigatórios', 'warning');
+    // Validações básicas
+    if (!descricao) {
+      showToast('⚠️ Preencha a Descrição', 'warning');
+      return;
+    }
+    if (!valorStr) {
+      showToast('⚠️ Preencha o Valor', 'warning');
+      return;
+    }
+    if (!cartao) {
+      showToast('⚠️ Selecione um Cartão', 'warning');
+      return;
+    }
+    if (!dataVencimentoStr) {
+      showToast('⚠️ Preencha a Data de Vencimento', 'warning');
       return;
     }
 
-    const valor = parseFloat(valorStr.replace(',', '.'));
+    // Converter valor (remover ponto de milhar, converter vírgula)
+    const valorLimpo = valorStr.replace(/\./g, '').replace(',', '.');
+    const valor = parseFloat(valorLimpo);
     if (isNaN(valor) || valor <= 0) {
-      showToast('⚠️ Valor inválido', 'warning');
+      showToast('⚠️ Valor deve ser maior que zero', 'warning');
       return;
     }
 
-    const valueCents = Math.round(valor * 100);
-
-    // Função auxiliar para validar e converter data
-    const parseDate = (dateStr, isRequired = false) => {
-      if (!dateStr) {
-        return isRequired ? null : todayISO();
-      }
-
-      // Validar formato: deve ter exatamente 10 caracteres (DD/MM/YYYY)
-      if (dateStr.length !== 10 || dateStr[2] !== '/' || dateStr[5] !== '/') {
-        return null;
-      }
-
+    // Converter datas (DD/MM/YYYY → YYYY-MM-DD)
+    const convertDate = (dateStr) => {
+      if (!dateStr || dateStr.length !== 10) return null;
       const parts = dateStr.split('/');
-      if (parts.length === 3) {
-        const dia = parseInt(parts[0]);
-        const mes = parseInt(parts[1]);
-        const ano = parseInt(parts[2]);
-
-        if (!isNaN(dia) && !isNaN(mes) && !isNaN(ano) &&
-            dia >= 1 && dia <= 31 &&
-            mes >= 1 && mes <= 12 &&
-            parts[2].length === 4 &&
-            ano >= 2000 && ano <= 2099) {
-          return ano + '-' + ('0' + mes).slice(-2) + '-' + ('0' + dia).slice(-2);
-        }
-      }
-      return null;
+      if (parts.length !== 3) return null;
+      const dia = parseInt(parts[0]);
+      const mes = parseInt(parts[1]);
+      const ano = parseInt(parts[2]);
+      if (isNaN(dia) || isNaN(mes) || isNaN(ano)) return null;
+      if (dia < 1 || dia > 31 || mes < 1 || mes > 12 || ano < 2000 || ano > 2099) return null;
+      return ano + '-' + ('0' + mes).slice(-2) + '-' + ('0' + dia).slice(-2);
     };
 
-    // Data de compra (opcional, padrão hoje)
-    let compraData = parseDate(dataCompraStr, false);
-    if (!compraData && dataCompraStr) {
-      showToast('⚠️ Data de Compra inválida. Use DD/MM/YYYY', 'warning');
-      return;
-    }
+    const dataCompra = dataCompraStr ? convertDate(dataCompraStr) : todayISO();
+    const dataVencimento = convertDate(dataVencimentoStr);
 
-    // Data de vencimento (obrigatória para compras no cartão)
-    let dataVencimento = null;
-    if (!dataVencimentoStr) {
-      showToast('⚠️ Data de Vencimento é obrigatória', 'warning');
-      return;
-    }
-    dataVencimento = parseDate(dataVencimentoStr, true);
     if (!dataVencimento) {
-      showToast('⚠️ Data de Vencimento inválida. Use DD/MM/YYYY', 'warning');
+      showToast('⚠️ Data de Vencimento inválida (use DD/MM/YYYY)', 'warning');
       return;
     }
 
-    // Criar despesa parcelada para cartão
+    // Criar e adicionar despesa
+    const valueCents = Math.round(valor * 100);
     const payload = {
       valueCents: valueCents,
       description: descricao,
       installments: novaCompraParcelas,
-      date: compraData,
+      date: dataCompra,
       dataVencimento: dataVencimento,
-      purchaseDate: compraData,
+      purchaseDate: dataCompra,
       cartao: cartao,
       createdAt: new Date().toISOString()
     };
@@ -3915,7 +4042,7 @@ footer.hint {
     addExpense(payload);
     showToast('✓ Compra parcelada adicionada (' + novaCompraParcelas + 'x)', 'success');
 
-    // Reset state
+    // Limpar formulário
     novaCompraParcelas = 1;
     updateCompraParcValue();
     closeModal('modalNovaCompraCartao');
@@ -4212,14 +4339,11 @@ footer.hint {
       { id: 'internet', nome: 'Internet', dia: 10 },
       { id: 'vivo_celular', nome: 'Vivo Celular (Iasmim)', dia: 6 },
       { id: 'vivo_telefone', nome: 'Vivo Telefone (Carla)', dia: 10 },
-      { id: 'mercado_pago_carla', nome: 'Mercado Pago (Carla)', dia: 4 },
-      { id: 'sicob', nome: 'Sicob (Carla)', dia: 11 },
       { id: 'porto_carla', nome: 'Porto Seguro (Carla)', dia: 7 },
       { id: 'dindin', nome: 'Dindin Santander', dia: 7 },
       { id: 'porto_iasmim', nome: 'Porto Seguro (Iasmim)', dia: 8 },
       { id: 'santander_carla', nome: 'Santander (Carla)', dia: 26 },
       { id: 'santander_iasmim', nome: 'Santander (Iasmim)', dia: 9 },
-      { id: 'mercado_pago_iasmim', nome: 'Mercado Pago (Iasmim)', dia: 4 },
       { id: 'otica', nome: 'Ótica (Carla)', dia: 10 },
       { id: 'renata', nome: 'Renata (Carla)', dia: 'quinto_util' },
       { id: 'financiamento', nome: 'Financiamento Carro', dia: 25 }
