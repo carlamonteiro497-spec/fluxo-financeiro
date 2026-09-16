@@ -2218,7 +2218,7 @@ footer.hint {
   // EXPORT / IMPORT
   const exportData = () => {
     const data = {
-      version: '6.1',
+      version: '6.2',
       exported: new Date().toISOString(),
       expenses: state.expenses,
       contasFixas: loadContasFixas(),
@@ -2227,21 +2227,52 @@ footer.hint {
       reembolsos: loadReembolsos()
     };
 
-    // Criar CSV também para facilitar visualização
-    let csv = 'Data,Descrição,Valor,Parcelamento,Cartão,Data Vencimento\n';
-    state.expenses.forEach(e => {
-      const cartaoNome = {
-        'cartao_santander': 'Cartão Santander Camila',
-        'cartao_sicoob': 'Sicoob',
-        'cartao_mercado_pago': 'Mercado Pago',
-        'cartao_digio': 'Digio',
-        'contas_fixas': 'Contas Fixas'
-      }[e.cartao || 'cartao_santander'] || 'Desconhecido';
+    // Criar CSV com todas as despesas agrupadas por cartão
+    const cartaoNomes = {
+      'cartao_santander': 'Cartão Santander Camila',
+      'cartao_sicoob': 'Sicoob',
+      'cartao_mercado_pago': 'Mercado Pago',
+      'cartao_digio': 'Digio',
+      'contas_fixas': 'Contas Fixas'
+    };
 
-      const data_compra = e.purchaseDate || e.date || '';
-      const data_vencimento = e.dataVencimento || '';
-      const inst = e.installments > 1 ? e.index + '/' + e.installments : '1/1';
-      csv += `"${data_compra}","${e.description}","${(e.valueCents / 100).toFixed(2)}","${inst}","${cartaoNome}","${data_vencimento}"\n`;
+    // Agrupar despesas por cartão
+    const despesasPorCartao = {};
+    state.expenses.forEach(e => {
+      const cartaoType = e.cartao || 'cartao_santander';
+      if (!despesasPorCartao[cartaoType]) despesasPorCartao[cartaoType] = [];
+      despesasPorCartao[cartaoType].push(e);
+    });
+
+    // Criar CSV organizado por cartão
+    let csv = 'FLUXO FINANCEIRO - EXPORTAÇÃO DE DESPESAS\n';
+    csv += 'Exportado em: ' + new Date().toLocaleString('pt-BR') + '\n\n';
+
+    // Adicionar resumo por cartão
+    csv += 'RESUMO POR CARTÃO\n';
+    csv += 'Cartão,Quantidade,Total\n';
+    let totalGeral = 0;
+    Object.entries(despesasPorCartao).forEach(([cartaoType, despesas]) => {
+      const total = despesas.reduce((sum, e) => sum + e.valueCents, 0) / 100;
+      csv += `"${cartaoNomes[cartaoType] || cartaoType}","${despesas.length}","R$ ${total.toFixed(2)}"\n`;
+      totalGeral += total;
+    });
+    csv += `"TOTAL GERAL","${state.expenses.length}","R$ ${totalGeral.toFixed(2)}"\n\n`;
+
+    // Adicionar detalhes de cada despesa
+    csv += 'DETALHES DAS DESPESAS\n';
+    csv += 'Data,Descrição,Valor,Parcelamento,Cartão,Data Vencimento\n';
+
+    Object.entries(despesasPorCartao).forEach(([cartaoType, despesas]) => {
+      csv += `\n# ${cartaoNomes[cartaoType] || cartaoType}\n`;
+      despesas.sort((a, b) => (b.purchaseDate || b.date).localeCompare(a.purchaseDate || a.date));
+
+      despesas.forEach(e => {
+        const data_compra = e.purchaseDate || e.date || '';
+        const data_vencimento = e.dataVencimento || '';
+        const inst = e.installments > 1 ? e.index + '/' + e.installments : '1/1';
+        csv += `"${data_compra}","${e.description}","${(e.valueCents / 100).toFixed(2)}","${inst}","${cartaoNomes[cartaoType] || cartaoType}","${data_vencimento}"\n`;
+      });
     });
 
     // Salvar JSON
@@ -2267,7 +2298,8 @@ footer.hint {
     document.body.removeChild(csvLink);
     URL.revokeObjectURL(csvUrl);
 
-    showToast('✅ Dados exportados (JSON + CSV)!', 'success');
+    console.log('Exportação - Despesas por cartão:', Object.entries(despesasPorCartao).map(([k, v]) => `${cartaoNomes[k]}: ${v.length}`).join(', '));
+    showToast('✅ Dados exportados (JSON + CSV com todos os cartões)!', 'success');
   };
 
   const importData = (event) => {
