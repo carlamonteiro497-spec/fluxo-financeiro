@@ -1441,6 +1441,10 @@ footer.hint {
             <input id="dateInput" class="date-input" type="text" placeholder="DD/MM/YYYY">
           </div>
         </div>
+        <div>
+          <label style="display: block; font-size: 11.5px; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px;">Data de Vencimento</label>
+          <input id="dataVencimentoInput" class="date-input" type="text" placeholder="DD/MM/YYYY">
+        </div>
         <button type="submit" class="submit-btn">Registrar gasto</button>
       </form>
     </div>
@@ -1798,6 +1802,7 @@ footer.hint {
           valuecents: parseInt(e.valueCents || 0),
           installments: parseInt(e.installments || 1),
           createdat: e.createdAt || now,  // Usar createdat (é a coluna correta para esta app)
+          datavencimento: e.dataVencimento || e.date || new Date().toISOString().split('T')[0],
           cartao: e.cartao || 'cartao_santander'
         };
       });
@@ -2121,7 +2126,7 @@ footer.hint {
   const el = {};
   ['summaryTotal', 'summaryCount', 'editingFlag', 'editingText', 'cancelEdit',
     'addForm', 'valueInput', 'descInput', 'instMinus', 'instValue', 'instPlus',
-    'dateInput', 'ledger', 'cartaoTotal', 'disponivel', 'summaryCartao', 'summaryDemaisCartoes'
+    'dateInput', 'dataVencimentoInput', 'ledger', 'cartaoTotal', 'disponivel', 'summaryCartao', 'summaryDemaisCartoes'
   ].forEach(id => el[id] = document.getElementById(id));
 
   const pad2 = n => n < 10 ? '0' + n : '' + n;
@@ -3024,6 +3029,16 @@ footer.hint {
     el.dateInput.value = formatted;
   });
 
+  el.dataVencimentoInput?.addEventListener('input', () => {
+    let v = el.dataVencimentoInput.value.replace(/\D/g, '');
+    if (v.length > 8) v = v.slice(0, 8);
+    let formatted = '';
+    if (v.length <= 2) formatted = v;
+    else if (v.length <= 4) formatted = v.slice(0, 2) + '/' + v.slice(2);
+    else formatted = v.slice(0, 2) + '/' + v.slice(2, 4) + '/' + v.slice(4, 8);
+    el.dataVencimentoInput.value = formatted;
+  });
+
   const parseValueCents = () => {
     const digits = el.valueInput?.getAttribute('data-cents') || '0';
     return parseInt(digits, 10) || 0;
@@ -3046,6 +3061,7 @@ footer.hint {
     el.valueInput.setAttribute('data-cents', '0');
     el.descInput.value = '';
     el.dateInput.value = formatDateToDMY(todayISO());
+    el.dataVencimentoInput.value = '';
     state.installments = 1;
     renderInstallments();
   };
@@ -3060,6 +3076,7 @@ footer.hint {
     el.valueInput.value = brl.format(e.valueCents / 100).replace('R$', '').trim();
     el.descInput.value = e.description || '';
     el.dateInput.value = formatDateToDMY(e.date);
+    el.dataVencimentoInput.value = e.dataVencimento ? formatDateToDMY(e.dataVencimento) : '';
     state.installments = e.installments || 1;
     renderInstallments();
     el.addForm.scrollIntoView({behavior: 'smooth', block: 'center'});
@@ -3092,11 +3109,17 @@ footer.hint {
       return;
     }
 
+    // Parse dataVencimento (optional, defaults to date if not provided)
+    const dataVencimentoISO = el.dataVencimentoInput.value.trim()
+      ? formatDateToISO(el.dataVencimentoInput.value)
+      : dateISO;
+
     const payload = {
       valueCents: cents,
       description: el.descInput.value.trim(),
       installments: state.installments,
       date: dateISO,
+      dataVencimento: dataVencimentoISO,
       cartao: el.cartaoSelect?.value || 'cartao_santander'
     };
     if (state.editingId) {
