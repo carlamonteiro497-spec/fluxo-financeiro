@@ -2218,21 +2218,56 @@ footer.hint {
   // EXPORT / IMPORT
   const exportData = () => {
     const data = {
-      version: '6.0',
+      version: '6.1',
       exported: new Date().toISOString(),
-      expenses: state.expenses
+      expenses: state.expenses,
+      contasFixas: loadContasFixas(),
+      summaryConfig: loadSummaryConfig(),
+      rendaConfig: loadRendaConfig(),
+      reembolsos: loadReembolsos()
     };
+
+    // Criar CSV também para facilitar visualização
+    let csv = 'Data,Descrição,Valor,Parcelamento,Cartão,Data Vencimento\n';
+    state.expenses.forEach(e => {
+      const cartaoNome = {
+        'cartao_santander': 'Cartão Santander Camila',
+        'cartao_sicoob': 'Sicoob',
+        'cartao_mercado_pago': 'Mercado Pago',
+        'cartao_digio': 'Digio',
+        'contas_fixas': 'Contas Fixas'
+      }[e.cartao || 'cartao_santander'] || 'Desconhecido';
+
+      const data_compra = e.purchaseDate || e.date || '';
+      const data_vencimento = e.dataVencimento || '';
+      const inst = e.installments > 1 ? e.index + '/' + e.installments : '1/1';
+      csv += `"${data_compra}","${e.description}","${(e.valueCents / 100).toFixed(2)}","${inst}","${cartaoNome}","${data_vencimento}"\n`;
+    });
+
+    // Salvar JSON
     const json = JSON.stringify(data, null, 2);
-    const blob = new Blob([json], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'fluxo-financeiro-backup-' + new Date().toISOString().slice(0, 10) + '.json';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    showToast('✅ Dados exportados com sucesso!', 'success');
+    const jsonBlob = new Blob([json], { type: 'application/json' });
+    const jsonUrl = URL.createObjectURL(jsonBlob);
+    const jsonLink = document.createElement('a');
+    jsonLink.href = jsonUrl;
+    jsonLink.download = 'fluxo-financeiro-backup-' + new Date().toISOString().slice(0, 10) + '.json';
+    document.body.appendChild(jsonLink);
+    jsonLink.click();
+    document.body.removeChild(jsonLink);
+    URL.revokeObjectURL(jsonUrl);
+
+    // Salvar CSV
+    const csvBlob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const csvUrl = URL.createObjectURL(csvBlob);
+    const csvLink = document.createElement('a');
+    csvLink.href = csvUrl;
+    csvLink.download = 'fluxo-financeiro-' + new Date().toISOString().slice(0, 10) + '.csv';
+    document.body.appendChild(csvLink);
+    csvLink.click();
+    document.body.removeChild(csvLink);
+    URL.revokeObjectURL(csvUrl);
+
+    showToast('✅ Dados exportados (JSON + CSV)!', 'success');
   };
 
   const importData = (event) => {
@@ -3355,6 +3390,7 @@ footer.hint {
     saveToStorage();
     renderAll();
     renderCalendar();
+    if (supabaseConfig.enabled) scheduleAutoSync();
 
     // Se tem Firestore, sincroniza
     if (db && expensesCol) {
@@ -3376,6 +3412,7 @@ footer.hint {
     if (e) {
       Object.assign(e, payload);
       saveToStorage();
+      if (supabaseConfig.enabled) scheduleAutoSync();
     }
 
     // Sincroniza com Firestore se existir
@@ -3394,6 +3431,7 @@ footer.hint {
     saveToStorage();
     renderAll();
     renderCalendar();
+    if (supabaseConfig.enabled) scheduleAutoSync();
     showToast('✓ Despesa deletada com sucesso', 'success');
 
     if (db && expensesCol && id.indexOf('local-') !== 0) {
@@ -4206,6 +4244,7 @@ footer.hint {
     };
     try {
       localStorage.setItem(SUMMARY_KEY, JSON.stringify(config));
+      if (supabaseConfig.enabled) scheduleAutoSync();
     } catch(e) {}
     return config;
   };
@@ -4284,6 +4323,7 @@ footer.hint {
       const chave = contaId + '_' + ano + '-' + pad2(mes + 1);
       valores[chave] = valor;
       localStorage.setItem(CONTAS_VALORES_MES_KEY, JSON.stringify(valores));
+      if (supabaseConfig.enabled) scheduleAutoSync();
     } catch(e) {
       // Erro ao salvar valor do mês no localStorage
     }
@@ -4333,6 +4373,7 @@ footer.hint {
   const saveContasFixas = (contas) => {
     try {
       localStorage.setItem(CONTAS_KEY, JSON.stringify(contas));
+      if (supabaseConfig.enabled) scheduleAutoSync();
     } catch(e) {}
   };
 
@@ -4350,6 +4391,7 @@ footer.hint {
   const saveReembolsos = (reembolsos) => {
     try {
       localStorage.setItem(REEMBOLSOS_KEY, JSON.stringify(reembolsos));
+      if (supabaseConfig.enabled) scheduleAutoSync();
     } catch(e) {}
   };
 
@@ -4640,6 +4682,7 @@ footer.hint {
     };
     try {
       localStorage.setItem(RENDA_KEY, JSON.stringify(config));
+      if (supabaseConfig.enabled) scheduleAutoSync();
     } catch(e) {}
     return config;
   };
