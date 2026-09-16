@@ -1293,7 +1293,7 @@ footer.hint {
 
   <!-- RESUMO -->
   <div id="resumo" class="tab-content active">
-    <div id="avisoResumo" style="background: #fef3c7; border: 1px solid #fcd34d; border-radius: 10px; padding: 12px; margin-bottom: 20px; font-size: 13px; color: #92400e; text-align: center;">
+    <div id="avisoResumo" style="display: none; background: #fef3c7; border: 1px solid #fcd34d; border-radius: 10px; padding: 12px; margin-bottom: 20px; font-size: 13px; color: #92400e; text-align: center;">
       ⚡ Gastos deste mês serão pagos no mês seguinte
     </div>
 
@@ -1314,6 +1314,11 @@ footer.hint {
         <div class="flow-value">R$ 565,92</div>
       </div>
 
+      <div class="flow-box income" onclick="openModal('modalReembolsos')" style="border-color: #10b981; background: #f0fdf4;">
+        <div class="flow-label">💰 Reembolsos</div>
+        <div class="flow-value" id="reembolsosTotal" style="color: #10b981;">R$ 0,00</div>
+      </div>
+
       <div class="flow-box expense" onclick="openModal('modalContasFixas')">
         <div class="flow-label">Contas Fixas</div>
         <div class="flow-value" id="contasFixasTotal">R$ 5.736,78</div>
@@ -1324,7 +1329,7 @@ footer.hint {
         <div class="flow-value" id="cartaoTotal">R$ 0,00</div>
       </div>
 
-      <div class="flow-box" onclick="openModal('modalDemaisCartoes')" style="cursor: pointer; border-color: #8b5cf6; background: #faf5ff; grid-column: 1 / -1;">
+      <div class="flow-box" onclick="openModal('modalDemaisCartoes')" style="cursor: pointer; border-color: #8b5cf6; background: #faf5ff;">
         <div class="flow-label">💳 Demais Cartões</div>
         <div class="flow-value" id="demaisCartoesTotal" style="color: #8b5cf6;">R$ 1.174,65</div>
       </div>
@@ -1351,6 +1356,10 @@ footer.hint {
       <div class="summary-row">
         <span>Vale Alimentação (Carla + Iasmim)</span>
         <span class="positive">+R$ 565,92</span>
+      </div>
+      <div class="summary-row">
+        <span>Reembolsos</span>
+        <span class="positive" id="summaryReembolsos">+R$ 0,00</span>
       </div>
       <div class="summary-row">
         <span>Total que entra</span>
@@ -1398,7 +1407,7 @@ footer.hint {
 
   <!-- DESPESAS -->
   <div id="despesas" class="tab-content">
-    <div id="avisoDespesas" style="background: #fef3c7; border: 1px solid #fcd34d; border-radius: 10px; padding: 12px; margin-bottom: 20px; font-size: 13px; color: #92400e; text-align: center;">
+    <div id="avisoDespesas" style="display: none; background: #fef3c7; border: 1px solid #fcd34d; border-radius: 10px; padding: 12px; margin-bottom: 20px; font-size: 13px; color: #92400e; text-align: center;">
       ⚡ Gastos deste mês serão pagos no mês seguinte
     </div>
 
@@ -1544,6 +1553,35 @@ footer.hint {
     <div class="modal-row" style="border-top: 2px solid var(--line); padding-top: 12px; margin-top: 8px; font-weight: 700;">
       <span class="modal-label">Total</span>
       <span class="modal-value" id="valeTotalDisplay">R$ 565,92</span>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL REEMBOLSOS -->
+<div id="modalReembolsos" class="modal-overlay">
+  <div class="modal-content" style="max-width: 450px;">
+    <button class="modal-close" onclick="closeModal('modalReembolsos')">×</button>
+    <div class="modal-header">💰 Reembolsos Recebidos</div>
+
+    <div id="reembolsosListaContainer" style="margin-bottom: 20px; max-height: 200px; overflow-y: auto;">
+      <!-- Lista de reembolsos será preenchida aqui -->
+    </div>
+
+    <div style="border-top: 1px solid var(--line); padding-top: 16px;">
+      <div style="font-size: 13px; font-weight: 600; margin-bottom: 12px; color: var(--ink-soft);">ADICIONAR NOVO REEMBOLSO</div>
+      <form id="novoReembolsoForm" style="display: flex; flex-direction: column; gap: 14px;">
+        <div>
+          <label style="display: block; font-size: 12px; color: var(--ink-soft); text-transform: uppercase; font-weight: 600; margin-bottom: 6px;">Valor (R$) *</label>
+          <input id="reembolsoValor" type="text" placeholder="0,00" style="width: 100%; padding: 10px 12px; border: 1.5px solid var(--line); border-radius: 8px; font-size: 14px; font-family: inherit; outline: none; color: var(--ink);">
+        </div>
+        <div>
+          <label style="display: block; font-size: 12px; color: var(--ink-soft); text-transform: uppercase; font-weight: 600; margin-bottom: 6px;">Descrição (quem devolveu)</label>
+          <input id="reembolsoDescricao" type="text" placeholder="Ex: João (Cartão Sicoob)" style="width: 100%; padding: 10px 12px; border: 1.5px solid var(--line); border-radius: 8px; font-size: 14px; font-family: inherit; outline: none; color: var(--ink);">
+        </div>
+        <button type="submit" style="background: var(--accent); color: var(--accent-ink); border: none; padding: 12px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 8px;">
+          Adicionar Reembolso
+        </button>
+      </form>
     </div>
   </div>
 </div>
@@ -2127,7 +2165,7 @@ footer.hint {
   const el = {};
   ['summaryTotal', 'summaryCount', 'editingFlag', 'editingText', 'cancelEdit',
     'addForm', 'valueInput', 'descInput', 'instMinus', 'instValue', 'instPlus',
-    'dateInput', 'dataVencimentoInput', 'ledger', 'cartaoTotal', 'disponivel', 'summaryCartao', 'summaryDemaisCartoes'
+    'dateInput', 'dataVencimentoInput', 'ledger', 'cartaoTotal', 'disponivel', 'summaryCartao', 'summaryDemaisCartoes', 'summaryReembolsos'
   ].forEach(id => el[id] = document.getElementById(id));
 
   const pad2 = n => n < 10 ? '0' + n : '' + n;
@@ -2592,6 +2630,8 @@ footer.hint {
         if (valeTotalEl) {
           valeTotalEl.textContent = 'R$ ' + valeTotal.toFixed(2).replace('.', ',');
         }
+      } else if (modalId === 'modalReembolsos') {
+        updateReembolsosModal();
       } else if (modalId === 'modalContasFixas') {
         renderContasFixasModal();
       } else if (modalId === 'modalDemaisCartoes') {
@@ -2914,6 +2954,38 @@ footer.hint {
     openModal('modalDayDetails');
   };
 
+  const updateReembolsosModal = () => {
+    const reembolsos = loadReembolsos();
+    const container = document.getElementById('reembolsosListaContainer');
+    if (!container) return;
+
+    if (reembolsos.length === 0) {
+      container.innerHTML = '<div style="font-size: 13px; color: var(--ink-faint); text-align: center; padding: 12px;">Nenhum reembolso registrado</div>';
+      return;
+    }
+
+    container.innerHTML = reembolsos.map(r => `
+      <div style="padding: 10px; background: var(--accent-soft); border-radius: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <div style="font-weight: 600; color: var(--ink);">R$ ${r.valor.toFixed(2).replace('.', ',')}</div>
+          <div style="font-size: 12px; color: var(--ink-soft);">${r.descricao}</div>
+          <div style="font-size: 11px; color: var(--ink-faint);">${new Date(r.data).toLocaleDateString('pt-BR')}</div>
+        </div>
+        <button onclick="deleteReembolsoUI(${r.id})" style="background: var(--danger); color: white; border: none; border-radius: 6px; padding: 6px 10px; cursor: pointer; font-size: 12px; font-weight: 600;">
+          Excluir
+        </button>
+      </div>
+    `).join('');
+  };
+
+  window.deleteReembolsoUI = (id) => {
+    if (confirm('Tem certeza que quer excluir este reembolso?')) {
+      deleteReembolso(id);
+      updateReembolsosModal();
+      renderSummary();
+    }
+  };
+
   const renderSummary = () => {
     // Summary sempre mostra apenas despesas do Cartão Santander (não é afetado pelo activeTab)
     const list = monthOccurrencesSantander();
@@ -2953,6 +3025,19 @@ footer.hint {
     const summaryConfig = loadSummaryConfig();
     const valeAlimentacao = summaryConfig.valeAlimentacaoCarla + summaryConfig.valeAlimentacaoIasmim;
 
+    // Reembolsos
+    const reembolsos = loadReembolsos();
+    let totalReembolsos = 0;
+    reembolsos.forEach(r => totalReembolsos += r.valor);
+    const reembolsosEl = document.getElementById('reembolsosTotal');
+    if (reembolsosEl) {
+      reembolsosEl.textContent = 'R$ ' + totalReembolsos.toFixed(2).replace('.', ',');
+    }
+    const summaryReembolsosEl = document.getElementById('summaryReembolsos');
+    if (summaryReembolsosEl) {
+      summaryReembolsosEl.textContent = '+R$ ' + totalReembolsos.toFixed(2).replace('.', ',');
+    }
+
     // Contas fixas dinâmicas - calcular total para o mês atual
     let contas = 0;
     const contasFixas = loadContasFixas();
@@ -2990,8 +3075,9 @@ footer.hint {
       totalEntradaEl.textContent = 'R$ ' + totalEntrada.toFixed(2).replace('.', ',');
     }
 
-    // Disponível = Renda Líquida + Vale Alimentação - Contas - Cartão Santander - Demais Cartões
-    const disponivel = rendaLiquida + valeAlimentacao - contas - totalEmReais - demaisCartoesEmReais;
+    // Disponível = Renda Líquida - Contas - Cartão Santander - Demais Cartões + Reembolsos
+    // Vale Alimentação é mantido completamente separado, sem interação com as despesas
+    const disponivel = rendaLiquida - contas - totalEmReais - demaisCartoesEmReais + totalReembolsos;
     const disponibilidadeText = 'R$ ' + disponivel.toFixed(2).replace('.', ',');
 
     // Atualizar elemento e cor baseado no valor
@@ -4055,6 +4141,33 @@ footer.hint {
   formatDateInput(document.getElementById('compraDataCompra'));
   formatDateInput(document.getElementById('compraDataVencimento'));
 
+  // REEMBOLSOS FORM
+  const handleNovoReembolsoSubmit = (ev) => {
+    ev.preventDefault();
+    const valor = document.getElementById('reembolsoValor').value.trim();
+    const descricao = document.getElementById('reembolsoDescricao').value.trim();
+
+    if (!valor) {
+      alert('Por favor, digite um valor');
+      return;
+    }
+
+    const valorLimpo = valor.replace(/\./g, '').replace(',', '.');
+    const valorNum = parseFloat(valorLimpo);
+
+    if (isNaN(valorNum) || valorNum <= 0) {
+      alert('Valor inválido');
+      return;
+    }
+
+    addReembolso(valorNum, descricao);
+    updateReembolsosModal();
+    renderSummary();
+    document.getElementById('novoReembolsoForm').reset();
+  };
+
+  document.getElementById('novoReembolsoForm')?.addEventListener('submit', handleNovoReembolsoSubmit);
+
   const RENDA_KEY = 'fluxo_renda_config';
 
   const loadRendaConfig = () => {
@@ -4221,6 +4334,42 @@ footer.hint {
     try {
       localStorage.setItem(CONTAS_KEY, JSON.stringify(contas));
     } catch(e) {}
+  };
+
+  // REEMBOLSOS
+  const REEMBOLSOS_KEY = 'fluxo_reembolsos';
+
+  const loadReembolsos = () => {
+    try {
+      const stored = localStorage.getItem(REEMBOLSOS_KEY);
+      if (stored) return JSON.parse(stored);
+    } catch(e) {}
+    return [];
+  };
+
+  const saveReembolsos = (reembolsos) => {
+    try {
+      localStorage.setItem(REEMBOLSOS_KEY, JSON.stringify(reembolsos));
+    } catch(e) {}
+  };
+
+  const addReembolso = (valor, descricao) => {
+    const reembolsos = loadReembolsos();
+    reembolsos.push({
+      id: Date.now(),
+      valor: parseFloat(valor),
+      descricao: descricao || 'Reembolso',
+      data: new Date().toISOString().split('T')[0]
+    });
+    saveReembolsos(reembolsos);
+    return reembolsos;
+  };
+
+  const deleteReembolso = (id) => {
+    let reembolsos = loadReembolsos();
+    reembolsos = reembolsos.filter(r => r.id !== id);
+    saveReembolsos(reembolsos);
+    return reembolsos;
   };
 
   // Helper function to get base name without parcel numbers
