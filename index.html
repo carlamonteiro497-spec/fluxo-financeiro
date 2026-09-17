@@ -1854,7 +1854,8 @@ footer.hint {
           installments: parseInt(e.installments || 1),
           createdat: e.createdAt || now,  // Usar createdat (é a coluna correta para esta app)
           datavencimento: e.dataVencimento || e.date || new Date().toISOString().split('T')[0],
-          cartao: e.cartao || 'cartao_santander'
+          cartao: e.cartao || 'cartao_santander',
+          updatedat: e.updatedAt || now  // Adicionar timestamp de última atualização
         };
       });
 
@@ -1982,7 +1983,7 @@ footer.hint {
     console.log('[SYNC] Antes da merge: state.expenses tem', state.expenses.length, 'registros');
 
     // IMPORTANTE: Atualizar state.expenses com dados da nuvem
-    // Fazer merge inteligente baseado em IDs
+    // Fazer merge inteligente baseado em IDs - SEMPRE usar a versão mais recente por timestamp!
     const cloudMap = new Map();
     cloudExpenses.forEach(e => {
       if (e.id) {
@@ -1994,24 +1995,51 @@ footer.hint {
           installments: parseInt(e.installments || 1),
           createdAt: e.createdat || e.createdAt || new Date().toISOString(),
           cartao: e.cartao || 'cartao_santander',
-          dataVencimento: e.datavencimento || e.dataVencimento || e.date || ''
+          dataVencimento: e.datavencimento || e.dataVencimento || e.date || '',
+          updatedAt: e.updatedat || e.updatedAt || new Date().toISOString()
         });
       }
     });
 
-    // Fazer merge: priorizar dados da nuvem (são a fonte da verdade)
+    // Fazer merge com versioning por timestamp
     const merged = [];
     const seenIds = new Set();
+    const localMap = new Map();
 
-    // Adicionar todos os dados da nuvem
-    cloudMap.forEach((expense, id) => {
-      merged.push(expense);
+    // Criar mapa dos dados locais para comparação
+    state.expenses.forEach(e => {
+      if (e.id) localMap.set(e.id, e);
+    });
+
+    // Comparar e mesclar: usar sempre a versão mais recente (por updatedAt)
+    cloudMap.forEach((cloudExp, id) => {
+      const localExp = localMap.get(id);
+
+      if (!localExp) {
+        // Dado existe apenas na nuvem
+        merged.push(cloudExp);
+      } else {
+        // Dado existe em ambos - comparar timestamps
+        const cloudTime = new Date(cloudExp.updatedAt || 0).getTime();
+        const localTime = new Date(localExp.updatedAt || 0).getTime();
+
+        if (localTime >= cloudTime) {
+          // Dados locais são mais recentes, manter os locais
+          console.log('[SYNC] ID', id, '- mantendo dados locais (mais recentes)');
+          merged.push(localExp);
+        } else {
+          // Dados da nuvem são mais recentes, usar os da nuvem
+          console.log('[SYNC] ID', id, '- atualizando com dados da nuvem');
+          merged.push(cloudExp);
+        }
+      }
       seenIds.add(id);
     });
 
     // Adicionar dados locais que não estão na nuvem (novos itens ainda não sincronizados)
     state.expenses.forEach(localExp => {
       if (localExp.id && !seenIds.has(localExp.id)) {
+        console.log('[SYNC] ID', localExp.id, '- adicionando item novo local');
         merged.push(localExp);
       }
     });
@@ -3575,6 +3603,7 @@ footer.hint {
       showToast('✓ Despesa atualizada', 'success');
     } else {
       payload.createdAt = new Date().toISOString();
+      payload.updatedAt = new Date().toISOString();
       addExpense(payload);
       resetForm();
       showToast('✓ Despesa adicionada', 'success');
@@ -3610,6 +3639,8 @@ footer.hint {
     const e = state.expenses.find(x => x.id === id);
     if (e) {
       Object.assign(e, payload);
+      // Adicionar timestamp de última atualização para controle de versão
+      e.updatedAt = new Date().toISOString();
       saveToStorage();
       if (supabaseConfig.enabled) scheduleAutoSync();
     }
