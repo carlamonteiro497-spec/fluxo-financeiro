@@ -1958,7 +1958,7 @@ footer.hint {
   }
 
   async function loadAndMergeFromSupabase() {
-    // Carrega dados do Supabase após sincronização
+    // Carrega dados do Supabase após sincronização e atualiza a interface
     const cloudExpenses = await loadFromSupabase();
 
     if (!cloudExpenses || cloudExpenses.length === 0) {
@@ -1967,10 +1967,46 @@ footer.hint {
     }
 
     console.log('[SYNC] ✓ Carregados', cloudExpenses.length, 'registros da nuvem');
+    console.log('[SYNC] Antes da merge: state.expenses tem', state.expenses.length, 'registros');
 
-    // Para sincronização futura multi-dispositivo, criar mapa baseado em data+descricao+valor
-    // Por enquanto, apenas retornar os dados da nuvem como confirmação
-    // Dados locais já foram enviados, então a nuvem é agora a fonte da verdade
+    // IMPORTANTE: Atualizar state.expenses com dados da nuvem
+    // Fazer merge inteligente baseado em IDs
+    const cloudMap = new Map();
+    cloudExpenses.forEach(e => {
+      if (e.id) {
+        cloudMap.set(e.id, {
+          id: e.id,
+          date: e.date || e.data || '',
+          description: e.description || '',
+          valueCents: parseInt(e.valuecents || e.valueCents || 0),
+          installments: parseInt(e.installments || 1),
+          createdAt: e.createdat || e.createdAt || new Date().toISOString(),
+          cartao: e.cartao || 'cartao_santander',
+          dataVencimento: e.datavencimento || e.dataVencimento || e.date || ''
+        });
+      }
+    });
+
+    // Fazer merge: priorizar dados da nuvem (são a fonte da verdade)
+    const merged = [];
+    const seenIds = new Set();
+
+    // Adicionar todos os dados da nuvem
+    cloudMap.forEach((expense, id) => {
+      merged.push(expense);
+      seenIds.add(id);
+    });
+
+    // Adicionar dados locais que não estão na nuvem (novos itens ainda não sincronizados)
+    state.expenses.forEach(localExp => {
+      if (localExp.id && !seenIds.has(localExp.id)) {
+        merged.push(localExp);
+      }
+    });
+
+    // Atualizar state.expenses com dados mesclados
+    state.expenses = merged;
+    console.log('[SYNC] Depois da merge: state.expenses tem', state.expenses.length, 'registros');
 
     // Salvar dados merged no localStorage
     saveToStorage();
@@ -1979,6 +2015,114 @@ footer.hint {
     renderAll();
 
     console.log('✓ Dados sincronizados e mesclados com sucesso');
+  }
+
+  async function loadInitialDataFromSupabase() {
+    // Carregar dados iniciais do Supabase na inicialização do app
+    if (!supabaseConfig.enabled || !supabaseConfig.url || !supabaseConfig.key) {
+      console.log('[SYNC] Supabase não configurado, usando dados locais');
+      return false;
+    }
+
+    try {
+      console.log('[SYNC] Carregando dados iniciais do Supabase...');
+      const cloudExpenses = await loadFromSupabase();
+
+      if (!cloudExpenses || cloudExpenses.length === 0) {
+        console.log('[SYNC] Nenhum dado na nuvem, usando dados locais');
+        return false;
+      }
+
+      console.log('[SYNC] ✓ Carregados', cloudExpenses.length, 'registros iniciais');
+
+      // Construir mapa de dados da nuvem
+      const cloudMap = new Map();
+      cloudExpenses.forEach(e => {
+        if (e.id) {
+          cloudMap.set(e.id, {
+            id: e.id,
+            date: e.date || e.data || '',
+            description: e.description || '',
+            valueCents: parseInt(e.valuecents || e.valueCents || 0),
+            installments: parseInt(e.installments || 1),
+            createdAt: e.createdat || e.createdAt || new Date().toISOString(),
+            cartao: e.cartao || 'cartao_santander',
+            dataVencimento: e.datavencimento || e.dataVencimento || e.date || ''
+          });
+        }
+      });
+
+      // Se tem dados locais, fazer merge
+      if (state.expenses.length > 0) {
+        const merged = [];
+        const seenIds = new Set();
+
+        // Dados da nuvem têm prioridade (são mais recentes)
+        cloudMap.forEach((expense, id) => {
+          merged.push(expense);
+          seenIds.add(id);
+        });
+
+        // Adicionar dados locais não sincronizados
+        state.expenses.forEach(localExp => {
+          if (localExp.id && !seenIds.has(localExp.id)) {
+            merged.push(localExp);
+          }
+        });
+
+        state.expenses = merged;
+      } else {
+        // Nenhum dado local, usar dados da nuvem
+        state.expenses = Array.from(cloudMap.values());
+      }
+
+      console.log('[SYNC] ✓ Inicializado com', state.expenses.length, 'registros');
+      return true;
+    } catch (e) {
+      console.error('[SYNC] Erro ao carregar dados iniciais:', e);
+      return false;
+    }
+  }
+
+  // Polling de sincronização em background
+  let syncPollTimer = null;
+  function startSyncPolling() {
+    if (!supabaseConfig.enabled) return;
+
+    // Fazer polling a cada 30 segundos para verificar atualizações de outros dispositivos
+    syncPollTimer = setInterval(async () => {
+      try {
+        const cloudExpenses = await loadFromSupabase();
+        if (!cloudExpenses) return;
+
+        // Comparar com dados locais
+        const currentHash = getDataHash();
+        const cloudHash = getHashFromExpenses(cloudExpenses);
+
+        if (currentHash !== cloudHash) {
+          console.log('[SYNC] Detectadas mudanças na nuvem, atualizando...');
+          await loadAndMergeFromSupabase();
+          showToast('📱 Dados sincronizados de outro dispositivo', 'info', 3000);
+        }
+      } catch (e) {
+        console.log('[SYNC] Erro no polling:', e);
+      }
+    }, 30000); // A cada 30 segundos
+  }
+
+  function stopSyncPolling() {
+    if (syncPollTimer) {
+      clearInterval(syncPollTimer);
+      syncPollTimer = null;
+    }
+  }
+
+  function getHashFromExpenses(expenses) {
+    // Criar um hash dos dados para comparação rápida
+    if (!expenses || !Array.isArray(expenses)) return '';
+    const sorted = expenses.sort((a, b) => (a.id || '').localeCompare(b.id || ''));
+    const data = sorted.map(e => `${e.id}:${e.valuecents}:${e.date}`).join('|');
+    return JSON.stringify(data);
   }
 
   function openSupabaseModal() {
@@ -2104,15 +2248,6 @@ footer.hint {
       updateSyncStatus('error');
       showToast('❌ Erro na sincronização', 'error');
     }
-  }
-
-  // Tentar carregar config ao iniciar
-  loadSupabaseConfig();
-
-  // Sincronizar ao carregar a página (se configurado)
-  if (supabaseConfig.enabled) {
-    console.log('Sincronizando dados ao carregar...');
-    loadAndMergeFromSupabase().catch(e => console.log('Sync ao carregar:', e));
   }
 
   // Sistema inteligente de auto-sync com debounce
@@ -4729,8 +4864,19 @@ footer.hint {
     renderSummary();
   });
 
-  const boot = () => {
+  const boot = async () => {
+    // Carregar dados locais primeiro
     loadFromStorage();
+
+    // Carregar configuração do Supabase e tentar buscar dados da nuvem
+    loadSupabaseConfig();
+    if (supabaseConfig.enabled) {
+      console.log('[SYNC] Carregando dados do Supabase na inicialização...');
+      await loadInitialDataFromSupabase();
+      // Iniciar polling de background para detectar mudanças de outros dispositivos
+      startSyncPolling();
+    }
+
     el.dateInput.value = formatDateToDMY(todayISO());
     renderInstallments();
     renderAll();
