@@ -1785,6 +1785,8 @@ footer.hint {
     viewYear: new Date().getFullYear(),
     viewMonth: new Date().getMonth(),
     editingId: null,
+    editingParcelIndex: null,
+    editingTotalParcels: 1,
     installments: 1,
     activeTab: 'resumo'
   };
@@ -2633,6 +2635,11 @@ footer.hint {
     return targetYear + '-' + pad2(targetMonth + 1) + '-' + pad2(useDay);
   };
 
+  // Inverter: subtrair meses (para calcular data base quando editando uma parcela específica)
+  const subtractMonthsClamped = (dateStr, months) => {
+    return addMonthsClamped(dateStr, -months);
+  };
+
   const purchaseOccurrences = e => {
     const n = Math.max(1, e.installments || 1);
     const base = Math.floor(e.valueCents / n);
@@ -3448,7 +3455,7 @@ footer.hint {
       if (!wasOpen) row.classList.add('open');
     });
 
-    row.querySelector('.btn-edit').addEventListener('click', () => startEdit(o.expenseId));
+    row.querySelector('.btn-edit').addEventListener('click', () => startEdit(o.expenseId, o.index, o.installments, o.dataVencimento));
 
     const delBtn = row.querySelector('.btn-delete');
     delBtn.addEventListener('click', () => {
@@ -3529,6 +3536,8 @@ footer.hint {
 
   const resetForm = () => {
     state.editingId = null;
+    state.editingParcelIndex = null;
+    state.editingTotalParcels = 1;
     el.editingFlag.hidden = true;
     el.valueInput.value = '';
     el.valueInput.setAttribute('data-cents', '0');
@@ -3539,17 +3548,33 @@ footer.hint {
     renderInstallments();
   };
 
-  const startEdit = id => {
+  const startEdit = (id, parcelIndex, totalParcels, parcelVencimento) => {
     const e = state.expenses.find(x => x.id === id);
     if (!e) return;
     state.editingId = id;
+    state.editingParcelIndex = parcelIndex || null;
+    state.editingTotalParcels = totalParcels || e.installments || 1;
     el.editingFlag.hidden = false;
-    el.editingText.textContent = 'Editando compra de ' + formatDateToDMY(e.date);
+
+    // Se estamos editando uma parcela específica (não a primeira), mostrar aviso
+    if (parcelIndex && parcelIndex > 1 && totalParcels && totalParcels > 1) {
+      el.editingText.textContent = 'Editando parcela ' + parcelIndex + '/' + totalParcels + ' de ' + formatDateToDMY(e.date);
+    } else {
+      el.editingText.textContent = 'Editando compra de ' + formatDateToDMY(e.date);
+    }
+
     el.valueInput.setAttribute('data-cents', String(e.valueCents));
     el.valueInput.value = brl.format(e.valueCents / 100).replace('R$', '').trim();
     el.descInput.value = e.description || '';
     el.dateInput.value = formatDateToDMY(e.date);
-    el.dataVencimentoInput.value = e.dataVencimento ? formatDateToDMY(e.dataVencimento) : '';
+
+    // Se fornecido o vencimento da parcela específica, usar esse. Senão, usar o base
+    if (parcelVencimento && parcelVencimento !== e.date) {
+      el.dataVencimentoInput.value = formatDateToDMY(parcelVencimento);
+    } else {
+      el.dataVencimentoInput.value = e.dataVencimento ? formatDateToDMY(e.dataVencimento) : '';
+    }
+
     state.installments = e.installments || 1;
     renderInstallments();
     el.addForm.scrollIntoView({behavior: 'smooth', block: 'center'});
@@ -3597,6 +3622,18 @@ footer.hint {
       cartao: 'cartao_santander'
     };
     if (state.editingId) {
+      // Se estamos editando uma parcela específica (não a primeira), ajustar dataVencimento
+      if (state.editingParcelIndex && state.editingParcelIndex > 1 && state.editingTotalParcels > 1) {
+        // Calcular qual deveria ser a data base para que esta parcela tenha exatamente este vencimento
+        const monthsToSubtract = state.editingParcelIndex - 1;
+        payload.dataVencimento = subtractMonthsClamped(dataVencimentoISO, monthsToSubtract);
+        // Mostrar aviso informativo
+        const debugMsg = 'Parcela ' + state.editingParcelIndex + '/' + state.editingTotalParcels +
+          ' - Data base ajustada para ' + formatDateToDMY(payload.dataVencimento) +
+          ' (parcela terá vencimento ' + formatDateToDMY(dataVencimentoISO) + ')';
+        console.log('[EDIT] ' + debugMsg);
+      }
+
       updateExpense(state.editingId, payload);
       resetForm();
       renderAll();
