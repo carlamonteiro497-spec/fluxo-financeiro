@@ -5440,6 +5440,28 @@ footer.hint {
     }
   };
 
+  async function deletarDoSupabase(id) {
+    if (!supabaseConfig.url || !supabaseConfig.key) return;
+    try {
+      const response = await fetch(
+        `${supabaseConfig.url}/rest/v1/expenses?id=eq.${id}`,
+        {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${supabaseConfig.key}`,
+            'apikey': supabaseConfig.key,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      if (!response.ok) {
+        console.error('Erro ao deletar do Supabase:', response.status);
+      }
+    } catch (e) {
+      console.error('Erro de conexão ao deletar:', e);
+    }
+  }
+
   const deleteExpense = id => {
     if (!confirm('⚠️ Tem certeza que deseja deletar esta despesa?\n\nEsta ação não pode ser desfeita.')) {
       return;
