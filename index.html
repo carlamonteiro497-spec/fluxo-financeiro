@@ -2053,7 +2053,12 @@ footer.hint {
   }
 
   async function loadAndMergeFromSupabase() {
-    // Carrega dados do Supabase após sincronização e atualiza a interface
+    // SUPABASE TEMPORARIAMENTE DESABILITADO
+    console.log('[SYNC] Supabase desabilitado - merge não executado');
+    return;
+
+    // Código abaixo comentado:
+    /*
     const cloudExpenses = await loadFromSupabase();
 
     if (!cloudExpenses || cloudExpenses.length === 0) {
@@ -2141,8 +2146,8 @@ footer.hint {
       }
     });
 
-    // Atualizar state.expenses com dados mesclados
-    state.expenses = merged;
+    // Atualizar state.expenses com dados mesclados (e remover duplicatas)
+    state.expenses = removeDuplicates(merged);
     console.log('[SYNC] Depois da merge: state.expenses tem', state.expenses.length, 'registros (deduplicação ativa)');
 
     // Salvar dados merged no localStorage
@@ -2152,10 +2157,16 @@ footer.hint {
     renderAll();
 
     console.log('✓ Dados sincronizados e mesclados com sucesso');
+    */
   }
 
   async function loadInitialDataFromSupabase() {
-    // Carregar dados iniciais do Supabase na inicialização do app
+    // SUPABASE TEMPORARIAMENTE DESABILITADO - Usar dados locais apenas
+    console.log('[SYNC] Supabase desabilitado, usando dados locais');
+    return false;
+
+    // Código abaixo comentado por enquanto:
+    /*
     if (!supabaseConfig.enabled || !supabaseConfig.url || !supabaseConfig.key) {
       console.log('[SYNC] Supabase não configurado, usando dados locais');
       return false;
@@ -2247,18 +2258,19 @@ footer.hint {
           }
         });
 
-        state.expenses = merged;
+        state.expenses = removeDuplicates(merged);
       } else {
         // Nenhum dado local, usar dados da nuvem
-        state.expenses = Array.from(cloudMap.values());
+        state.expenses = removeDuplicates(Array.from(cloudMap.values()));
       }
 
-      console.log('[SYNC] ✓ Inicializado com', state.expenses.length, 'registros');
+      console.log('[SYNC] ✓ Inicializado com', state.expenses.length, 'registros (após deduplicação)');
       return true;
     } catch (e) {
       console.error('[SYNC] Erro ao carregar dados iniciais:', e);
       return false;
     }
+    */
   }
 
   // Polling de sincronização em background
