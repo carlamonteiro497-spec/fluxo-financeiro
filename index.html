@@ -6748,6 +6748,11 @@ footer.hint {
 
     // Carregar configuração do Supabase e tentar buscar dados da nuvem
     loadSupabaseConfig();
+    console.log('[SYNC] Config carregada:', supabaseConfig);
+    console.log('[SYNC] Supabase enabled?', supabaseConfig.enabled);
+    console.log('[SYNC] Tem URL?', supabaseConfig.url ? 'SIM' : 'NÃO');
+    console.log('[SYNC] Tem key?', supabaseConfig.key ? 'SIM' : 'NÃO');
+
     if (supabaseConfig.enabled) {
       console.log('[SYNC] Carregando dados do Supabase na inicialização...');
       await loadInitialDataFromSupabase();
@@ -6756,8 +6761,14 @@ footer.hint {
       // Isso garante que dados restaurados sejam enviados para a nuvem
       if (state.expenses && state.expenses.length > 0) {
         console.log('[SYNC] Iniciando sincronização de upload ao boot...');
+        console.log('[SYNC] Total de despesas a enviar:', state.expenses.length);
         await syncToSupabase().catch(e => console.log('[SYNC] Upload ao boot falhou:', e));
+      } else {
+        console.log('[SYNC] Nenhuma despesa para enviar');
       }
+    } else {
+      console.log('[SYNC] ⚠️ Supabase NÃO está habilitado no boot');
+    }
 
       // Iniciar polling de background para detectar mudanças de outros dispositivos
       startSyncPolling();
