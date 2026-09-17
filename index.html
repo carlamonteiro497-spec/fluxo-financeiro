@@ -2116,23 +2116,34 @@ footer.hint {
     // Fazer merge: priorizar dados da nuvem (são a fonte da verdade)
     const merged = [];
     const seenIds = new Set();
+    const seenSignatures = new Set(); // Proteção contra duplicatas sem ID
 
     // Adicionar todos os dados da nuvem
     cloudMap.forEach((expense, id) => {
       merged.push(expense);
       seenIds.add(id);
+      // Criar assinatura do registro para detectar duplicatas mesmo sem ID
+      const sig = `${expense.date}|${expense.description}|${expense.valueCents}`;
+      seenSignatures.add(sig);
     });
 
     // Adicionar dados locais que não estão na nuvem (novos itens ainda não sincronizados)
     state.expenses.forEach(localExp => {
       if (localExp.id && !seenIds.has(localExp.id)) {
-        merged.push(localExp);
+        // Verificar duplicata por assinatura também
+        const sig = `${localExp.date}|${localExp.description}|${localExp.valueCents}`;
+        if (!seenSignatures.has(sig)) {
+          merged.push(localExp);
+          seenSignatures.add(sig);
+        } else {
+          console.log('[SYNC] ⚠️ Duplicata detectada e evitada:', localExp.description);
+        }
       }
     });
 
     // Atualizar state.expenses com dados mesclados
     state.expenses = merged;
-    console.log('[SYNC] Depois da merge: state.expenses tem', state.expenses.length, 'registros');
+    console.log('[SYNC] Depois da merge: state.expenses tem', state.expenses.length, 'registros (deduplicação ativa)');
 
     // Salvar dados merged no localStorage
     saveToStorage();
@@ -2213,17 +2224,26 @@ footer.hint {
       if (state.expenses.length > 0) {
         const merged = [];
         const seenIds = new Set();
+        const seenSignatures = new Set(); // Proteção contra duplicatas
 
         // Dados da nuvem têm prioridade (são mais recentes)
         cloudMap.forEach((expense, id) => {
           merged.push(expense);
           seenIds.add(id);
+          // Criar assinatura para detectar duplicatas
+          const sig = `${expense.date}|${expense.description}|${expense.valueCents}`;
+          seenSignatures.add(sig);
         });
 
         // Adicionar dados locais não sincronizados
         state.expenses.forEach(localExp => {
           if (localExp.id && !seenIds.has(localExp.id)) {
-            merged.push(localExp);
+            // Verificar duplicata por assinatura também
+            const sig = `${localExp.date}|${localExp.description}|${localExp.valueCents}`;
+            if (!seenSignatures.has(sig)) {
+              merged.push(localExp);
+              seenSignatures.add(sig);
+            }
           }
         });
 
@@ -2612,10 +2632,16 @@ footer.hint {
           return;
         }
 
-        // Importar despesas
-        state.expenses = data.expenses || [];
+        // Importar despesas - GARANTIR que cada uma tem ID único
+        state.expenses = data.expenses.map(exp => {
+          // Se não tem ID, gerar um novo
+          if (!exp.id) {
+            exp.id = generateUUID();
+          }
+          return exp;
+        }) || [];
         saveToStorage();
-        console.log('[IMPORT] ✓ Despesas importadas:', state.expenses.length);
+        console.log('[IMPORT] ✓ Despesas importadas:', state.expenses.length, '(com IDs garantidos)');
 
         // Importar contas fixas
         if (data.contasFixas && typeof data.contasFixas === 'object') {
