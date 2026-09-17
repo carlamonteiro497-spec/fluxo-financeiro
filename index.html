@@ -6751,6 +6751,14 @@ footer.hint {
     if (supabaseConfig.enabled) {
       console.log('[SYNC] Carregando dados do Supabase na inicialização...');
       await loadInitialDataFromSupabase();
+
+      // IMPORTANTE: Forçar sync de dados locais para Supabase ao inicializar
+      // Isso garante que dados restaurados sejam enviados para a nuvem
+      if (state.expenses && state.expenses.length > 0) {
+        console.log('[SYNC] Iniciando sincronização de upload ao boot...');
+        await syncToSupabase().catch(e => console.log('[SYNC] Upload ao boot falhou:', e));
+      }
+
       // Iniciar polling de background para detectar mudanças de outros dispositivos
       startSyncPolling();
     }
