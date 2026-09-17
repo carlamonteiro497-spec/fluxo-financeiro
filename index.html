@@ -3754,7 +3754,7 @@ footer.hint {
     }
   };
 
-  const deleteExpense = id => {
+  const deleteExpense = async id => {
     if (!confirm('⚠️ Tem certeza que deseja deletar esta despesa?\n\nEsta ação não pode ser desfeita.')) {
       return;
     }
@@ -3762,13 +3762,29 @@ footer.hint {
     saveToStorage();
     renderAll();
     renderCalendar();
-    if (supabaseConfig.enabled) scheduleAutoSync();
     showToast('✓ Despesa deletada com sucesso', 'success');
 
-    if (db && expensesCol && id.indexOf('local-') !== 0) {
-      expensesCol.doc(id).delete().catch(err => {
-        showToast('Erro ao sincronizar com servidor', 'error');
-      });
+    if (supabaseConfig.enabled && supabaseConfig.url && supabaseConfig.key) {
+      try {
+        const response = await fetch(
+          `${supabaseConfig.url}/rest/v1/expenses?id=eq.${id}`,
+          {
+            method: 'DELETE',
+            headers: {
+              'apikey': supabaseConfig.key,
+              'Authorization': `Bearer ${supabaseConfig.key}`,
+              'Content-Type': 'application/json'
+            }
+          }
+        );
+        if (!response.ok) {
+          console.error('[DELETE] Erro:', await response.text());
+        } else {
+          console.log('[DELETE] Despesa deletada do Supabase:', id);
+        }
+      } catch (err) {
+        console.error('[DELETE] Erro ao deletar:', err);
+      }
     }
   };
 
