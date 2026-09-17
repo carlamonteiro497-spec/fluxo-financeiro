@@ -3889,14 +3889,27 @@ footer.hint {
         }
       });
 
-      // Se tem dados locais, fazer merge
+      // Se tem dados locais, fazer merge com comparação de timestamps
       if (state.expenses.length > 0) {
         const merged = [];
         const seenIds = new Set();
 
-        // Dados da nuvem têm prioridade (são mais recentes)
-        cloudMap.forEach((expense, id) => {
-          merged.push(expense);
+        // Comparar cada expense - usar versão mais recente
+        cloudMap.forEach((cloudExp, id) => {
+          const localExp = state.expenses.find(e => e.id === id);
+          
+          if (!localExp) {
+            merged.push(cloudExp);
+          } else {
+            const cloudTime = new Date(cloudExp.updatedAt || cloudExp.createdAt || 0).getTime();
+            const localTime = new Date(localExp.updatedAt || localExp.createdAt || 0).getTime();
+            
+            if (localTime > cloudTime) {
+              merged.push(localExp);  // Local é mais recente
+            } else {
+              merged.push(cloudExp);  // Cloud é mais recente
+            }
+          }
           seenIds.add(id);
         });
 
