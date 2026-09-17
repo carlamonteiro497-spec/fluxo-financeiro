@@ -2801,6 +2801,30 @@ footer.hint {
     {"date": "2026-07-04", "description": "PARC-103ADRIELECARVALHO", "valueCents": 31392, "installments": 3, "dataVencimento": "2026-07-04"}
   ];
 
+  // Função para remover duplicatas existentes
+  const removeDuplicates = (expenses) => {
+    const seen = new Set();
+    const unique = [];
+
+    expenses.forEach(exp => {
+      // Criar assinatura única baseada em data, descrição e valor
+      const sig = `${exp.date}|${exp.description}|${exp.valueCents}`;
+
+      if (!seen.has(sig)) {
+        unique.push(exp);
+        seen.add(sig);
+      } else {
+        console.log('[DEDUP] Removendo duplicata:', exp.description, '-', exp.date);
+      }
+    });
+
+    if (unique.length < expenses.length) {
+      console.log('[DEDUP] ✓ Removidas', expenses.length - unique.length, 'duplicatas');
+    }
+
+    return unique;
+  };
+
   const loadFromStorage = () => {
     try {
       const storedVersion = localStorage.getItem(VERSION_KEY);
@@ -2815,8 +2839,10 @@ footer.hint {
         // Se tem dados salvos, usa eles (respeita as alterações do usuário)
         const parsed = JSON.parse(stored);
         if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].id) {
-          // Valida se tem a estrutura correta
-          state.expenses = parsed;
+          // REMOVER DUPLICATAS ao carregar
+          state.expenses = removeDuplicates(parsed);
+          // Salvar dados limpos de volta no localStorage
+          saveToStorage();
         } else {
           // Se localStorage está vazio ou inválido, carrega os padrão
           loadDefaultExpenses();
