@@ -3820,13 +3820,13 @@ footer.hint {
         // Comparar timestamps para determinar qual é mais recente
         const cloudTime = new Date(cloudExp.updatedAt || cloudExp.createdAt || 0).getTime();
         const localTime = new Date(localExp.updatedAt || localExp.createdAt || 0).getTime();
-        
-        // Use whichever version is newer
-        if (localTime > cloudTime) {
-          merged.push(localExp);  // Local é mais recente
-          console.log('[SYNC] Mantendo versão local (mais recente) para:', id);
+
+        // Use whichever version is newer (preferir local se timestamps forem iguais)
+        if (localTime >= cloudTime) {
+          merged.push(localExp);  // Local é mais recente OU igual (preferir local)
+          console.log('[SYNC] Mantendo versão local para:', id);
         } else {
-          merged.push(cloudExp);  // Cloud é mais recente ou igual
+          merged.push(cloudExp);  // Cloud é mais recente
           console.log('[SYNC] Usando versão da nuvem para:', id);
         }
       }
@@ -3903,9 +3903,9 @@ footer.hint {
           } else {
             const cloudTime = new Date(cloudExp.updatedAt || cloudExp.createdAt || 0).getTime();
             const localTime = new Date(localExp.updatedAt || localExp.createdAt || 0).getTime();
-            
-            if (localTime > cloudTime) {
-              merged.push(localExp);  // Local é mais recente
+
+            if (localTime >= cloudTime) {
+              merged.push(localExp);  // Local é mais recente OU igual (preferir local)
             } else {
               merged.push(cloudExp);  // Cloud é mais recente
             }
