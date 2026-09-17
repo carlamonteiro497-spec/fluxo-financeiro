@@ -5470,8 +5470,14 @@ footer.hint {
     saveToStorage();
     renderAll();
     renderCalendar();
-    if (supabaseConfig.enabled) scheduleAutoSync();
     showToast('✓ Despesa deletada com sucesso', 'success');
+
+    // Sincronizar deleção com Supabase IMEDIATAMENTE (não usar scheduleAutoSync)
+    if (supabaseConfig.enabled && id.indexOf('local-') !== 0) {
+      deletarDoSupabase(id).then(() => {
+        console.log('[SYNC] Deleção sincronizada com Supabase');
+      });
+    }
 
     if (db && expensesCol && id.indexOf('local-') !== 0) {
       expensesCol.doc(id).delete().catch(err => {
