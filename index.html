@@ -1824,7 +1824,7 @@ footer.hint {
   let supabaseConfig = {
     url: null,
     key: null,
-    enabled: false
+    enabled: false  // DESABILITADO: Supabase está criando duplicatas
   };
 
   function loadSupabaseConfig() {
@@ -2803,23 +2803,39 @@ footer.hint {
 
   // Função para remover duplicatas existentes
   const removeDuplicates = (expenses) => {
-    const seen = new Set();
-    const unique = [];
+    if (!Array.isArray(expenses)) return expenses;
 
-    expenses.forEach(exp => {
-      // Criar assinatura única baseada em data, descrição e valor
-      const sig = `${exp.date}|${exp.description}|${exp.valueCents}`;
+    const seen = new Map();
+    const unique = [];
+    let duplicateCount = 0;
+
+    // Ordenar por data para manter registros mais antigos
+    const sorted = [...expenses].sort((a, b) => {
+      const dateA = new Date(a.date || '1970-01-01');
+      const dateB = new Date(b.date || '1970-01-01');
+      return dateA - dateB;
+    });
+
+    sorted.forEach(exp => {
+      // Normalizar data e descrição para comparação robusta
+      const dateNorm = (exp.date || '').split('T')[0];
+      const descNorm = (exp.description || '').trim().toUpperCase();
+      const valueNorm = parseInt(exp.valueCents || 0);
+
+      // Criar assinatura normalizada
+      const sig = `${dateNorm}|${descNorm}|${valueNorm}`;
 
       if (!seen.has(sig)) {
         unique.push(exp);
-        seen.add(sig);
+        seen.set(sig, true);
       } else {
-        console.log('[DEDUP] Removendo duplicata:', exp.description, '-', exp.date);
+        duplicateCount++;
+        console.log('[DEDUP] ⚠️ Duplicata:', descNorm);
       }
     });
 
-    if (unique.length < expenses.length) {
-      console.log('[DEDUP] ✓ Removidas', expenses.length - unique.length, 'duplicatas');
+    if (duplicateCount > 0) {
+      console.log('[DEDUP] ✓ Removidas', duplicateCount, 'duplicatas. Antes:', expenses.length, '| Depois:', unique.length);
     }
 
     return unique;
