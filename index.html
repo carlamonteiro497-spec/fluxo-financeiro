@@ -1815,6 +1815,69 @@ footer.hint {
     localStorage.setItem('supabase_config', JSON.stringify(supabaseConfig));
   }
 
+  // Deleta do Supabase os registros que não existem mais localmente
+  async function deleteRemovedExpensesFromSupabase(localIds) {
+    if (!supabaseConfig.enabled || !supabaseConfig.url || !supabaseConfig.key) {
+      return;
+    }
+
+    try {
+      // Carregar todos os IDs do Supabase
+      const response = await fetch(
+        `${supabaseConfig.url}/rest/v1/expenses?select=id`,
+        {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${supabaseConfig.key}`,
+            'apikey': supabaseConfig.key,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      if (!response.ok) {
+        console.log('[SYNC] Não foi possível verificar deletados no Supabase');
+        return;
+      }
+
+      const cloudRecords = await response.json();
+      const cloudIds = cloudRecords.map(r => r.id);
+
+      // Encontrar IDs que existem na nuvem mas não localmente
+      const idsToDelete = cloudIds.filter(id => !localIds.includes(id));
+
+      if (idsToDelete.length === 0) {
+        console.log('[SYNC] Nenhum registro para deletar no Supabase');
+        return;
+      }
+
+      console.log('[SYNC] Deletando', idsToDelete.length, 'registros do Supabase');
+
+      // Deletar cada ID que não existe mais localmente
+      for (const id of idsToDelete) {
+        try {
+          await fetch(
+            `${supabaseConfig.url}/rest/v1/expenses?id=eq.${encodeURIComponent(id)}`,
+            {
+              method: 'DELETE',
+              headers: {
+                'Authorization': `Bearer ${supabaseConfig.key}`,
+                'apikey': supabaseConfig.key,
+                'Content-Type': 'application/json'
+              }
+            }
+          );
+        } catch (e) {
+          console.error('[SYNC] Erro ao deletar registro:', id);
+        }
+      }
+
+      console.log('[SYNC] ✓ Registros deletados com sucesso');
+    } catch (e) {
+      console.error('[SYNC] Erro ao sincronizar deletados:', e);
+    }
+  }
+
   async function syncToSupabase() {
     if (!supabaseConfig.enabled || !supabaseConfig.url || !supabaseConfig.key) {
       return false;
@@ -1873,6 +1936,8 @@ footer.hint {
       if (response.ok) {
         console.log('[SYNC] ✓ Dados sincronizados com sucesso');
         updateSyncStatus('success');
+        // Deletar registros do Supabase que não existem mais localmente
+        await deleteRemovedExpensesFromSupabase(dataToSync.map(e => e.id));
         await loadAndMergeFromSupabase();
         return true;
       } else {
@@ -1915,6 +1980,8 @@ footer.hint {
         if (successCount > 0) {
           console.log('[SYNC] ✓ Inseridos', successCount, 'de', dataToSync.length, 'registros');
           updateSyncStatus('success');
+          // Deletar registros do Supabase que não existem mais localmente
+          await deleteRemovedExpensesFromSupabase(dataToSync.map(e => e.id));
           await loadAndMergeFromSupabase();
           return true;
         } else {
