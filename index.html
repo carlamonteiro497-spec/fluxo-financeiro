@@ -2657,13 +2657,27 @@ footer.hint {
         html += '<div style="margin-bottom: 20px; border-bottom: 1px solid var(--line); padding-bottom: 16px;">';
         html += '<div style="font-weight: 600; font-size: 14px; margin-bottom: 10px; color: var(--ink);">' + (cartaoLabels[cartaoKey] || cartaoKey) + '</div>';
 
+        // Coletar todas as ocorrências deste cartão e ordenar por data de compra
+        const todasOcorrencias = [];
         despesas.forEach(e => {
           const ocorrencias = purchaseOccurrences(e);
-
           ocorrencias.forEach(occ => {
             // Filtrar apenas as ocorrências do mês atual
             const occDate = (occ.dataVencimento || occ.date || '');
             if (occDate.slice(0, 7) === key) {
+              todasOcorrencias.push(occ);
+            }
+          });
+        });
+
+        // Ordenar por data de compra (mais recente primeiro)
+        todasOcorrencias.sort((a, b) => {
+          const dateA = new Date(a.purchaseDate || a.date || '0000-00-00');
+          const dateB = new Date(b.purchaseDate || b.date || '0000-00-00');
+          return dateB - dateA; // Mais recente primeiro
+        });
+
+        todasOcorrencias.forEach(occ => {
               const instText = occ.installments > 1 ? ' (' + occ.index + '/' + occ.installments + ')' : '';
 
               // Format vencimento date
@@ -2687,7 +2701,7 @@ footer.hint {
               html += '<div style="font-size: 24px; flex-shrink: 0;">' + typeIcon + '</div>';
 
               html += '<div style="flex: 1;">';
-              html += '<div style="font-weight: 600; font-size: 14px; color: var(--ink); margin-bottom: 4px;">' + (e.description || 'Sem descrição') + '</div>';
+              html += '<div style="font-weight: 600; font-size: 14px; color: var(--ink); margin-bottom: 4px;">' + (occ.description || 'Sem descrição') + '</div>';
               html += '<div style="font-size: 12px; color: var(--ink-soft); margin-bottom: 6px;">' + typeLabel + instLabel + '</div>';
 
               if (compDisplay) {
@@ -2699,12 +2713,10 @@ footer.hint {
               // Valor à direita
               html += '<div style="text-align: right; flex-shrink: 0;">';
               html += '<div style="font-weight: 700; font-size: 15px; color: var(--accent); margin-bottom: 6px;">R$ ' + (occ.valueCents / 100).toFixed(2).replace('.', ',') + '</div>';
-              html += '<button onclick="deleteExpense(\'' + e.id + '\')" style="background: none; border: none; cursor: pointer; font-size: 16px; opacity: 0.5; padding: 0; color: var(--danger);">🗑️</button>';
+              html += '<button onclick="deleteExpense(\'' + occ.id + '\')" style="background: none; border: none; cursor: pointer; font-size: 16px; opacity: 0.5; padding: 0; color: var(--danger);">🗑️</button>';
               html += '</div>';
 
               html += '</div>';
-            }
-          });
         });
 
         if (totalCartao > 0) {
