@@ -4886,8 +4886,9 @@ footer.hint {
     updateContasFixasTotal();
     renderCalendar();
 
-    // Tenta inicializar o banco de dados para sincronização
-    if (window.claude && typeof window.claude.use === 'function') {
+    // Tenta inicializar o banco de dados para sincronização (APENAS se Supabase não estiver habilitado)
+    // Se Supabase está ativado, usar apenas Supabase para evitar conflitos entre dois sistemas de sync
+    if (!supabaseConfig.enabled && window.claude && typeof window.claude.use === 'function') {
       window.claude.use('db').then(dbNs => {
         if (dbNs) {
           initDb(dbNs);
