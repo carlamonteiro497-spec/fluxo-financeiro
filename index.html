@@ -536,6 +536,31 @@ body {
 .entry-info {
   flex: 1;
   min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.entry-logo {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  object-fit: contain;
+  object-position: center;
+  background: var(--paper);
+  padding: 4px;
+  border: 1px solid var(--line);
+}
+
+.entry-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .entry-desc {
@@ -3037,6 +3062,77 @@ footer.hint {
     return '📋';
   };
 
+  // Mapear serviços e descrições para logos
+  const getServiceLogo = (description) => {
+    if (!description) return null;
+    const desc = description.toLowerCase().trim();
+
+    const services = {
+      'netflix': 'https://upload.wikimedia.org/wikipedia/commons/6/69/Netflix_logo.svg',
+      'spotify': 'https://upload.wikimedia.org/wikipedia/commons/1/1d/Spotify_logo_without_text.svg',
+      'amazon': 'https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg',
+      'deezer': 'https://cdns-files-dzcdn.dzcdn.net/cache/common/44/444ce88f24a8a621baecc0e108e876d7.png',
+      'youtube': 'https://upload.wikimedia.org/wikipedia/commons/0/09/YouTube_full-color_icon_%282017%29.svg',
+      'disney': 'https://upload.wikimedia.org/wikipedia/commons/3/3e/Disney%2B_logo.svg',
+      'ifood': 'https://upload.wikimedia.org/wikipedia/commons/c/c5/IFood_icon.png',
+      'uber': 'https://upload.wikimedia.org/wikipedia/commons/5/58/Uber_logo_2018.svg',
+      '99': 'https://www.99taxis.com/assets/logo-99-colored-1-white.svg',
+      'cabify': 'https://upload.wikimedia.org/wikipedia/commons/c/ca/Cabify_logo.svg',
+      'rappi': 'https://s3.amazonaws.com/cdn.designscode.io/logos/rappi-logo.png',
+      'loggi': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Loggi_logo.png/440px-Loggi_logo.png',
+      'mercado pago': 'https://http2.mlstatic.com/frontend-assets/ui-navigation/5.16.0/mercadopago/37x37.png',
+      'paypal': 'https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg',
+      'nubank': 'https://upload.wikimedia.org/wikipedia/commons/0/04/Nubank_logo.svg',
+      'itaú': 'https://upload.wikimedia.org/wikipedia/commons/5/58/Ita%C3%BA_logo.svg',
+      'bradesco': 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Banco_Bradesco_Logo.svg/1200px-Banco_Bradesco_Logo.svg',
+      'caixa': 'https://upload.wikimedia.org/wikipedia/commons/f/f5/Logomarca_CAIXA_ECONOMICA_FEDERAL.svg',
+      'santander': 'https://upload.wikimedia.org/wikipedia/commons/0/0a/Banco_Santander.svg',
+      'bmg': 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/BMG_logo.png/220px-BMG_logo.png',
+      'bb': 'https://upload.wikimedia.org/wikipedia/commons/8/8e/Banco_do_Brasil_logo.svg',
+      'vivo': 'https://upload.wikimedia.org/wikipedia/commons/7/7c/Vivo_%28telecom%29_logo.svg',
+      'oi': 'https://upload.wikimedia.org/wikipedia/commons/7/7c/Oi_Brasil_logo.svg',
+      'claro': 'https://upload.wikimedia.org/wikipedia/commons/e/e8/Claro_Logo.svg',
+      'tim': 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/TIM_logo.svg/1200px-TIM_logo.svg',
+      'netflix': 'https://upload.wikimedia.org/wikipedia/commons/6/69/Netflix_logo.svg',
+      'drogaria': 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Drogaria_S%C3%A3o_Paulo_logo.png/220px-Drogaria_S%C3%A3o_Paulo_logo.png',
+      'farmaecia': 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Drogaria_S%C3%A3o_Paulo_logo.png/220px-Drogaria_S%C3%A3o_Paulo_logo.png',
+      'farmácia': 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Drogaria_S%C3%A3o_Paulo_logo.png/220px-Drogaria_S%C3%A3o_Paulo_logo.png',
+      'carrefour': 'https://upload.wikimedia.org/wikipedia/commons/9/9e/Carrefour_Logo.svg',
+      'walmart': 'https://upload.wikimedia.org/wikipedia/commons/c/ca/Walmart_logo.svg',
+      'extra': 'https://upload.wikimedia.org/wikipedia/commons/8/8c/Extra_Hypermercados_logo.svg',
+      'são paulo': 'https://www.saopaulo.sp.gov.br/favicon.ico',
+      'prefeitura': 'https://www.saopaulo.sp.gov.br/favicon.ico',
+      'iptu': 'https://www.saopaulo.sp.gov.br/favicon.ico',
+      'enel': 'https://upload.wikimedia.org/wikipedia/commons/7/7a/Enel_logo.svg',
+      'cpfl': 'https://upload.wikimedia.org/wikipedia/commons/f/f4/CPFL_Energia_logo.svg',
+      'elektro': 'https://upload.wikimedia.org/wikipedia/commons/7/78/Elektro_logo.svg',
+      'cemig': 'https://upload.wikimedia.org/wikipedia/commons/3/38/CEMIG_logo.svg',
+      'sabesp': 'https://upload.wikimedia.org/wikipedia/commons/7/78/Sabesp_logo.svg',
+      'copasa': 'https://upload.wikimedia.org/wikipedia/commons/e/ee/Copasa_Logo.svg',
+      'hotéis.com': 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Hotels-com_logo.svg/440px-Hotels-com_logo.svg',
+      'booking': 'https://upload.wikimedia.org/wikipedia/commons/f/f8/Booking.com_logo.svg',
+      'airbnb': 'https://upload.wikimedia.org/wikipedia/commons/6/69/Airbnb_Logo_B%C3%A9lo.svg',
+      'decathlon': 'https://upload.wikimedia.org/wikipedia/commons/e/e8/Decathlon_logo.svg',
+      'nike': 'https://upload.wikimedia.org/wikipedia/commons/a/a7/Camponotus_flavomarginatus_ant.jpg',
+      'adidas': 'https://upload.wikimedia.org/wikipedia/commons/1/1f/Adidas_Logo.svg',
+      'puma': 'https://upload.wikimedia.org/wikipedia/commons/2/22/Puma_Logo.svg',
+      'uniqlo': 'https://upload.wikimedia.org/wikipedia/commons/9/95/Uniqlo_logo.svg',
+      'zara': 'https://upload.wikimedia.org/wikipedia/commons/9/9c/Zara_Logo.svg',
+      'h&m': 'https://upload.wikimedia.org/wikipedia/commons/5/53/H%26M-logo.svg',
+      'riachuelo': 'https://upload.wikimedia.org/wikipedia/commons/6/6e/Riachuelo_logo.svg'
+    };
+
+    for (const [key, url] of Object.entries(services)) {
+      if (desc.includes(key)) {
+        return url;
+      }
+    }
+    return null;
+  };
+
+  // Cache de logos para evitar recarregar a mesma imagem
+  const logoCache = {};
+
   const monthNames = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
 
   // Contas com valores variáveis (não mostrar valor fixo)
@@ -3126,9 +3222,14 @@ footer.hint {
                   const valorExp = (occ.valueCents || 0) / 100;
                   const parcelaInfo = occ.installments && occ.installments > 1 ? ' • Parcela ' + occ.index + ' de ' + occ.installments : '';
                   const typeIcon = occ.installments > 1 ? '🎁' : '💳';
+                  const logoUrl = getServiceLogo(occ.description);
 
                   html += '<div style="display: flex; gap: 12px; padding: 12px 12px; margin: 6px 0; border-radius: 6px; background: var(--paper-raised); border: 1px solid var(--line); align-items: flex-start; cursor: pointer;" data-expense-id="' + (occ.occId || idx) + '" class="expense-row">';
-                  html += '<div style="font-size: 18px; flex-shrink: 0;">' + typeIcon + '</div>';
+                  if (logoUrl) {
+                    html += '<img src="' + logoUrl + '" alt="logo" style="width: 32px; height: 32px; flex-shrink: 0; border-radius: 6px; object-fit: contain; object-position: center; background: var(--paper); padding: 3px; border: 1px solid var(--line);" onerror="this.innerHTML=\'💳\';" />';
+                  } else {
+                    html += '<div style="font-size: 18px; flex-shrink: 0;">' + typeIcon + '</div>';
+                  }
                   html += '<div style="flex: 1;">';
                   html += '<div style="font-weight: 600; font-size: 13px; color: var(--ink); margin-bottom: 2px;">' + occ.description + '</div>';
                   html += '<div style="font-size: 11px; color: var(--ink-faint);">' + (occ.installments > 1 ? '🎁' : '💳') + ' ' + (occ.installments > 1 ? 'Parcelado' : 'Crédito') + parcelaInfo + '</div>';
@@ -3543,7 +3644,12 @@ footer.hint {
     const metaHtml = instChip ? '<div class="entry-meta">' + instChip + '</div>' : '';
     const deleteLabel = o.installments > 1 ? 'Excluir (todas)' : 'Excluir';
     const confirmLabel = o.installments > 1 ? 'Confirmar exclusão' : 'Confirmar';
-    row.innerHTML = '<div class="entry-main"><div class="entry-info"><div class="' + descClass + '">' + descText + '</div>' + metaHtml + '</div><div class="entry-value">' + formatCentsBRL(o.valueCents) + '</div></div><div class="entry-actions"><button type="button" class="btn-edit">Editar</button><button type="button" class="btn-delete">' + deleteLabel + '</button></div>';
+
+    // Obter logo do serviço
+    const logoUrl = getServiceLogo(o.description);
+    const logoHtml = logoUrl ? '<img src="' + logoUrl + '" alt="logo" class="entry-logo" onerror="this.replaceWith(document.createTextNode(\'💳\'))">' : '<span class="entry-icon">💳</span>';
+
+    row.innerHTML = '<div class="entry-main"><div class="entry-info">' + logoHtml + '<div style="flex: 1;"><div class="' + descClass + '">' + descText + '</div>' + metaHtml + '</div></div><div class="entry-value">' + formatCentsBRL(o.valueCents) + '</div></div><div class="entry-actions"><button type="button" class="btn-edit">Editar</button><button type="button" class="btn-delete">' + deleteLabel + '</button></div>';
 
     row.addEventListener('click', ev => {
       if (ev.target.closest('.btn-edit') || ev.target.closest('.btn-delete')) return;
