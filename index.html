@@ -3563,8 +3563,8 @@ footer.hint {
     <div id="supabaseStatus" class="modal-status"></div>
 
     <div class="modal-buttons">
-      <button type="button" class="modal-btn modal-btn-secondary" onclick="document.getElementById('supabaseModal').classList.remove('show')">Cancelar</button>
-      <button type="button" class="modal-btn modal-btn-primary" onclick="(async () => { const url = document.getElementById('supabaseUrl').value; const key = document.getElementById('supabaseKey').value; if(!url || !key) { alert('Preencha URL e Chave'); return; } saveSupabaseConfig(url, key); document.getElementById('supabaseModal').classList.remove('show'); })()">Salvar e Conectar</button>
+      <button type="button" class="modal-btn modal-btn-secondary" onclick="closeSupabaseModal()">Cancelar</button>
+      <button type="button" class="modal-btn modal-btn-primary" onclick="saveSupabaseConfigViaModal()">Salvar e Conectar</button>
     </div>
   </div>
 
@@ -3574,8 +3574,8 @@ footer.hint {
   <div style="background: linear-gradient(135deg, rgba(53, 70, 122, 0.05) 0%, rgba(132, 150, 214, 0.05) 100%); border: 1px solid var(--line-strong); border-radius: 12px; padding: 20px; margin-top: 20px;">
     <h3 style="font-size: 13px; font-weight: 600; color: var(--ink-soft); margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.5px;">⚙️ Ferramentas</h3>
     <div class="tools-grid">
-      <button onclick="(async () => { const btn = event.target; btn.disabled = true; btn.textContent = '⏳ Sincronizando...'; try { await syncToSupabase(); btn.textContent = '✓ Sincronizado!'; setTimeout(() => { btn.textContent = '🔄 Sincronizar'; btn.disabled = false; }, 2000); } catch(e) { console.error('Erro:', e); btn.textContent = '❌ Erro'; setTimeout(() => { btn.textContent = '🔄 Sincronizar'; btn.disabled = false; }, 2000); } })()" style="background: var(--accent); color: var(--accent-ink); border: none; padding: 12px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.3s;" title="Sincronizar dados com Supabase" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">🔄 Sincronizar</button>
-      <button onclick="document.getElementById('supabaseModal').classList.add('show')" style="background: var(--accent); color: var(--accent-ink); border: none; padding: 12px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.3s;" title="Configurar sincronização em nuvem" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">⚙️ Configuração</button>
+      <button onclick="manualSyncSupabase()" style="background: var(--accent); color: var(--accent-ink); border: none; padding: 12px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.3s;" title="Sincronizar dados com Supabase" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">🔄 Sincronizar</button>
+      <button onclick="showSupabaseSetup()" style="background: var(--accent); color: var(--accent-ink); border: none; padding: 12px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.3s;" title="Configurar sincronização em nuvem" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">⚙️ Configuração</button>
       <button onclick="exportData()" style="background: var(--accent); color: var(--accent-ink); border: none; padding: 12px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.3s;" title="Exportar dados para backup" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">📥 Exportar</button>
       <button onclick="document.getElementById('importFile').click()" style="background: var(--accent); color: var(--accent-ink); border: none; padding: 12px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.3s;" title="Importar dados de backup" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">📤 Importar</button>
       <input type="file" id="importFile" accept=".json" style="display:none;" onchange="importData(event)">
@@ -6748,11 +6748,6 @@ footer.hint {
 
     // Carregar configuração do Supabase e tentar buscar dados da nuvem
     loadSupabaseConfig();
-    console.log('[SYNC] Config carregada:', supabaseConfig);
-    console.log('[SYNC] Supabase enabled?', supabaseConfig.enabled);
-    console.log('[SYNC] Tem URL?', supabaseConfig.url ? 'SIM' : 'NÃO');
-    console.log('[SYNC] Tem key?', supabaseConfig.key ? 'SIM' : 'NÃO');
-
     if (supabaseConfig.enabled) {
       console.log('[SYNC] Carregando dados do Supabase na inicialização...');
       await loadInitialDataFromSupabase();
@@ -6761,14 +6756,8 @@ footer.hint {
       // Isso garante que dados restaurados sejam enviados para a nuvem
       if (state.expenses && state.expenses.length > 0) {
         console.log('[SYNC] Iniciando sincronização de upload ao boot...');
-        console.log('[SYNC] Total de despesas a enviar:', state.expenses.length);
         await syncToSupabase().catch(e => console.log('[SYNC] Upload ao boot falhou:', e));
-      } else {
-        console.log('[SYNC] Nenhuma despesa para enviar');
       }
-    } else {
-      console.log('[SYNC] ⚠️ Supabase NÃO está habilitado no boot');
-    }
 
       // Iniciar polling de background para detectar mudanças de outros dispositivos
       startSyncPolling();
@@ -6951,22 +6940,12 @@ footer.hint {
   });
 
   // Expor funções Supabase para o escopo global (para onclick HTML)
-  // IMPORTANTE: Fazer isso ANTES para garantir que estão disponíveis
   window.showSupabaseSetup = showSupabaseSetup;
   window.openSupabaseModal = openSupabaseModal;
   window.closeSupabaseModal = closeSupabaseModal;
   window.toggleSupabaseKeyVisibility = toggleSupabaseKeyVisibility;
-  window.manualSyncSupabase = manualSyncSupabase;
-  window.saveSupabaseConfig = saveSupabaseConfig;
-
-  // Debug: verificar se funções estão expostas
-  console.log('[INIT] Funções Supabase expostas:');
-  console.log('[INIT] showSupabaseSetup:', typeof window.showSupabaseSetup);
-  console.log('[INIT] openSupabaseModal:', typeof window.openSupabaseModal);
-  console.log('[INIT] closeSupabaseModal:', typeof window.closeSupabaseModal);
   window.saveSupabaseConfigViaModal = saveSupabaseConfigViaModal;
   window.manualSyncSupabase = manualSyncSupabase;
-  window.syncToSupabase = syncToSupabase;
   window.updateSyncStatus = updateSyncStatus;
 })();
 </script>
