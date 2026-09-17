@@ -2596,56 +2596,78 @@ footer.hint {
 
   const importData = (event) => {
     const file = event.target.files[0];
-    if (!file) return;
+    if (!file) {
+      showToast('❌ Nenhum arquivo selecionado', 'error');
+      return;
+    }
 
     const reader = new FileReader();
     reader.onload = (e) => {
       try {
         const data = JSON.parse(e.target.result);
-        if (data.expenses && Array.isArray(data.expenses)) {
-          // Importar despesas
-          state.expenses = data.expenses;
-          saveToStorage();
+        console.log('[IMPORT] Iniciando importação:', data);
 
-          // Importar configurações se existirem
-          if (data.contasFixas) {
-            localStorage.setItem('fluxo_contas', JSON.stringify(data.contasFixas));
-            console.log('✓ Contas fixas importadas:', Object.keys(data.contasFixas).length);
-          }
+        if (!data.expenses || !Array.isArray(data.expenses)) {
+          showToast('❌ Arquivo inválido (sem array de despesas)', 'error');
+          return;
+        }
 
-          if (data.summaryConfig) {
-            localStorage.setItem('fluxo_summary_config', JSON.stringify(data.summaryConfig));
-            console.log('✓ Vale alimentação importado');
-          }
+        // Importar despesas
+        state.expenses = data.expenses || [];
+        saveToStorage();
+        console.log('[IMPORT] ✓ Despesas importadas:', state.expenses.length);
 
-          if (data.rendaConfig) {
-            localStorage.setItem('fluxo_renda_config', JSON.stringify(data.rendaConfig));
-            console.log('✓ Configuração de renda importada');
-          }
+        // Importar contas fixas
+        if (data.contasFixas && typeof data.contasFixas === 'object') {
+          localStorage.setItem('fluxo_contas', JSON.stringify(data.contasFixas));
+          console.log('[IMPORT] ✓ Contas fixas importadas:', Object.keys(data.contasFixas).length);
+        }
 
-          if (data.reembolsos) {
-            localStorage.setItem('fluxo_reembolsos', JSON.stringify(data.reembolsos));
-            console.log('✓ Reembolsos importados');
-          }
+        // Importar configuração de renda
+        if (data.rendaConfig && typeof data.rendaConfig === 'object') {
+          localStorage.setItem('fluxo_renda_config', JSON.stringify(data.rendaConfig));
+          console.log('[IMPORT] ✓ Configuração de renda importada');
+        }
 
-          // Recarregar a página para aplicar todas as mudanças
-          boot();
-          showToast('✅ Dados importados: ' + data.expenses.length + ' despesas + configurações!', 'success');
+        // Importar configuração de vale alimentação
+        if (data.summaryConfig && typeof data.summaryConfig === 'object') {
+          localStorage.setItem('fluxo_summary_config', JSON.stringify(data.summaryConfig));
+          console.log('[IMPORT] ✓ Vale alimentação importado');
+        }
 
-          // Sincronizar com Supabase se configurado
-          if (supabaseConfig.enabled) {
-            setTimeout(() => {
-              syncToSupabase().catch(e => console.log('Sync error:', e));
-            }, 1000);
-          }
-        } else {
-          showToast('❌ Arquivo inválido (sem despesas)', 'error');
+        // Importar reembolsos
+        if (data.reembolsos && typeof data.reembolsos === 'object') {
+          localStorage.setItem('fluxo_reembolsos', JSON.stringify(data.reembolsos));
+          console.log('[IMPORT] ✓ Reembolsos importados');
+        }
+
+        // Recarregar dados do localStorage
+        loadFromStorage();
+
+        // Renderizar interface
+        renderAll();
+        renderCalendar();
+        showToast('✅ Dados importados: ' + (data.expenses.length) + ' despesas!', 'success');
+
+        // Sincronizar com Supabase se configurado
+        if (supabaseConfig.enabled) {
+          console.log('[IMPORT] Sincronizando com Supabase...');
+          setTimeout(() => {
+            syncToSupabase().catch(e => console.log('[IMPORT] Erro ao sincronizar:', e));
+            syncConfigurationsToSupabase().catch(e => console.log('[IMPORT] Erro ao sincronizar configs:', e));
+          }, 500);
         }
       } catch(err) {
-        console.error('Erro ao importar:', err);
-        showToast('❌ Erro ao importar arquivo', 'error');
+        console.error('[IMPORT] Erro ao importar:', err);
+        showToast('❌ Erro ao ler arquivo: ' + err.message, 'error');
       }
     };
+
+    reader.onerror = () => {
+      console.error('[IMPORT] Erro ao ler arquivo');
+      showToast('❌ Erro ao ler arquivo', 'error');
+    };
+
     reader.readAsText(file);
     document.getElementById('importFile').value = '';
   };
