@@ -1824,7 +1824,7 @@ footer.hint {
   let supabaseConfig = {
     url: null,
     key: null,
-    enabled: false  // DESABILITADO: Supabase está criando duplicatas
+    enabled: true  // ✅ HABILITADO - Configure credenciais via modal
   };
 
   function loadSupabaseConfig() {
@@ -2053,12 +2053,7 @@ footer.hint {
   }
 
   async function loadAndMergeFromSupabase() {
-    // SUPABASE TEMPORARIAMENTE DESABILITADO
-    console.log('[SYNC] Supabase desabilitado - merge não executado');
-    return;
-
-    // Código abaixo comentado:
-    /*
+    // Carrega dados do Supabase após sincronização e atualiza a interface
     const cloudExpenses = await loadFromSupabase();
 
     if (!cloudExpenses || cloudExpenses.length === 0) {
@@ -2118,37 +2113,28 @@ footer.hint {
       }
     }
 
-    // Fazer merge: priorizar dados da nuvem (são a fonte da verdade)
+    // MERGE SIMPLIFICADO: usar APENAS IDs para evitar duplicatas
+    // Supabase é a fonte da verdade
     const merged = [];
-    const seenIds = new Set();
-    const seenSignatures = new Set(); // Proteção contra duplicatas sem ID
+    const seenIds = new Map(); // ID -> expense
 
-    // Adicionar todos os dados da nuvem
+    // 1. Adicionar TUDO do Supabase (prioridade)
     cloudMap.forEach((expense, id) => {
       merged.push(expense);
-      seenIds.add(id);
-      // Criar assinatura do registro para detectar duplicatas mesmo sem ID
-      const sig = `${expense.date}|${expense.description}|${expense.valueCents}`;
-      seenSignatures.add(sig);
+      seenIds.set(id, expense);
     });
 
-    // Adicionar dados locais que não estão na nuvem (novos itens ainda não sincronizados)
+    // 2. Adicionar dados locais que NÃO estão no Supabase
     state.expenses.forEach(localExp => {
       if (localExp.id && !seenIds.has(localExp.id)) {
-        // Verificar duplicata por assinatura também
-        const sig = `${localExp.date}|${localExp.description}|${localExp.valueCents}`;
-        if (!seenSignatures.has(sig)) {
-          merged.push(localExp);
-          seenSignatures.add(sig);
-        } else {
-          console.log('[SYNC] ⚠️ Duplicata detectada e evitada:', localExp.description);
-        }
+        merged.push(localExp);
+        seenIds.set(localExp.id, localExp);
       }
     });
 
-    // Atualizar state.expenses com dados mesclados (e remover duplicatas)
-    state.expenses = removeDuplicates(merged);
-    console.log('[SYNC] Depois da merge: state.expenses tem', state.expenses.length, 'registros (deduplicação ativa)');
+    // Atualizar estado com merge (sem deduplicação complexa - ID é único!)
+    state.expenses = merged;
+    console.log('[SYNC] Depois da merge (ID-based): state.expenses tem', state.expenses.length, 'registros');
 
     // Salvar dados merged no localStorage
     saveToStorage();
@@ -2157,16 +2143,10 @@ footer.hint {
     renderAll();
 
     console.log('✓ Dados sincronizados e mesclados com sucesso');
-    */
   }
 
   async function loadInitialDataFromSupabase() {
-    // SUPABASE TEMPORARIAMENTE DESABILITADO - Usar dados locais apenas
-    console.log('[SYNC] Supabase desabilitado, usando dados locais');
-    return false;
-
-    // Código abaixo comentado por enquanto:
-    /*
+    // Carregar dados iniciais do Supabase na inicialização do app
     if (!supabaseConfig.enabled || !supabaseConfig.url || !supabaseConfig.key) {
       console.log('[SYNC] Supabase não configurado, usando dados locais');
       return false;
@@ -2231,46 +2211,37 @@ footer.hint {
         }
       }
 
-      // Se tem dados locais, fazer merge
+      // Se tem dados locais, fazer merge simplificado (ID-based)
       if (state.expenses.length > 0) {
         const merged = [];
         const seenIds = new Set();
-        const seenSignatures = new Set(); // Proteção contra duplicatas
 
         // Dados da nuvem têm prioridade (são mais recentes)
         cloudMap.forEach((expense, id) => {
           merged.push(expense);
           seenIds.add(id);
-          // Criar assinatura para detectar duplicatas
-          const sig = `${expense.date}|${expense.description}|${expense.valueCents}`;
-          seenSignatures.add(sig);
         });
 
         // Adicionar dados locais não sincronizados
         state.expenses.forEach(localExp => {
           if (localExp.id && !seenIds.has(localExp.id)) {
-            // Verificar duplicata por assinatura também
-            const sig = `${localExp.date}|${localExp.description}|${localExp.valueCents}`;
-            if (!seenSignatures.has(sig)) {
-              merged.push(localExp);
-              seenSignatures.add(sig);
-            }
+            merged.push(localExp);
+            seenIds.add(localExp.id);
           }
         });
 
-        state.expenses = removeDuplicates(merged);
+        state.expenses = merged;
       } else {
         // Nenhum dado local, usar dados da nuvem
-        state.expenses = removeDuplicates(Array.from(cloudMap.values()));
+        state.expenses = Array.from(cloudMap.values());
       }
 
-      console.log('[SYNC] ✓ Inicializado com', state.expenses.length, 'registros (após deduplicação)');
+      console.log('[SYNC] ✓ Inicializado com', state.expenses.length, 'registros (merge ID-based)');
       return true;
     } catch (e) {
       console.error('[SYNC] Erro ao carregar dados iniciais:', e);
       return false;
     }
-    */
   }
 
   // Polling de sincronização em background
@@ -2867,10 +2838,8 @@ footer.hint {
         // Se tem dados salvos, usa eles (respeita as alterações do usuário)
         const parsed = JSON.parse(stored);
         if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].id) {
-          // REMOVER DUPLICATAS ao carregar
-          state.expenses = removeDuplicates(parsed);
-          // Salvar dados limpos de volta no localStorage
-          saveToStorage();
+          // Carregar dados sem processamento extra (merge ID-based depois)
+          state.expenses = parsed;
         } else {
           // Se localStorage está vazio ou inválido, carrega os padrão
           loadDefaultExpenses();
