@@ -6748,6 +6748,8 @@ footer.hint {
 
     // Carregar configuração do Supabase e tentar buscar dados da nuvem
     loadSupabaseConfig();
+    console.log('[BOOT] Config loaded:', { enabled: supabaseConfig.enabled, hasUrl: !!supabaseConfig.url, hasKey: !!supabaseConfig.key });
+
     if (supabaseConfig.enabled) {
       console.log('[SYNC] Carregando dados do Supabase na inicialização...');
       await loadInitialDataFromSupabase();
@@ -6755,12 +6757,17 @@ footer.hint {
       // IMPORTANTE: Forçar sync de dados locais para Supabase ao inicializar
       // Isso garante que dados restaurados sejam enviados para a nuvem
       if (state.expenses && state.expenses.length > 0) {
-        console.log('[SYNC] Iniciando sincronização de upload ao boot...');
-        await syncToSupabase().catch(e => console.log('[SYNC] Upload ao boot falhou:', e));
+        console.log('[SYNC] Iniciando sincronização de upload ao boot... Total:', state.expenses.length);
+        const syncResult = await syncToSupabase().catch(e => { console.log('[SYNC] Upload ao boot falhou:', e); return false; });
+        console.log('[SYNC] Resultado do upload:', syncResult);
+      } else {
+        console.log('[SYNC] Nenhuma despesa para sincronizar no boot');
       }
 
       // Iniciar polling de background para detectar mudanças de outros dispositivos
       startSyncPolling();
+    } else {
+      console.log('[BOOT] ⚠️ Supabase NÃO está habilitado. Verifique Configurações > Supabase');
     }
 
     el.dateInput.value = formatDateToDMY(todayISO());
