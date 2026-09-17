@@ -3564,7 +3564,7 @@ footer.hint {
 
     <div class="modal-buttons">
       <button type="button" class="modal-btn modal-btn-secondary" onclick="document.getElementById('supabaseModal').classList.remove('show')">Cancelar</button>
-      <button type="button" class="modal-btn modal-btn-primary" onclick="saveSupabaseConfigViaModal()">Salvar e Conectar</button>
+      <button type="button" class="modal-btn modal-btn-primary" onclick="(async () => { const url = document.getElementById('supabaseUrl').value; const key = document.getElementById('supabaseKey').value; if(!url || !key) { alert('Preencha URL e Chave'); return; } saveSupabaseConfig(url, key); document.getElementById('supabaseModal').classList.remove('show'); })()">Salvar e Conectar</button>
     </div>
   </div>
 
