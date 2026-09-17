@@ -2,27 +2,27 @@
   "name": "Fluxo Financeiro",
   "short_name": "Fluxo",
   "description": "Aplicação de rastreamento financeiro com calendário, contas fixas e despesas variáveis",
-  "start_url": "/",
+  "start_url": "./",
   "display": "standalone",
   "background_color": "#F5F3EC",
   "theme_color": "#1e40af",
   "orientation": "portrait-primary",
-  "scope": "/",
+  "scope": "./",
   "icons": [
     {
-      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%231e40af' width='192' height='192'/><text x='50%' y='50%' font-size='100' font-weight='bold' fill='white' text-anchor='middle' dominant-baseline='middle'>💰</text></svg>",
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><defs><linearGradient id='bgGradient' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' style='stop-color:%231e40af;stop-opacity:1' /><stop offset='100%' style='stop-color:%230891b2;stop-opacity:1' /></linearGradient></defs><rect width='192' height='192' fill='url(%23bgGradient)'/><circle cx='96' cy='96' r='60' fill='none' stroke='%236db3d9' stroke-width='4'/><circle cx='96' cy='96' r='55' fill='rgba(255,255,255,0.05)'/><text x='96' y='115' font-family='Fraunces, serif' font-size='70' font-weight='700' fill='white' text-anchor='middle' dominant-baseline='middle'>CI</text><g transform='translate(138, 48)'><circle cx='0' cy='0' r='18' fill='%234a90e2' stroke='%237ba8e8' stroke-width='2'/><circle cx='0' cy='0' r='12' fill='%236db3d9'/><text x='0' y='4' font-family='Arial' font-size='16' font-weight='bold' fill='white' text-anchor='middle'>$</text></g></svg>",
       "sizes": "192x192",
       "type": "image/svg+xml",
       "purpose": "any"
     },
     {
-      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect fill='%231e40af' width='512' height='512'/><text x='50%' y='50%' font-size='300' font-weight='bold' fill='white' text-anchor='middle' dominant-baseline='middle'>💰</text></svg>",
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><defs><linearGradient id='bgGradient' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' style='stop-color:%231e40af;stop-opacity:1' /><stop offset='100%' style='stop-color:%230891b2;stop-opacity:1' /></linearGradient></defs><rect width='512' height='512' fill='url(%23bgGradient)'/><circle cx='256' cy='256' r='150' fill='none' stroke='%236db3d9' stroke-width='8'/><circle cx='256' cy='256' r='140' fill='rgba(255,255,255,0.05)'/><text x='256' y='300' font-family='Fraunces, serif' font-size='180' font-weight='700' fill='white' text-anchor='middle' dominant-baseline='middle'>CI</text><g transform='translate(380, 130)'><circle cx='0' cy='0' r='50' fill='%234a90e2' stroke='%237ba8e8' stroke-width='4'/><circle cx='0' cy='0' r='35' fill='%236db3d9'/><text x='0' y='12' font-family='Arial' font-size='50' font-weight='bold' fill='white' text-anchor='middle'>$</text></g></svg>",
       "sizes": "512x512",
       "type": "image/svg+xml",
       "purpose": "any"
     },
     {
-      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%231e40af' width='192' height='192' rx='45'/><text x='50%' y='50%' font-size='100' font-weight='bold' fill='white' text-anchor='middle' dominant-baseline='middle'>💰</text></svg>",
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><defs><linearGradient id='bgGradient' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' style='stop-color:%231e40af;stop-opacity:1' /><stop offset='100%' style='stop-color:%230891b2;stop-opacity:1' /></linearGradient></defs><rect width='192' height='192' rx='45' fill='url(%23bgGradient)'/><circle cx='96' cy='96' r='60' fill='none' stroke='%236db3d9' stroke-width='4'/><circle cx='96' cy='96' r='55' fill='rgba(255,255,255,0.05)'/><text x='96' y='115' font-family='Fraunces, serif' font-size='70' font-weight='700' fill='white' text-anchor='middle' dominant-baseline='middle'>CI</text><g transform='translate(138, 48)'><circle cx='0' cy='0' r='18' fill='%234a90e2' stroke='%237ba8e8' stroke-width='2'/><circle cx='0' cy='0' r='12' fill='%236db3d9'/><text x='0' y='4' font-family='Arial' font-size='16' font-weight='bold' fill='white' text-anchor='middle'>$</text></g></svg>",
       "sizes": "192x192",
       "type": "image/svg+xml",
       "purpose": "maskable"
@@ -31,7 +31,7 @@
   "categories": ["finance", "productivity"],
   "screenshots": [
     {
-      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 540 720'><rect fill='%23F5F3EC' width='540' height='720'/><rect fill='%231e40af' width='540' height='100'/><text x='270' y='50' font-size='32' font-weight='bold' fill='white' text-anchor='middle' dominant-baseline='middle'>Fluxo Financeiro</text></svg>",
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 540 720'><rect fill='%23F5F3EC' width='540' height='720'/><rect fill='%231e40af' width='540' height='100'/><text x='270' y='50' font-size='32' font-weight='bold' fill='white' text-anchor='middle' dominant-baseline='middle'>Fluxo Financeiro</text><rect y='110' width='540' height='140' fill='%23FFFFFF' stroke='%23E0E0E0' stroke-width='1'/><text x='20' y='145' font-size='18' font-weight='600' fill='%231E2019'>📊 Resumo do Mês</text><text x='20' y='180' font-size='28' font-weight='700' fill='%231e40af'>R$ 4.250,30</text><text x='20' y='215' font-size='14' fill='%23686A5E'>Total de despesas</text><rect y='270' width='540' height='180' fill='%23FFFFFF' stroke='%23E0E0E0' stroke-width='1'/><text x='20' y='295' font-size='18' font-weight='600' fill='%231E2019'>💳 Contas Fixas</text><line x1='20' y1='310' x2='520' y2='310' stroke='%23E0E0E0' stroke-width='1'/><text x='20' y='335' font-size='16' fill='%231E2019'>Aluguel</text><text x='480' y='335' font-size='16' font-weight='600' fill='%231e40af' text-anchor='end'>R$ 1.500</text><line x1='20' y1='350' x2='520' y2='350' stroke='%23E0E0E0' stroke-width='1'/><text x='20' y='375' font-size='16' fill='%231E2019'>Água/Luz</text><text x='480' y='375' font-size='16' font-weight='600' fill='%231e40af' text-anchor='end'>R$ 380</text><line x1='20' y1='390' x2='520' y2='390' stroke='%23E0E0E0' stroke-width='1'/><text x='20' y='415' font-size='16' fill='%231E2019'>Internet</text><text x='480' y='415' font-size='16' font-weight='600' fill='%231e40af' text-anchor='end'>R$ 120</text><rect y='480' width='540' height='180' fill='%23FFFFFF' stroke='%23E0E0E0' stroke-width='1'/><text x='20' y='505' font-size='18' font-weight='600' fill='%231E2019'>💸 Últimas Despesas</text><line x1='20' y1='520' x2='520' y2='520' stroke='%23E0E0E0' stroke-width='1'/><text x='20' y='545' font-size='16' fill='%231E2019'>Supermercado</text><text x='480' y='545' font-size='16' font-weight='600' fill='%23dc2626' text-anchor='end'>-R$ 185,50</text><text x='20' y='565' font-size='12' fill='%23A9AA9C'>Hoje</text><line x1='20' y1='575' x2='520' y2='575' stroke='%23E0E0E0' stroke-width='1'/><text x='20' y='600' font-size='16' fill='%231E2019'>Farmácia</text><text x='480' y='600' font-size='16' font-weight='600' fill='%23dc2626' text-anchor='end'>-R$ 45,00</text><text x='20' y='620' font-size='12' fill='%23A9AA9C'>Ontem</text></svg>",
       "sizes": "540x720",
       "type": "image/svg+xml",
       "form_factor": "narrow"
@@ -42,14 +42,51 @@
       "name": "Adicionar Gasto",
       "short_name": "Novo Gasto",
       "description": "Adicionar um novo gasto rápidamente",
-      "url": "/?tab=despesas",
+      "url": "./index.html?tab=despesas",
       "icons": [
         {
-          "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'><rect fill='%23dc2626' width='96' height='96' rx='22'/><text x='48' y='48' font-size='60' text-anchor='middle' dominant-baseline='middle'>➕</text></svg>",
+          "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'><rect fill='%23dc2626' width='96' height='96' rx='22'/><text x='48' y='52' font-size='60' text-anchor='middle' dominant-baseline='middle'>➕</text></svg>",
+          "sizes": "96x96",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "Contas Fixas",
+      "short_name": "Contas",
+      "description": "Gerenciar contas fixas",
+      "url": "./index.html?tab=contas",
+      "icons": [
+        {
+          "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'><rect fill='%233b82f6' width='96' height='96' rx='22'/><text x='48' y='52' font-size='60' text-anchor='middle' dominant-baseline='middle'>💳</text></svg>",
+          "sizes": "96x96",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "Configurações",
+      "short_name": "Config",
+      "description": "Acessar configurações",
+      "url": "./index.html?tab=config",
+      "icons": [
+        {
+          "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'><rect fill='%238b5cf6' width='96' height='96' rx='22'/><text x='48' y='52' font-size='60' text-anchor='middle' dominant-baseline='middle'>⚙️</text></svg>",
           "sizes": "96x96",
           "type": "image/svg+xml"
         }
       ]
     }
-  ]
+  ],
+  "share_target": {
+    "action": "/share",
+    "method": "POST",
+    "enctype": "application/x-www-form-urlencoded",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  },
+  "prefer_related_applications": false
 }
