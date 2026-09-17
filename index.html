@@ -1682,6 +1682,11 @@ footer.hint {
         <label style="display: block; font-size: 12px; color: var(--ink-soft); text-transform: uppercase; font-weight: 600; margin-bottom: 6px;">Novo Valor</label>
         <input id="editarContaValorInput" type="text" placeholder="0,00" style="width: 100%; padding: 10px 12px; border: 1.5px solid var(--line); border-radius: 8px; font-size: 14px; font-family: 'IBM Plex Mono'; outline: none; color: var(--ink);">
       </div>
+      <div>
+        <label style="display: block; font-size: 12px; color: var(--ink-soft); text-transform: uppercase; font-weight: 600; margin-bottom: 6px;">Data de Vencimento</label>
+        <input id="editarContaDiaInput" type="text" placeholder="ex: 10 ou quinto_util" style="width: 100%; padding: 10px 12px; border: 1.5px solid var(--line); border-radius: 8px; font-size: 14px; font-family: inherit; outline: none; color: var(--ink);">
+        <small style="color: var(--ink-soft); display: block; margin-top: 4px;">Digite número (1-31) ou "quinto_util"</small>
+      </div>
       <button type="submit" style="background: var(--accent); color: var(--accent-ink); border: none; padding: 12px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 8px;">
         Salvar
       </button>
@@ -2573,14 +2578,46 @@ footer.hint {
       try {
         const data = JSON.parse(e.target.result);
         if (data.expenses && Array.isArray(data.expenses)) {
+          // Importar despesas
           state.expenses = data.expenses;
           saveToStorage();
+
+          // Importar configurações se existirem
+          if (data.contasFixas) {
+            localStorage.setItem('fluxo_contas', JSON.stringify(data.contasFixas));
+            console.log('✓ Contas fixas importadas:', Object.keys(data.contasFixas).length);
+          }
+
+          if (data.summaryConfig) {
+            localStorage.setItem('fluxo_summary_config', JSON.stringify(data.summaryConfig));
+            console.log('✓ Vale alimentação importado');
+          }
+
+          if (data.rendaConfig) {
+            localStorage.setItem('fluxo_renda_config', JSON.stringify(data.rendaConfig));
+            console.log('✓ Configuração de renda importada');
+          }
+
+          if (data.reembolsos) {
+            localStorage.setItem('fluxo_reembolsos', JSON.stringify(data.reembolsos));
+            console.log('✓ Reembolsos importados');
+          }
+
+          // Recarregar a página para aplicar todas as mudanças
           boot();
-          showToast('✅ Dados importados com sucesso!', 'success');
+          showToast('✅ Dados importados: ' + data.expenses.length + ' despesas + configurações!', 'success');
+
+          // Sincronizar com Supabase se configurado
+          if (supabaseConfig.enabled) {
+            setTimeout(() => {
+              syncToSupabase().catch(e => console.log('Sync error:', e));
+            }, 1000);
+          }
         } else {
-          showToast('❌ Arquivo inválido', 'error');
+          showToast('❌ Arquivo inválido (sem despesas)', 'error');
         }
       } catch(err) {
+        console.error('Erro ao importar:', err);
         showToast('❌ Erro ao importar arquivo', 'error');
       }
     };
@@ -4748,6 +4785,7 @@ footer.hint {
     contaEmEdicao = contaId;
     document.getElementById('editarContaNome').textContent = 'Editar ' + conta.nome;
     document.getElementById('editarContaValorInput').value = conta.valor.toFixed(2).replace('.', ',');
+    document.getElementById('editarContaDiaInput').value = conta.dia.toString();
     document.getElementById('editarContaValorInput').focus();
     openModal('modalEditarContaFixa');
   };
@@ -4775,12 +4813,26 @@ footer.hint {
     ev.preventDefault();
     if (!contaEmEdicao) return;
 
-    const input = document.getElementById('editarContaValorInput');
-    const valor = parseFloat(input.value.replace(',', '.'));
+    const valorInput = document.getElementById('editarContaValorInput');
+    const diaInput = document.getElementById('editarContaDiaInput');
+    const valor = parseFloat(valorInput.value.replace(',', '.'));
+    const diaStr = diaInput.value.trim();
 
     if (isNaN(valor) || valor < 0) {
       alert('Por favor, digite um valor válido');
       return;
+    }
+
+    // Validar dia
+    let dia = null;
+    if (diaStr === 'quinto_util') {
+      dia = 'quinto_util';
+    } else {
+      dia = parseInt(diaStr);
+      if (isNaN(dia) || dia < 1 || dia > 31) {
+        alert('Por favor, digite um dia válido (1-31) ou "quinto_util"');
+        return;
+      }
     }
 
     const conta = contasFixas[contaEmEdicao];
@@ -4789,8 +4841,9 @@ footer.hint {
     if (contasVariaveis.includes(contaEmEdicao)) {
       setValorContaMes(contaEmEdicao, state.viewYear, state.viewMonth, valor);
     } else {
-      // Se é conta fixa, salva normalmente
+      // Se é conta fixa, salva valor E dia
       conta.valor = valor;
+      conta.dia = dia;
       saveContasFixas(contasFixas);
     }
 
@@ -4801,9 +4854,14 @@ footer.hint {
     }
 
     closeModal('modalEditarContaFixa');
-    alert('Valor atualizado com sucesso!');
+    alert('Conta atualizada com sucesso! (Valor e vencimento)');
     contaEmEdicao = null;
     renderAll();
+
+    // Sincronizar mudanças
+    if (supabaseConfig.enabled) {
+      syncConfigurationsToSupabase().catch(e => console.log('Sync error:', e));
+    }
   });
 
   const renderContasFixasModal = () => {
