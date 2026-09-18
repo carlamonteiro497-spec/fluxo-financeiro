@@ -1832,6 +1832,8 @@ footer.hint {
     if (saved) {
       try {
         supabaseConfig = JSON.parse(saved);
+        // ❌ FORCE DISABLED - Sempre manter Supabase desabilitado
+        supabaseConfig.enabled = false;
         return supabaseConfig.url && supabaseConfig.key;
       } catch (e) {
         return false;
@@ -1841,7 +1843,7 @@ footer.hint {
   }
 
   function saveSupabaseConfig(url, key) {
-    supabaseConfig = { url, key, enabled: true };
+    supabaseConfig = { url, key, enabled: false };  // ❌ DESABILITADO
     localStorage.setItem('supabase_config', JSON.stringify(supabaseConfig));
   }
 
