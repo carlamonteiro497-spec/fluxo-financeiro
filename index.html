@@ -1822,7 +1822,7 @@ footer.hint {
   let supabaseConfig = {
     url: null,
     key: null,
-    enabled: false  // ❌ DESABILITADO - Sincronização manual apenas
+    enabled: true  // ✅ HABILITADO - Conectar ao Supabase
   };
 
   function loadSupabaseConfig() {
@@ -1830,8 +1830,6 @@ footer.hint {
     if (saved) {
       try {
         supabaseConfig = JSON.parse(saved);
-        // ❌ FORCE DISABLED - Sempre manter Supabase desabilitado
-        supabaseConfig.enabled = false;
         return supabaseConfig.url && supabaseConfig.key;
       } catch (e) {
         return false;
@@ -1841,7 +1839,7 @@ footer.hint {
   }
 
   function saveSupabaseConfig(url, key) {
-    supabaseConfig = { url, key, enabled: false };  // ❌ DESABILITADO
+    supabaseConfig = { url, key, enabled: true };  // ✅ HABILITADO
     localStorage.setItem('supabase_config', JSON.stringify(supabaseConfig));
   }
 
@@ -2684,7 +2682,7 @@ footer.hint {
   const STORAGE_KEY = 'passou_anotou_expenses';
   const VERSION_KEY = 'passou_anotou_version';
   const CONTAS_VERSION_KEY = 'passou_anotou_contas_version';
-  const CURRENT_VERSION = '5.5'; // Incrementa quando defaultExpenses muda (5.5: Dados corrigidos com 83 registros + Supabase desabilitado)
+  const CURRENT_VERSION = '5.4'; // Incrementa quando defaultExpenses muda
 
   const saveToStorage = () => {
     try {
