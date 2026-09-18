@@ -5377,47 +5377,10 @@ footer.hint {
     if (container) container.classList.remove('show');
   };
 
-  // Configuração Firebase
-  const firebaseConfig = {
-    apiKey: "AIzaSyABpWSJh2P_SASAdQxJz2XD5IStjrwx2SQ",
-    authDomain: "fluxo-financeiro-ee3a3.firebaseapp.com",
-    projectId: "fluxo-financeiro-ee3a3",
-    storageBucket: "fluxo-financeiro-ee3a3.firebasestorage.app",
-    messagingSenderId: "255340364435",
-    appId: "1:255340364435:web:10f8093626c3315021c366"
-  };
-
   // Registrar Service Worker para PWA
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/service-worker.js').then(registration => {
-      // Após o service worker estar registrado, configurar Firebase Messaging
-      if ('firebase' in window && firebase.messaging) {
-        try {
-          const messaging = firebase.messaging();
-
-          // Pedir permissão para notificações
-          Notification.requestPermission().then(permission => {
-            if (permission === 'granted') {
-              // Registrar para receber mensagens quando o app está em primeiro plano
-              messaging.onMessage(payload => {
-                const notificationTitle = payload.notification.title;
-                const notificationOptions = {
-                  body: payload.notification.body,
-                  icon: '💰',
-                  badge: '💰',
-                  tag: 'fluxo-notificacao'
-                };
-
-                registration.showNotification(notificationTitle, notificationOptions);
-              });
-            }
-          });
-        } catch (error) {
-          // Erro ao configurar Firebase Messaging
-        }
-      }
-    }).catch(error => {
-      // Erro ao registrar Service Worker
+    navigator.serviceWorker.register('/service-worker.js').catch(error => {
+      // Erro ao registrar Service Worker - sem Firebase necessário
     });
   }
 
