@@ -1262,9 +1262,7 @@ footer.hint {
 </style>
 
 <!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js"></script>
-<script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js"></script>
+<!-- Firebase removido - usando apenas localStorage -->
 </head>
 <body>
 
@@ -2686,7 +2684,7 @@ footer.hint {
   const STORAGE_KEY = 'passou_anotou_expenses';
   const VERSION_KEY = 'passou_anotou_version';
   const CONTAS_VERSION_KEY = 'passou_anotou_contas_version';
-  const CURRENT_VERSION = '5.4'; // Incrementa quando defaultExpenses muda (5.4: Alertas visuais de vencimentos - hoje e amanhã)
+  const CURRENT_VERSION = '5.5'; // Incrementa quando defaultExpenses muda (5.5: Dados corrigidos com 83 registros + Supabase desabilitado)
 
   const saveToStorage = () => {
     try {
@@ -2926,9 +2924,9 @@ footer.hint {
       }
     });
 
-    // Total geral (apenas do mês atual) - usar monthOccurrences
+    // Total geral (apenas do mês atual) - usar monthOccurrencesByVencimento
     let totalGeral = 0;
-    const occurrencesThisMonth = monthOccurrences();
+    const occurrencesThisMonth = monthOccurrencesByVencimento();
     occurrencesThisMonth.forEach(occ => {
       const cartao = occ.cartao || 'cartao_santander';
       if (cartao !== 'cartao_santander' && cartao !== 'contas_fixas') {
@@ -2968,6 +2966,25 @@ footer.hint {
       // IMPORTANT: Use purchaseDate for monthly filtering (not dataVencimento)
       // This ensures expenses appear in the month they were purchased, not when they're due
       const displayDate = (o.purchaseDate || o.date || '');
+      return displayDate.slice(0, 7) === key && cartao === 'cartao_santander';
+    });
+  };
+
+  // Filtra por DATA DE VENCIMENTO (para calcular totais dos cartões)
+  const monthOccurrencesByVencimento = () => {
+    const key = monthKey(state.viewYear, state.viewMonth);
+    return allOccurrences().filter(o => {
+      const displayDate = (o.dataVencimento || o.date || '');
+      return displayDate.slice(0, 7) === key;
+    });
+  };
+
+  // Filtra apenas Santander por DATA DE VENCIMENTO
+  const monthOccurrencesSantanderByVencimento = () => {
+    const key = monthKey(state.viewYear, state.viewMonth);
+    return allOccurrences().filter(o => {
+      const cartao = o.cartao || 'cartao_santander';
+      const displayDate = (o.dataVencimento || o.date || '');
       return displayDate.slice(0, 7) === key && cartao === 'cartao_santander';
     });
   };
@@ -3476,8 +3493,9 @@ footer.hint {
   };
 
   const renderSummary = () => {
-    // Summary sempre mostra apenas despesas do Cartão Santander (não é afetado pelo activeTab)
-    const list = monthOccurrencesSantander();
+    // Summary mostra despesas por DATA DE VENCIMENTO (não purchaseDate)
+    // Isso mostra o que vai vencer naquele mês, não o que foi comprado
+    const list = monthOccurrencesSantanderByVencimento();
     let total = 0;
     list.forEach(o => total += o.valueCents);
     el.summaryTotal.textContent = formatCentsBRL(total);
@@ -3488,9 +3506,9 @@ footer.hint {
     el.cartaoTotal.textContent = formatCentsBRL(total);
     el.summaryCartao.textContent = '-' + formatCentsBRL(total);
 
-    // Calcular total de Demais Cartões apenas do mês atual
+    // Calcular total de Demais Cartões por DATA DE VENCIMENTO
     let totalDemaisCartoes = 0;
-    const occurrencesThisMonth = monthOccurrences();
+    const occurrencesThisMonth = monthOccurrencesByVencimento();
     occurrencesThisMonth.forEach(occ => {
       const cartao = occ.cartao || 'cartao_santander';
       if (cartao !== 'cartao_santander' && cartao !== 'contas_fixas') {
@@ -5440,22 +5458,9 @@ footer.hint {
 </script>
 
 <!-- Firebase App (modular version) -->
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js"></script>
+<!-- Firebase Messaging removido -->
 
-<script>
-  // Inicializar Firebase
-  if (typeof firebase !== 'undefined') {
-    firebase.initializeApp({
-      apiKey: "AIzaSyABpWSJh2P_SASAdQxJz2XD5IStjrwx2SQ",
-      authDomain: "fluxo-financeiro-ee3a3.firebaseapp.com",
-      projectId: "fluxo-financeiro-ee3a3",
-      storageBucket: "fluxo-financeiro-ee3a3.firebasestorage.app",
-      messagingSenderId: "255340364435",
-      appId: "1:255340364435:web:10f8093626c3315021c366"
-    });
-  }
-</script>
+<!-- Firebase inicialização removida - usando apenas localStorage -->
 
 </body>
 </html>
