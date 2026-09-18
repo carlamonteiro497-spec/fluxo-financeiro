@@ -2776,12 +2776,14 @@ footer.hint {
 
   const loadDefaultExpenses = () => {
     state.expenses = defaultExpenses.map((e, i) => ({
-      id: 'exp_' + i,
+      id: e.id || 'exp_' + i,
       date: e.date,
       description: e.description,
       valueCents: e.valueCents,
-      installments: e.installments,
-      createdAt: new Date(e.date + 'T10:00:00Z').toISOString()
+      installments: e.installments || 1,
+      cartao: e.cartao || 'cartao_santander',
+      dataVencimento: e.dataVencimento || e.date,
+      createdAt: e.createdAt || new Date(e.date + 'T10:00:00Z').toISOString()
     }));
     saveToStorage();
   };
