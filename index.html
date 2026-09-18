@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Fluxo">
-<link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCA0MDAgNDAwJz4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0nYmdHcmFkaWVudCcgeDE9JzAlJyB5MT0nMCUnIHgyPScxMDAlJyB5Mj0nMTAwJSc+CiAgICAgIDxzdG9wIG9mZnNldD0nMCUnIHN0eWxlPSdzdG9wLWNvbG9yOiMxZTQwYWY7c3RvcC1vcGFjaXR5OjEnIC8+CiAgICAgIDxzdG9wIG9mZnNldD0nMTAwJScgc3R5bGU9J3N0b3AtY29sb3I6IzA4OTFiMjtzdG9wLW9wYWNpdHk6MScgLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgPC9kZWZzPgogIDxyZWN0IHdpZHRoPSc0MDAnIGhlaWdodD0nNDAwJyBmaWxsPSd1cmwoI2JnR3JhZGllbnQpJy8+CiAgCiAgPCEtLSBNYWluIGNpcmNsZSB3aXRoIGJvcmRlciAtLT4KICA8Y2lyY2xlIGN4PScyMDAnIGN5PScyMDAnIHI9JzE1MCcgZmlsbD0nbm9uZScgc3Ryb2tlPScjNmRiM2Q5JyBzdHJva2Utd2lkdGg9JzgnLz4KICAKICA8IS0tIElubmVyIGNpcmNsZSBiYWNrZ3JvdW5kIC0tPgogIDxjaXJjbGUgY3g9JzIwMCcgY3k9JzIwMCcgcj0nMTQwJyBmaWxsPSdyZ2JhKDI1NSwyNTUsMjU1LDAuMDUpJy8+CiAgCiAgPCEtLSBDSSB0ZXh0IC0tPgogIDx0ZXh0IHg9JzIwMCcgeT0nMjMwJyBmb250LWZhbWlseT0nRnJhdW5jZXMsIHNlcmlmJyBmb250LXNpemU9JzE0MCcgZm9udC13ZWlnaHQ9JzcwMCcgZmlsbD0nd2hpdGUnIHRleHQtYW5jaG9yPSdtaWRkbGUnIGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnPkNJPC90ZXh0PgogIAogIDwhLS0gRG9sbGFyIGNvaW4gaW4gdG9wIHJpZ2h0IC0tPgogIDxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDMyMCwgODApJz4KICAgIDxjaXJjbGUgY3g9JzAnIGN5PScwJyByPSczNScgZmlsbD0nIzRhOTBlMicgc3Ryb2tlPScjN2JhOGU4JyBzdHJva2Utd2lkdGg9JzQnLz4KICAgIDxjaXJjbGUgY3g9JzAnIGN5PScwJyByPScyNScgZmlsbD0nIzZkYjNkOScvPgogICAgPHRleHQgeD0nMCcgeT0nOCcgZm9udC1mYW1pbHk9J0FyaWFsJyBmb250LXNpemU9JzMyJyBmb250LXdlaWdodD0nYm9sZCcgZmlsbD0nd2hpdGUnIHRleHQtYW5jaG9yPSdtaWRkbGUnPiQ8L3RleHQ+CiAgPC9nPgo8L3N2Zz4K">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192' width='192' height='192'><defs><linearGradient id='bg' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' stop-color='%231e40af'/><stop offset='100%' stop-color='%230891b2'/></linearGradient></defs><rect width='192' height='192' fill='url(%23bg)'/><text x='96' y='110' font-family='Fraunces,serif' font-size='110' font-weight='700' fill='%23ffffff' text-anchor='middle' dominant-baseline='middle'>CI</text><g transform='translate(155, 37)'><circle cx='0' cy='0' r='20' fill='%234a90e2' opacity='0.9'/><circle cx='0' cy='0' r='18' fill='%236db3d9'/><text x='0' y='7' font-family='Arial' font-size='18' font-weight='bold' fill='white' text-anchor='middle'>$</text></g></svg>">
 <link rel="manifest" href="manifest.json">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -536,6 +536,31 @@ body {
 .entry-info {
   flex: 1;
   min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.entry-logo {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  object-fit: contain;
+  object-position: center;
+  background: var(--paper);
+  padding: 4px;
+  border: 1px solid var(--line);
+}
+
+.entry-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .entry-desc {
@@ -1237,7 +1262,9 @@ footer.hint {
 </style>
 
 <!-- Firebase SDK -->
-<!-- Firebase removed - using localStorage + Supabase REST API -->
+<script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js"></script>
 </head>
 <body>
 
@@ -1291,7 +1318,7 @@ footer.hint {
 
   <!-- RESUMO -->
   <div id="resumo" class="tab-content active">
-    <div id="avisoResumo" style="background: #fef3c7; border: 1px solid #fcd34d; border-radius: 10px; padding: 12px; margin-bottom: 20px; font-size: 13px; color: #92400e; text-align: center;">
+    <div id="avisoResumo" style="display: none; background: #fef3c7; border: 1px solid #fcd34d; border-radius: 10px; padding: 12px; margin-bottom: 20px; font-size: 13px; color: #92400e; text-align: center;">
       ⚡ Gastos deste mês serão pagos no mês seguinte
     </div>
 
@@ -1312,6 +1339,11 @@ footer.hint {
         <div class="flow-value">R$ 565,92</div>
       </div>
 
+      <div class="flow-box income" onclick="openModal('modalReembolsos')" style="border-color: #10b981; background: #f0fdf4;">
+        <div class="flow-label">💰 Reembolsos</div>
+        <div class="flow-value" id="reembolsosTotal" style="color: #10b981;">R$ 0,00</div>
+      </div>
+
       <div class="flow-box expense" onclick="openModal('modalContasFixas')">
         <div class="flow-label">Contas Fixas</div>
         <div class="flow-value" id="contasFixasTotal">R$ 5.736,78</div>
@@ -1322,7 +1354,7 @@ footer.hint {
         <div class="flow-value" id="cartaoTotal">R$ 0,00</div>
       </div>
 
-      <div class="flow-box" onclick="openModal('modalDemaisCartoes')" style="cursor: pointer; border-color: #8b5cf6; background: #faf5ff; grid-column: 1 / -1;">
+      <div class="flow-box" onclick="openModal('modalDemaisCartoes')" style="cursor: pointer; border-color: #8b5cf6; background: #faf5ff;">
         <div class="flow-label">💳 Demais Cartões</div>
         <div class="flow-value" id="demaisCartoesTotal" style="color: #8b5cf6;">R$ 1.174,65</div>
       </div>
@@ -1349,6 +1381,10 @@ footer.hint {
       <div class="summary-row">
         <span>Vale Alimentação (Carla + Iasmim)</span>
         <span class="positive">+R$ 565,92</span>
+      </div>
+      <div class="summary-row">
+        <span>Reembolsos</span>
+        <span class="positive" id="summaryReembolsos">+R$ 0,00</span>
       </div>
       <div class="summary-row">
         <span>Total que entra</span>
@@ -1396,7 +1432,7 @@ footer.hint {
 
   <!-- DESPESAS -->
   <div id="despesas" class="tab-content">
-    <div id="avisoDespesas" style="background: #fef3c7; border: 1px solid #fcd34d; border-radius: 10px; padding: 12px; margin-bottom: 20px; font-size: 13px; color: #92400e; text-align: center;">
+    <div id="avisoDespesas" style="display: none; background: #fef3c7; border: 1px solid #fcd34d; border-radius: 10px; padding: 12px; margin-bottom: 20px; font-size: 13px; color: #92400e; text-align: center;">
       ⚡ Gastos deste mês serão pagos no mês seguinte
     </div>
 
@@ -1422,7 +1458,7 @@ footer.hint {
       <form id="addForm">
         <div class="value-field">
           <span class="currency-prefix">R$</span>
-          <input id="valueInput" inputmode="decimal" type="text" placeholder="0,00" autocomplete="off">
+          <input id="valueInput" inputmode="numeric" placeholder="0,00">
         </div>
         <input id="descInput" class="desc-input" type="text" placeholder="Onde foi?">
         <div class="row-fields">
@@ -1438,6 +1474,10 @@ footer.hint {
             <label>Data</label>
             <input id="dateInput" class="date-input" type="text" placeholder="DD/MM/YYYY">
           </div>
+        </div>
+        <div>
+          <label style="display: block; font-size: 11.5px; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px;">Data de Vencimento</label>
+          <input id="dataVencimentoInput" class="date-input" type="text" placeholder="DD/MM/YYYY">
         </div>
         <button type="submit" class="submit-btn">Registrar gasto</button>
       </form>
@@ -1542,6 +1582,35 @@ footer.hint {
   </div>
 </div>
 
+<!-- MODAL REEMBOLSOS -->
+<div id="modalReembolsos" class="modal-overlay">
+  <div class="modal-content" style="max-width: 450px;">
+    <button class="modal-close" onclick="closeModal('modalReembolsos')">×</button>
+    <div class="modal-header">💰 Reembolsos Recebidos</div>
+
+    <div id="reembolsosListaContainer" style="margin-bottom: 20px; max-height: 200px; overflow-y: auto;">
+      <!-- Lista de reembolsos será preenchida aqui -->
+    </div>
+
+    <div style="border-top: 1px solid var(--line); padding-top: 16px;">
+      <div style="font-size: 13px; font-weight: 600; margin-bottom: 12px; color: var(--ink-soft);">ADICIONAR NOVO REEMBOLSO</div>
+      <form id="novoReembolsoForm" style="display: flex; flex-direction: column; gap: 14px;">
+        <div>
+          <label style="display: block; font-size: 12px; color: var(--ink-soft); text-transform: uppercase; font-weight: 600; margin-bottom: 6px;">Valor (R$) *</label>
+          <input id="reembolsoValor" type="text" placeholder="0,00" style="width: 100%; padding: 10px 12px; border: 1.5px solid var(--line); border-radius: 8px; font-size: 14px; font-family: inherit; outline: none; color: var(--ink);">
+        </div>
+        <div>
+          <label style="display: block; font-size: 12px; color: var(--ink-soft); text-transform: uppercase; font-weight: 600; margin-bottom: 6px;">Descrição (quem devolveu)</label>
+          <input id="reembolsoDescricao" type="text" placeholder="Ex: João (Cartão Sicoob)" style="width: 100%; padding: 10px 12px; border: 1.5px solid var(--line); border-radius: 8px; font-size: 14px; font-family: inherit; outline: none; color: var(--ink);">
+        </div>
+        <button type="submit" style="background: var(--accent); color: var(--accent-ink); border: none; padding: 12px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 8px;">
+          Adicionar Reembolso
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL ADICIONAR CONTA FIXA -->
 <div id="modalNovaContaForm" class="modal-overlay">
   <div class="modal-content" style="max-width: 450px;">
@@ -1581,8 +1650,9 @@ footer.hint {
         <input id="compraDescricao" type="text" placeholder="Ex: Compras no mercado..." style="width: 100%; padding: 10px 12px; border: 1.5px solid var(--line); border-radius: 8px; font-size: 14px; font-family: inherit; outline: none; color: var(--ink);">
       </div>
       <div>
-        <label style="display: block; font-size: 12px; color: var(--ink-soft); text-transform: uppercase; font-weight: 600; margin-bottom: 6px;">Valor (R$)</label>
+        <label style="display: block; font-size: 12px; color: var(--ink-soft); text-transform: uppercase; font-weight: 600; margin-bottom: 6px;">Valor Total (R$) *</label>
         <input id="compraValor" type="text" placeholder="0,00" style="width: 100%; padding: 10px 12px; border: 1.5px solid var(--line); border-radius: 8px; font-size: 14px; font-family: inherit; outline: none; color: var(--ink);">
+        <div style="font-size: 11px; color: var(--ink-faint); margin-top: 4px;">Valor da compra inteira (será dividido pelas parcelas)</div>
       </div>
       <div>
         <label style="display: block; font-size: 12px; color: var(--ink-soft); text-transform: uppercase; font-weight: 600; margin-bottom: 6px;">Data de Compra</label>
@@ -1636,6 +1706,11 @@ footer.hint {
       <div>
         <label style="display: block; font-size: 12px; color: var(--ink-soft); text-transform: uppercase; font-weight: 600; margin-bottom: 6px;">Novo Valor</label>
         <input id="editarContaValorInput" type="text" placeholder="0,00" style="width: 100%; padding: 10px 12px; border: 1.5px solid var(--line); border-radius: 8px; font-size: 14px; font-family: 'IBM Plex Mono'; outline: none; color: var(--ink);">
+      </div>
+      <div>
+        <label style="display: block; font-size: 12px; color: var(--ink-soft); text-transform: uppercase; font-weight: 600; margin-bottom: 6px;">Data de Vencimento</label>
+        <input id="editarContaDiaInput" type="text" placeholder="ex: 10 ou quinto_util" style="width: 100%; padding: 10px 12px; border: 1.5px solid var(--line); border-radius: 8px; font-size: 14px; font-family: inherit; outline: none; color: var(--ink);">
+        <small style="color: var(--ink-soft); display: block; margin-top: 4px;">Digite número (1-31) ou "quinto_util"</small>
       </div>
       <button type="submit" style="background: var(--accent); color: var(--accent-ink); border: none; padding: 12px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 8px;">
         Salvar
@@ -1749,7 +1824,7 @@ footer.hint {
   let supabaseConfig = {
     url: null,
     key: null,
-    enabled: false
+    enabled: true  // ✅ HABILITADO - Configure credenciais via modal
   };
 
   function loadSupabaseConfig() {
@@ -1768,6 +1843,66 @@ footer.hint {
   function saveSupabaseConfig(url, key) {
     supabaseConfig = { url, key, enabled: true };
     localStorage.setItem('supabase_config', JSON.stringify(supabaseConfig));
+  }
+
+  // Sincronizar configurações para Supabase usando uma entrada especial
+  async function syncConfigurationsToSupabase() {
+    if (!supabaseConfig.enabled || !supabaseConfig.url || !supabaseConfig.key) {
+      return false;
+    }
+
+    try {
+      console.log('[SYNC] Sincronizando configurações...');
+
+      // Carregar configurações atuais
+      const contasFixas = loadContasFixas();
+      const summaryConfig = loadSummaryConfig();
+      const rendaConfig = loadRendaConfig();
+
+      // Preparar entrada de configuração como um registro especial
+      const configRecord = {
+        id: 'config_latest',
+        date: new Date().toISOString().split('T')[0],
+        description: '[CONFIG] Configurações de Contas Fixas e Renda',
+        valuecents: 0,
+        installments: 1,
+        createdat: new Date().toISOString(),
+        datavencimento: new Date().toISOString().split('T')[0],
+        cartao: 'config',
+        configdata: JSON.stringify({
+          version: '6.2',
+          contasFixas,
+          summaryConfig,
+          rendaConfig,
+          timestamp: new Date().toISOString()
+        })
+      };
+
+      const response = await fetch(
+        `${supabaseConfig.url}/rest/v1/expenses`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${supabaseConfig.key}`,
+            'apikey': supabaseConfig.key,
+            'Content-Type': 'application/json',
+            'Prefer': 'resolution=merge-duplicates,return=minimal'
+          },
+          body: JSON.stringify([configRecord])
+        }
+      );
+
+      if (response.ok) {
+        console.log('[SYNC] ✓ Configurações sincronizadas');
+        return true;
+      } else {
+        console.warn('[SYNC] Aviso ao sincronizar configurações');
+        return false;
+      }
+    } catch (e) {
+      console.error('[SYNC] Erro ao sincronizar configurações:', e);
+      return false;
+    }
   }
 
   async function syncToSupabase() {
@@ -1795,7 +1930,8 @@ footer.hint {
           description: e.description || 'Sem descrição',
           valuecents: parseInt(e.valueCents || 0),
           installments: parseInt(e.installments || 1),
-          createdat: e.createdAt || now,
+          createdat: e.createdAt || now,  // Usar createdat (é a coluna correta para esta app)
+          datavencimento: e.dataVencimento || e.date || new Date().toISOString().split('T')[0],
           cartao: e.cartao || 'cartao_santander'
         };
       });
@@ -1825,8 +1961,12 @@ footer.hint {
       );
 
       if (response.ok) {
-        console.log('[SYNC] ✓ Dados sincronizados com sucesso');
+        console.log('[SYNC] ✓ Despesas sincronizadas com sucesso');
         updateSyncStatus('success');
+
+        // Sincronizar configurações também
+        await syncConfigurationsToSupabase();
+
         await loadAndMergeFromSupabase();
         return true;
       } else {
@@ -1869,6 +2009,7 @@ footer.hint {
         if (successCount > 0) {
           console.log('[SYNC] ✓ Inseridos', successCount, 'de', dataToSync.length, 'registros');
           updateSyncStatus('success');
+          await syncConfigurationsToSupabase();
           await loadAndMergeFromSupabase();
           return true;
         } else {
@@ -1912,7 +2053,7 @@ footer.hint {
   }
 
   async function loadAndMergeFromSupabase() {
-    // Carrega dados do Supabase após sincronização
+    // Carrega dados do Supabase após sincronização e atualiza a interface
     const cloudExpenses = await loadFromSupabase();
 
     if (!cloudExpenses || cloudExpenses.length === 0) {
@@ -1921,24 +2062,79 @@ footer.hint {
     }
 
     console.log('[SYNC] ✓ Carregados', cloudExpenses.length, 'registros da nuvem');
+    console.log('[SYNC] Antes da merge: state.expenses tem', state.expenses.length, 'registros');
 
-    // Mapear campos do Supabase para o formato local
-    // Importante: O Supabase retorna os nomes das colunas exatamente como estão na tabela
-    const mappedExpenses = cloudExpenses.map(e => ({
-      id: e.id,
-      date: e.date,
-      description: e.description,
-      valueCents: parseInt(e.valuecents || 0),  // Supabase retorna como valuecents (lowercase)
-      installments: parseInt(e.installments || 1),
-      createdAt: e.createdat || e.created_at,  // createdat é a coluna de app, created_at é timestamp do sistema
-      dataVencimento: e.dataVencimento || e.date,
-      cartao: e.cartao || 'cartao_santander'
-    }));
+    // IMPORTANTE: Atualizar state.expenses com dados da nuvem
+    // Fazer merge inteligente baseado em IDs
+    const cloudMap = new Map();
+    let configRecord = null;
 
-    // Atualizar o estado com os dados sincronizados da nuvem
-    // A nuvem é agora a fonte da verdade
-    state.expenses = mappedExpenses;
-    console.log('[SYNC] Estado atualizado com', mappedExpenses.length, 'despesas da nuvem');
+    cloudExpenses.forEach(e => {
+      if (e.id) {
+        // Verificar se é um registro de configuração
+        if (e.id === 'config_latest' && e.cartao === 'config') {
+          try {
+            if (e.configdata) {
+              configRecord = typeof e.configdata === 'string' ? JSON.parse(e.configdata) : e.configdata;
+              console.log('[SYNC] ✓ Configuração carregada da nuvem');
+            }
+          } catch (err) {
+            console.warn('[SYNC] Erro ao parsear configuração:', err);
+          }
+          return; // Pular este registro na lista de despesas
+        }
+
+        cloudMap.set(e.id, {
+          id: e.id,
+          date: e.date || e.data || '',
+          description: e.description || '',
+          valueCents: parseInt(e.valuecents || e.valueCents || 0),
+          installments: parseInt(e.installments || 1),
+          createdAt: e.createdat || e.createdAt || new Date().toISOString(),
+          cartao: e.cartao || 'cartao_santander',
+          dataVencimento: e.datavencimento || e.dataVencimento || e.date || ''
+        });
+      }
+    });
+
+    // Se encontrou configuração na nuvem, restaurar localmente
+    if (configRecord && configRecord.contasFixas) {
+      try {
+        localStorage.setItem('fluxo_contas', JSON.stringify(configRecord.contasFixas));
+        if (configRecord.summaryConfig) {
+          localStorage.setItem('fluxo_summary_config', JSON.stringify(configRecord.summaryConfig));
+        }
+        if (configRecord.rendaConfig) {
+          localStorage.setItem('fluxo_renda_config', JSON.stringify(configRecord.rendaConfig));
+        }
+        console.log('[SYNC] ✓ Configurações restauradas do Supabase');
+      } catch (e) {
+        console.warn('[SYNC] Erro ao restaurar configurações:', e);
+      }
+    }
+
+    // MERGE SIMPLIFICADO: usar APENAS IDs para evitar duplicatas
+    // Supabase é a fonte da verdade
+    const merged = [];
+    const seenIds = new Map(); // ID -> expense
+
+    // 1. Adicionar TUDO do Supabase (prioridade)
+    cloudMap.forEach((expense, id) => {
+      merged.push(expense);
+      seenIds.set(id, expense);
+    });
+
+    // 2. Adicionar dados locais que NÃO estão no Supabase
+    state.expenses.forEach(localExp => {
+      if (localExp.id && !seenIds.has(localExp.id)) {
+        merged.push(localExp);
+        seenIds.set(localExp.id, localExp);
+      }
+    });
+
+    // Atualizar estado com merge (sem deduplicação complexa - ID é único!)
+    state.expenses = merged;
+    console.log('[SYNC] Depois da merge (ID-based): state.expenses tem', state.expenses.length, 'registros');
 
     // Salvar dados merged no localStorage
     saveToStorage();
@@ -1947,6 +2143,146 @@ footer.hint {
     renderAll();
 
     console.log('✓ Dados sincronizados e mesclados com sucesso');
+  }
+
+  async function loadInitialDataFromSupabase() {
+    // Carregar dados iniciais do Supabase na inicialização do app
+    if (!supabaseConfig.enabled || !supabaseConfig.url || !supabaseConfig.key) {
+      console.log('[SYNC] Supabase não configurado, usando dados locais');
+      return false;
+    }
+
+    try {
+      console.log('[SYNC] Carregando dados iniciais do Supabase...');
+      const cloudExpenses = await loadFromSupabase();
+
+      if (!cloudExpenses || cloudExpenses.length === 0) {
+        console.log('[SYNC] Nenhum dado na nuvem, usando dados locais');
+        return false;
+      }
+
+      console.log('[SYNC] ✓ Carregados', cloudExpenses.length, 'registros iniciais');
+
+      // Construir mapa de dados da nuvem
+      const cloudMap = new Map();
+      let configRecord = null;
+
+      cloudExpenses.forEach(e => {
+        if (e.id) {
+          // Verificar se é um registro de configuração
+          if (e.id === 'config_latest' && e.cartao === 'config') {
+            try {
+              if (e.configdata) {
+                configRecord = typeof e.configdata === 'string' ? JSON.parse(e.configdata) : e.configdata;
+                console.log('[SYNC] ✓ Configuração inicial carregada da nuvem');
+              }
+            } catch (err) {
+              console.warn('[SYNC] Erro ao parsear configuração inicial:', err);
+            }
+            return; // Pular este registro na lista de despesas
+          }
+
+          cloudMap.set(e.id, {
+            id: e.id,
+            date: e.date || e.data || '',
+            description: e.description || '',
+            valueCents: parseInt(e.valuecents || e.valueCents || 0),
+            installments: parseInt(e.installments || 1),
+            createdAt: e.createdat || e.createdAt || new Date().toISOString(),
+            cartao: e.cartao || 'cartao_santander',
+            dataVencimento: e.datavencimento || e.dataVencimento || e.date || ''
+          });
+        }
+      });
+
+      // Se encontrou configuração na nuvem, restaurar localmente
+      if (configRecord && configRecord.contasFixas) {
+        try {
+          localStorage.setItem('fluxo_contas', JSON.stringify(configRecord.contasFixas));
+          if (configRecord.summaryConfig) {
+            localStorage.setItem('fluxo_summary_config', JSON.stringify(configRecord.summaryConfig));
+          }
+          if (configRecord.rendaConfig) {
+            localStorage.setItem('fluxo_renda_config', JSON.stringify(configRecord.rendaConfig));
+          }
+          console.log('[SYNC] ✓ Configurações iniciais restauradas do Supabase');
+        } catch (e) {
+          console.warn('[SYNC] Erro ao restaurar configurações iniciais:', e);
+        }
+      }
+
+      // Se tem dados locais, fazer merge simplificado (ID-based)
+      if (state.expenses.length > 0) {
+        const merged = [];
+        const seenIds = new Set();
+
+        // Dados da nuvem têm prioridade (são mais recentes)
+        cloudMap.forEach((expense, id) => {
+          merged.push(expense);
+          seenIds.add(id);
+        });
+
+        // Adicionar dados locais não sincronizados
+        state.expenses.forEach(localExp => {
+          if (localExp.id && !seenIds.has(localExp.id)) {
+            merged.push(localExp);
+            seenIds.add(localExp.id);
+          }
+        });
+
+        state.expenses = merged;
+      } else {
+        // Nenhum dado local, usar dados da nuvem
+        state.expenses = Array.from(cloudMap.values());
+      }
+
+      console.log('[SYNC] ✓ Inicializado com', state.expenses.length, 'registros (merge ID-based)');
+      return true;
+    } catch (e) {
+      console.error('[SYNC] Erro ao carregar dados iniciais:', e);
+      return false;
+    }
+  }
+
+  // Polling de sincronização em background
+  let syncPollTimer = null;
+  function startSyncPolling() {
+    if (!supabaseConfig.enabled) return;
+
+    // Fazer polling a cada 30 segundos para verificar atualizações de outros dispositivos
+    syncPollTimer = setInterval(async () => {
+      try {
+        const cloudExpenses = await loadFromSupabase();
+        if (!cloudExpenses) return;
+
+        // Comparar com dados locais
+        const currentHash = getDataHash();
+        const cloudHash = getHashFromExpenses(cloudExpenses);
+
+        if (currentHash !== cloudHash) {
+          console.log('[SYNC] Detectadas mudanças na nuvem, atualizando...');
+          await loadAndMergeFromSupabase();
+          showToast('📱 Dados sincronizados de outro dispositivo', 'info', 3000);
+        }
+      } catch (e) {
+        console.log('[SYNC] Erro no polling:', e);
+      }
+    }, 30000); // A cada 30 segundos
+  }
+
+  function stopSyncPolling() {
+    if (syncPollTimer) {
+      clearInterval(syncPollTimer);
+      syncPollTimer = null;
+    }
+  }
+
+  function getHashFromExpenses(expenses) {
+    // Criar um hash dos dados para comparação rápida
+    if (!expenses || !Array.isArray(expenses)) return '';
+    const sorted = expenses.sort((a, b) => (a.id || '').localeCompare(b.id || ''));
+    const data = sorted.map(e => `${e.id}:${e.valuecents}:${e.date}`).join('|');
+    return JSON.stringify(data);
   }
 
   function openSupabaseModal() {
@@ -2074,15 +2410,6 @@ footer.hint {
     }
   }
 
-  // Tentar carregar config ao iniciar
-  loadSupabaseConfig();
-
-  // Sincronizar ao carregar a página (se configurado)
-  if (supabaseConfig.enabled) {
-    console.log('Sincronizando dados ao carregar...');
-    loadAndMergeFromSupabase().catch(e => console.log('Sync ao carregar:', e));
-  }
-
   // Sistema inteligente de auto-sync com debounce
   let lastSyncHash = '';
   let syncDebounceTimer = null;
@@ -2133,7 +2460,7 @@ footer.hint {
   const el = {};
   ['summaryTotal', 'summaryCount', 'editingFlag', 'editingText', 'cancelEdit',
     'addForm', 'valueInput', 'descInput', 'instMinus', 'instValue', 'instPlus',
-    'dateInput', 'ledger', 'cartaoTotal', 'disponivel', 'summaryCartao', 'summaryDemaisCartoes'
+    'dateInput', 'dataVencimentoInput', 'ledger', 'cartaoTotal', 'disponivel', 'summaryCartao', 'summaryDemaisCartoes', 'summaryReembolsos'
   ].forEach(id => el[id] = document.getElementById(id));
 
   const pad2 = n => n < 10 ? '0' + n : '' + n;
@@ -2186,43 +2513,170 @@ footer.hint {
   // EXPORT / IMPORT
   const exportData = () => {
     const data = {
-      version: '6.0',
+      version: '6.2',
       exported: new Date().toISOString(),
-      expenses: state.expenses
+      expenses: state.expenses,
+      contasFixas: loadContasFixas(),
+      summaryConfig: loadSummaryConfig(),
+      rendaConfig: loadRendaConfig(),
+      reembolsos: loadReembolsos()
     };
+
+    // Criar CSV com todas as despesas agrupadas por cartão
+    const cartaoNomes = {
+      'cartao_santander': 'Cartão Santander Camila',
+      'cartao_sicoob': 'Sicoob',
+      'cartao_mercado_pago': 'Mercado Pago',
+      'cartao_digio': 'Digio',
+      'contas_fixas': 'Contas Fixas'
+    };
+
+    // Agrupar despesas por cartão
+    const despesasPorCartao = {};
+    state.expenses.forEach(e => {
+      const cartaoType = e.cartao || 'cartao_santander';
+      if (!despesasPorCartao[cartaoType]) despesasPorCartao[cartaoType] = [];
+      despesasPorCartao[cartaoType].push(e);
+    });
+
+    // Criar CSV organizado por cartão
+    let csv = 'FLUXO FINANCEIRO - EXPORTAÇÃO DE DESPESAS\n';
+    csv += 'Exportado em: ' + new Date().toLocaleString('pt-BR') + '\n\n';
+
+    // Adicionar resumo por cartão
+    csv += 'RESUMO POR CARTÃO\n';
+    csv += 'Cartão,Quantidade,Total\n';
+    let totalGeral = 0;
+    Object.entries(despesasPorCartao).forEach(([cartaoType, despesas]) => {
+      const total = despesas.reduce((sum, e) => sum + e.valueCents, 0) / 100;
+      csv += `"${cartaoNomes[cartaoType] || cartaoType}","${despesas.length}","R$ ${total.toFixed(2)}"\n`;
+      totalGeral += total;
+    });
+    csv += `"TOTAL GERAL","${state.expenses.length}","R$ ${totalGeral.toFixed(2)}"\n\n`;
+
+    // Adicionar detalhes de cada despesa
+    csv += 'DETALHES DAS DESPESAS\n';
+    csv += 'Data,Descrição,Valor,Parcelamento,Cartão,Data Vencimento\n';
+
+    Object.entries(despesasPorCartao).forEach(([cartaoType, despesas]) => {
+      csv += `\n# ${cartaoNomes[cartaoType] || cartaoType}\n`;
+      despesas.sort((a, b) => (b.purchaseDate || b.date).localeCompare(a.purchaseDate || a.date));
+
+      despesas.forEach(e => {
+        const data_compra = e.purchaseDate || e.date || '';
+        const data_vencimento = e.dataVencimento || '';
+        const inst = e.installments > 1 ? e.index + '/' + e.installments : '1/1';
+        csv += `"${data_compra}","${e.description}","${(e.valueCents / 100).toFixed(2)}","${inst}","${cartaoNomes[cartaoType] || cartaoType}","${data_vencimento}"\n`;
+      });
+    });
+
+    // Salvar JSON
     const json = JSON.stringify(data, null, 2);
-    const blob = new Blob([json], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'fluxo-financeiro-backup-' + new Date().toISOString().slice(0, 10) + '.json';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    showToast('✅ Dados exportados com sucesso!', 'success');
+    const jsonBlob = new Blob([json], { type: 'application/json' });
+    const jsonUrl = URL.createObjectURL(jsonBlob);
+    const jsonLink = document.createElement('a');
+    jsonLink.href = jsonUrl;
+    jsonLink.download = 'fluxo-financeiro-backup-' + new Date().toISOString().slice(0, 10) + '.json';
+    document.body.appendChild(jsonLink);
+    jsonLink.click();
+    document.body.removeChild(jsonLink);
+    URL.revokeObjectURL(jsonUrl);
+
+    // Salvar CSV
+    const csvBlob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const csvUrl = URL.createObjectURL(csvBlob);
+    const csvLink = document.createElement('a');
+    csvLink.href = csvUrl;
+    csvLink.download = 'fluxo-financeiro-' + new Date().toISOString().slice(0, 10) + '.csv';
+    document.body.appendChild(csvLink);
+    csvLink.click();
+    document.body.removeChild(csvLink);
+    URL.revokeObjectURL(csvUrl);
+
+    console.log('Exportação - Despesas por cartão:', Object.entries(despesasPorCartao).map(([k, v]) => `${cartaoNomes[k]}: ${v.length}`).join(', '));
+    showToast('✅ Dados exportados (JSON + CSV com todos os cartões)!', 'success');
   };
 
   const importData = (event) => {
     const file = event.target.files[0];
-    if (!file) return;
+    if (!file) {
+      showToast('❌ Nenhum arquivo selecionado', 'error');
+      return;
+    }
 
     const reader = new FileReader();
     reader.onload = (e) => {
       try {
         const data = JSON.parse(e.target.result);
-        if (data.expenses && Array.isArray(data.expenses)) {
-          state.expenses = data.expenses;
-          saveToStorage();
-          boot();
-          showToast('✅ Dados importados com sucesso!', 'success');
-        } else {
-          showToast('❌ Arquivo inválido', 'error');
+        console.log('[IMPORT] Iniciando importação:', data);
+
+        if (!data.expenses || !Array.isArray(data.expenses)) {
+          showToast('❌ Arquivo inválido (sem array de despesas)', 'error');
+          return;
+        }
+
+        // Importar despesas - GARANTIR que cada uma tem ID único
+        state.expenses = data.expenses.map(exp => {
+          // Se não tem ID, gerar um novo
+          if (!exp.id) {
+            exp.id = generateUUID();
+          }
+          return exp;
+        }) || [];
+        saveToStorage();
+        console.log('[IMPORT] ✓ Despesas importadas:', state.expenses.length, '(com IDs garantidos)');
+
+        // Importar contas fixas
+        if (data.contasFixas && typeof data.contasFixas === 'object') {
+          localStorage.setItem('fluxo_contas', JSON.stringify(data.contasFixas));
+          console.log('[IMPORT] ✓ Contas fixas importadas:', Object.keys(data.contasFixas).length);
+        }
+
+        // Importar configuração de renda
+        if (data.rendaConfig && typeof data.rendaConfig === 'object') {
+          localStorage.setItem('fluxo_renda_config', JSON.stringify(data.rendaConfig));
+          console.log('[IMPORT] ✓ Configuração de renda importada');
+        }
+
+        // Importar configuração de vale alimentação
+        if (data.summaryConfig && typeof data.summaryConfig === 'object') {
+          localStorage.setItem('fluxo_summary_config', JSON.stringify(data.summaryConfig));
+          console.log('[IMPORT] ✓ Vale alimentação importado');
+        }
+
+        // Importar reembolsos
+        if (data.reembolsos && typeof data.reembolsos === 'object') {
+          localStorage.setItem('fluxo_reembolsos', JSON.stringify(data.reembolsos));
+          console.log('[IMPORT] ✓ Reembolsos importados');
+        }
+
+        // Recarregar dados do localStorage
+        loadFromStorage();
+
+        // Renderizar interface
+        renderAll();
+        renderCalendar();
+        showToast('✅ Dados importados: ' + (data.expenses.length) + ' despesas!', 'success');
+
+        // Sincronizar com Supabase se configurado
+        if (supabaseConfig.enabled) {
+          console.log('[IMPORT] Sincronizando com Supabase...');
+          setTimeout(() => {
+            syncToSupabase().catch(e => console.log('[IMPORT] Erro ao sincronizar:', e));
+            syncConfigurationsToSupabase().catch(e => console.log('[IMPORT] Erro ao sincronizar configs:', e));
+          }, 500);
         }
       } catch(err) {
-        showToast('❌ Erro ao importar arquivo', 'error');
+        console.error('[IMPORT] Erro ao importar:', err);
+        showToast('❌ Erro ao ler arquivo: ' + err.message, 'error');
       }
     };
+
+    reader.onerror = () => {
+      console.error('[IMPORT] Erro ao ler arquivo');
+      showToast('❌ Erro ao ler arquivo', 'error');
+    };
+
     reader.readAsText(file);
     document.getElementById('importFile').value = '';
   };
@@ -2245,61 +2699,130 @@ footer.hint {
   };
 
   const defaultExpenses = [
-    {"date": "2026-05-07", "description": "AMAZONMKTPLC*KALFECALC", "valueCents": 19535, "installments": 5},
-    {"date": "2026-05-12", "description": "ANIMED", "valueCents": 771000, "installments": 30},
-    {"date": "2026-05-12", "description": "VETSMILE", "valueCents": 54996, "installments": 6},
-    {"date": "2026-06-07", "description": "DL*ALIEXPRESSBR", "valueCents": 124728, "installments": 12},
-    {"date": "2026-06-19", "description": "MP*ALIEXPRESS", "valueCents": 23796, "installments": 4},
-    {"date": "2026-07-04", "description": "PARC-103ADRIELECARVALHO", "valueCents": 31392, "installments": 3},
-    {"date": "2026-07-09", "description": "ANYCAROLINEDE", "valueCents": 461400, "installments": 8},
-    {"date": "2026-07-10", "description": "VET LAB", "valueCents": 24204, "installments": 3},
-    {"date": "2026-07-10", "description": "ANIMED", "valueCents": 720000, "installments": 30},
-    {"date": "2026-07-11", "description": "MP*APP", "valueCents": 15081, "installments": 3},
-    {"date": "2026-07-13", "description": "SHEIN *SHEINCOM", "valueCents": 17673, "installments": 3},
-    {"date": "2026-07-13", "description": "AMAZONMKTPLC*DROGARIAC", "valueCents": 22722, "installments": 3},
-    {"date": "2026-07-18", "description": "ANYCAROLINEDE", "valueCents": 35004, "installments": 3},
-    {"date": "2026-07-18", "description": "ANYCAROLINEDE", "valueCents": 46900, "installments": 4},
-    {"date": "2026-07-20", "description": "MP*APP", "valueCents": 11583, "installments": 3},
-    {"date": "2026-08-03", "description": "SHOPEE*MODASBETINA", "valueCents": 9300, "installments": 3},
-    {"date": "2026-08-03", "description": "SHOPEE*PERSONALIZADOR", "valueCents": 11817, "installments": 3},
-    {"date": "2026-08-04", "description": "PLANETA ANIMAL", "valueCents": 19494, "installments": 3},
-    {"date": "2026-08-04", "description": "RAIA DROGASIL SA", "valueCents": 12526, "installments": 2},
-    {"date": "2026-08-04", "description": "GUSTAVOXA VIERDE", "valueCents": 24370, "installments": 2},
-    {"date": "2026-08-04", "description": "MERCADOLIVRE*EMPORIOSOLER", "valueCents": 37110, "installments": 3},
-    {"date": "2026-08-05", "description": "MANIPULACAO SAO M", "valueCents": 17502, "installments": 3},
-    {"date": "2026-08-09", "description": "SHEIN *SHEINCOM", "valueCents": 11505, "installments": 3},
-    {"date": "2026-08-10", "description": "SHOPEE*VERSATMIXES", "valueCents": 9849, "installments": 3},
-    {"date": "2026-08-16", "description": "SHOPEE*BIBIBOTECHLTDA", "valueCents": 17337, "installments": 3},
-    {"date": "2026-08-17", "description": "MERCADOLIVRE*BOX7MOTOS", "valueCents": 3068, "installments": 4},
-    {"date": "2026-08-17", "description": "MERCADOLIVRE*BOX7MOTOS", "valueCents": 17532, "installments": 4},
-    {"date": "2026-08-19", "description": "SHOPEE*ZORZIDECOR", "valueCents": 14466, "installments": 3},
-    {"date": "2026-08-22", "description": "MERCADOLIVRE*MERCADOLIVRE", "valueCents": 40892, "installments": 4},
-    {"date": "2026-08-22", "description": "CASA TRESIRMAOS", "valueCents": 12102, "installments": 3},
-    {"date": "2026-08-27", "description": "PNEUCENTER", "valueCents": 159420, "installments": 10},
-    {"date": "2026-09-04", "description": "Savegnago Lj 02 P (Paulistão)", "valueCents": 56124, "installments": 1},
-    {"date": "2026-09-05", "description": "Supermercado Savegnago", "valueCents": 8575, "installments": 1},
-    {"date": "2026-09-05", "description": "Oliveira Sanches E San", "valueCents": 1828, "installments": 1},
-    {"date": "2026-09-05", "description": "Frios & Cia", "valueCents": 8536, "installments": 1},
-    {"date": "2026-09-06", "description": "Supermercado Savegnago", "valueCents": 6303, "installments": 1},
-    {"date": "2026-09-08", "description": "Colina (pedagogio)", "valueCents": 1170, "installments": 1},
-    {"date": "2026-09-08", "description": "Pp4 Pitangueiras (pedagogio)", "valueCents": 1220, "installments": 1},
-    {"date": "2026-09-08", "description": "Parc-106havan Sertãozinho", "valueCents": 52782, "installments": 6},
-    {"date": "2026-09-08", "description": "Pp3 Sertãozinho (pedagogio)", "valueCents": 960, "installments": 1},
-    {"date": "2026-09-08", "description": "Centro de Eventos Ribeirao (estacionamento)", "valueCents": 1750, "installments": 1},
-    {"date": "2026-09-08", "description": "UCI (starbucks)", "valueCents": 2490, "installments": 1},
-    {"date": "2026-09-08", "description": "Vía Alimentos Ltda 1 (kfc)", "valueCents": 5490, "installments": 1},
-    {"date": "2026-09-08", "description": "Parc-106black Creek (Levis)", "valueCents": 39900, "installments": 6},
-    {"date": "2026-09-08", "description": "Faepa (Estacionamento hospital de Base)", "valueCents": 2400, "installments": 1},
-    {"date": "2026-09-08", "description": "Pp3 Sertãozinho (pedagogio)", "valueCents": 960, "installments": 1},
-    {"date": "2026-09-08", "description": "Pp4 Pitangueiras (pedagios)", "valueCents": 1220, "installments": 1},
-    {"date": "2026-09-08", "description": "Colina (pedagio)", "valueCents": 1170, "installments": 1},
-    {"date": "2026-09-08", "description": "Carvalho Filho (lé-las)", "valueCents": 13103, "installments": 1},
-    {"date": "2026-09-09", "description": "Shopee.SHOPEE.", "valueCents": 28736, "installments": 4},
-    {"date": "2026-09-09", "description": "Shopee.precinhl", "valueCents": 50064, "installments": 8},
-    {"date": "2026-09-10", "description": "Ediceli", "valueCents": 22000, "installments": 1},
-    {"date": "2026-09-11", "description": "BOOKING", "valueCents": 237057, "installments": 3},
-    {"date": "2026-09-10", "description": "SHOPEE.infinit", "valueCents": 95712, "installments": 12}
+    {"date": "2026-09-05", "description": "Supermercado Savegnago", "valueCents": 8575, "installments": 1, "dataVencimento": "2026-10-10", "cartao": "cartao_santander"},
+    {"date": "2026-09-05", "description": "Oliveira Sanches E San", "valueCents": 1828, "installments": 1, "dataVencimento": "2026-10-10", "cartao": "cartao_santander"},
+    {"date": "2026-05-12", "description": "ANIMED", "valueCents": 257000, "installments": 10, "dataVencimento": "2026-06-10", "cartao": "cartao_santander"},
+    {"date": "2026-08-04", "description": "PLANETA ANIMAL", "valueCents": 19494, "installments": 3, "dataVencimento": "2026-09-10", "cartao": "cartao_santander"},
+    {"date": "2026-08-03", "description": "SHOPEE*PERSONALIZADOR", "valueCents": 11817, "installments": 3, "dataVencimento": "2026-09-10", "cartao": "cartao_santander"},
+    {"date": "2026-08-04", "description": "RAIA DROGASIL SA", "valueCents": 12526, "installments": 2, "dataVencimento": "2026-09-10", "cartao": "cartao_santander"},
+    {"date": "2026-08-04", "description": "GUSTAVOXA VIERDE", "valueCents": 24370, "installments": 2, "dataVencimento": "2026-09-10", "cartao": "cartao_santander"},
+    {"date": "2026-08-04", "description": "MERCADOLIVRE*EMPORIOSOLER", "valueCents": 37110, "installments": 3, "dataVencimento": "2026-09-10", "cartao": "cartao_santander"},
+    {"date": "2026-08-05", "description": "MANIPULACAO SAO M", "valueCents": 17502, "installments": 3, "dataVencimento": "2026-09-10", "cartao": "cartao_santander"},
+    {"date": "2026-08-09", "description": "SHEIN *SHEINCOM", "valueCents": 11505, "installments": 3, "dataVencimento": "2026-09-10", "cartao": "cartao_santander"},
+    {"date": "2026-08-10", "description": "SHOPEE*VERSATMIXES", "valueCents": 9849, "installments": 3, "dataVencimento": "2026-09-10", "cartao": "cartao_santander"},
+    {"date": "2026-08-16", "description": "SHOPEE*BIBIBOTECHLTDA", "valueCents": 17337, "installments": 3, "dataVencimento": "2026-09-10", "cartao": "cartao_santander"},
+    {"date": "2026-08-17", "description": "MERCADOLIVRE*BOX7MOTOS", "valueCents": 3068, "installments": 4, "dataVencimento": "2026-09-10", "cartao": "cartao_santander"},
+    {"date": "2026-08-17", "description": "MERCADOLIVRE*BOX7MOTOS", "valueCents": 17532, "installments": 4, "dataVencimento": "2026-09-10", "cartao": "cartao_santander"},
+    {"date": "2026-08-19", "description": "SHOPEE*ZORZIDECOR", "valueCents": 14466, "installments": 3, "dataVencimento": "2026-09-10", "cartao": "cartao_santander"},
+    {"date": "2026-08-22", "description": "MERCADOLIVRE*MERCADOLIVRE", "valueCents": 40892, "installments": 4, "dataVencimento": "2026-09-10", "cartao": "cartao_santander"},
+    {"date": "2026-08-27", "description": "PNEUCENTER", "valueCents": 159420, "installments": 10, "dataVencimento": "2026-09-10", "cartao": "cartao_santander"},
+    {"date": "2026-08-22", "description": "CASA TRESIRMAOS", "valueCents": 12102, "installments": 3, "dataVencimento": "2026-09-10", "cartao": "cartao_santander"},
+    {"date": "2026-09-04", "description": "Savegnago Lj 02 P (Paulistão)", "valueCents": 56124, "installments": 1, "dataVencimento": "2026-10-10", "cartao": "cartao_santander"},
+    {"date": "2026-05-07", "description": "AMAZONMKTPLC*KALFECALC", "valueCents": 19535, "installments": 5, "dataVencimento": "2026-06-10", "cartao": "cartao_santander"},
+    {"date": "2026-05-12", "description": "VETSMILE", "valueCents": 54996, "installments": 6, "dataVencimento": "2026-06-10", "cartao": "cartao_santander"},
+    {"date": "2026-06-07", "description": "DL*ALIEXPRESSBR", "valueCents": 124728, "installments": 12, "dataVencimento": "2026-07-10", "cartao": "cartao_santander"},
+    {"date": "2026-06-19", "description": "MP*ALIEXPRESS", "valueCents": 23796, "installments": 4, "dataVencimento": "2026-07-10", "cartao": "cartao_santander"},
+    {"date": "2026-07-09", "description": "ANYCAROLINEDE", "valueCents": 461400, "installments": 8, "dataVencimento": "2026-08-10", "cartao": "cartao_santander"},
+    {"date": "2026-09-05", "description": "Frios & Cia", "valueCents": 8536, "installments": 1, "dataVencimento": "2026-10-10", "cartao": "cartao_santander"},
+    {"date": "2026-09-06", "description": "Supermercado Savegnago", "valueCents": 6303, "installments": 1, "dataVencimento": "2026-10-10", "cartao": "cartao_santander"},
+    {"date": "2026-09-08", "description": "Colina (pedagogio)", "valueCents": 1170, "installments": 1, "dataVencimento": "2026-10-10", "cartao": "cartao_santander"},
+    {"date": "2026-09-08", "description": "Pp4 Pitangueiras (pedagogio)", "valueCents": 1220, "installments": 1, "dataVencimento": "2026-10-10", "cartao": "cartao_santander"},
+    {"date": "2026-09-08", "description": "Parc-106havan Sertãozinho", "valueCents": 52782, "installments": 6, "dataVencimento": "2026-10-10", "cartao": "cartao_santander"},
+    {"date": "2026-09-08", "description": "Pp3 Sertãozinho (pedagogio)", "valueCents": 960, "installments": 1, "dataVencimento": "2026-10-10", "cartao": "cartao_santander"},
+    {"date": "2026-09-08", "description": "Centro de Eventos Ribeirao (estacionamento)", "valueCents": 1750, "installments": 1, "dataVencimento": "2026-10-10", "cartao": "cartao_santander"},
+    {"date": "2026-07-10", "description": "VET LAB", "valueCents": 24204, "installments": 3, "dataVencimento": "2026-08-10", "cartao": "cartao_santander"},
+    {"date": "2026-07-10", "description": "ANIMED", "valueCents": 240000, "installments": 10, "dataVencimento": "2026-08-10", "cartao": "cartao_santander"},
+    {"date": "2026-07-11", "description": "MP*APP", "valueCents": 15081, "installments": 3, "dataVencimento": "2026-08-10", "cartao": "cartao_santander"},
+    {"date": "2026-07-13", "description": "SHEIN *SHEINCOM", "valueCents": 17673, "installments": 3, "dataVencimento": "2026-08-10", "cartao": "cartao_santander"},
+    {"date": "2026-07-13", "description": "AMAZONMKTPLC*DROGARIAC", "valueCents": 37870, "installments": 5, "dataVencimento": "2026-08-10", "cartao": "cartao_santander"},
+    {"date": "2026-07-18", "description": "ANYCAROLINEDE", "valueCents": 35004, "installments": 3, "dataVencimento": "2026-08-10", "cartao": "cartao_santander"},
+    {"date": "2026-07-18", "description": "ANYCAROLINEDE", "valueCents": 46900, "installments": 4, "dataVencimento": "2026-08-10", "cartao": "cartao_santander"},
+    {"date": "2026-07-20", "description": "MP*APP", "valueCents": 11583, "installments": 3, "dataVencimento": "2026-08-10", "cartao": "cartao_santander"},
+    {"date": "2026-08-03", "description": "SHOPEE*MODASBETINA", "valueCents": 9300, "installments": 3, "dataVencimento": "2026-09-10", "cartao": "cartao_santander"},
+    {"date": "2026-09-08", "description": "Carvalho Filho (lé-las)", "valueCents": 13103, "installments": 1, "dataVencimento": "2026-10-10", "cartao": "cartao_santander"},
+    {"date": "2026-09-09", "description": "Shopee.SHOPEE.", "valueCents": 28736, "installments": 4, "dataVencimento": "2026-10-10", "cartao": "cartao_santander"},
+    {"date": "2026-09-09", "description": "Shopee.precinhl", "valueCents": 50064, "installments": 8, "dataVencimento": "2026-10-10", "cartao": "cartao_santander"},
+    {"date": "2026-09-10", "description": "Ediceli", "valueCents": 22000, "installments": 1, "dataVencimento": "2026-10-10", "cartao": "cartao_santander"},
+    {"date": "2026-09-11", "description": "BOOKING", "valueCents": 237057, "installments": 3, "dataVencimento": "2026-10-10", "cartao": "cartao_santander"},
+    {"date": "2026-09-10", "description": "SHOPEE.infinit", "valueCents": 95712, "installments": 12, "dataVencimento": "2026-10-10", "cartao": "cartao_santander"},
+    {"date": "2025-12-29", "description": "PG*NUVEM SISTERSSHOESV", "valueCents": 290, "installments": 8, "dataVencimento": "2026-01-04", "cartao": "cartao_santander"},
+    {"date": "2026-09-08", "description": "Colina (pedagio)", "valueCents": 1170, "installments": 1, "dataVencimento": "2026-10-10", "cartao": "cartao_santander"},
+    {"date": "2026-09-08", "description": "UCI (starbucks)", "valueCents": 2490, "installments": 1, "dataVencimento": "2026-10-10", "cartao": "cartao_santander"},
+    {"date": "2026-09-08", "description": "Vía Alimentos Ltda 1 (kfc)", "valueCents": 5490, "installments": 1, "dataVencimento": "2026-10-10", "cartao": "cartao_santander"},
+    {"date": "2026-09-08", "description": "Parc-106black Creek (Levis)", "valueCents": 39900, "installments": 6, "dataVencimento": "2026-10-10", "cartao": "cartao_santander"},
+    {"date": "2026-09-08", "description": "Faepa (Estacionamento hospital de Base)", "valueCents": 2400, "installments": 1, "dataVencimento": "2026-10-10", "cartao": "cartao_santander"},
+    {"date": "2026-09-08", "description": "Pp3 Sertãozinho (pedagogio)", "valueCents": 960, "installments": 1, "dataVencimento": "2026-10-10", "cartao": "cartao_santander"},
+    {"date": "2026-09-08", "description": "Pp4 Pitangueiras (pedagios)", "valueCents": 1220, "installments": 1, "dataVencimento": "2026-10-10", "cartao": "cartao_santander"},
+    {"date": "2026-08-28", "description": "iFood", "valueCents": 13038, "installments": 1, "dataVencimento": "2026-10-04", "cartao": "cartao_santander"},
+    {"date": "2025-12-29", "description": "MAPFRE*pcl10de12", "valueCents": 289932, "installments": 12, "dataVencimento": "2026-01-04", "cartao": "cartao_santander"},
+    {"date": "2026-08-30", "description": "iFood", "valueCents": 3198, "installments": 1, "dataVencimento": "2026-10-04", "cartao": "cartao_santander"},
+    {"date": "2026-08-30", "description": "iFood", "valueCents": 3074, "installments": 1, "dataVencimento": "2026-10-04", "cartao": "cartao_santander"},
+    {"date": "2026-08-31", "description": "iFood", "valueCents": 2948, "installments": 1, "dataVencimento": "2026-10-04", "cartao": "cartao_santander"},
+    {"date": "2026-09-07", "description": "Spotify", "valueCents": 4090, "installments": 1, "dataVencimento": "2026-10-04", "cartao": "cartao_santander"},
+    {"date": "2026-09-09", "description": "Apple", "valueCents": 6690, "installments": 1, "dataVencimento": "2026-10-04", "cartao": "cartao_santander"},
+    {"date": "2026-08-04", "description": "PG*NUVEM SISTERSSHOESV", "valueCents": 24964, "installments": 4, "dataVencimento": "2026-09-11", "cartao": "cartao_santander"},
+    {"date": "2026-09-01", "description": "VEGAS AUTO POSTO DE BA", "valueCents": 10000, "installments": 1, "dataVencimento": "2026-10-11", "cartao": "cartao_santander"},
+    {"date": "2026-09-02", "description": "LojaCarvalho", "valueCents": 1000, "installments": 1, "dataVencimento": "2026-10-11", "cartao": "cartao_santander"},
+    {"date": "2026-09-14", "description": "Cama inbox (shopee)", "valueCents": 266023, "installments": 5, "dataVencimento": "2026-10-10", "cartao": "cartao_santander"},
+    {"date": "2026-09-12", "description": "Karina Pecas", "valueCents": 3090, "installments": 1, "dataVencimento": "2026-10-10", "cartao": "cartao_santander"},
+    {"date": "2026-09-13", "description": "Supermercado Savegnago", "valueCents": 7355, "installments": 1, "dataVencimento": "2026-10-10", "cartao": "cartao_santander"},
+    {"date": "2026-09-12", "description": "41791- Catedral do Divi", "valueCents": 10200, "installments": 1, "dataVencimento": "2026-10-10", "cartao": "cartao_santander"},
+    {"date": "2026-09-14", "description": "Savegnago Lj 02 P", "valueCents": 4498, "installments": 1, "dataVencimento": "2026-10-10", "cartao": "cartao_santander"},
+    {"date": "2026-09-15", "description": "Amarelinha", "valueCents": 1320, "installments": 1, "dataVencimento": "2026-10-10", "cartao": "cartao_santander"},
+    {"date": "2026-09-15", "description": "Savegnago Loja 02 P", "valueCents": 596, "installments": 1, "dataVencimento": "2026-10-10", "cartao": "cartao_santander"},
+    {"date": "2026-09-16", "description": "Mercado França", "valueCents": 750, "installments": 1, "dataVencimento": "2026-10-10", "cartao": "cartao_santander"},
+    {"date": "2026-09-16", "description": "Alpes Festas 2", "valueCents": 1989, "installments": 1, "dataVencimento": "2026-10-10", "cartao": "cartao_santander"},
+    {"date": "2026-09-16", "description": "Bruju Comércio de Doces", "valueCents": 2300, "installments": 1, "dataVencimento": "2026-10-10", "cartao": "cartao_santander"},
+    {"date": "2026-09-16", "description": "Parc=102ja Brinks", "valueCents": 8500, "installments": 2, "dataVencimento": "2026-10-10", "cartao": "cartao_santander"},
+    {"date": "2026-08-31", "description": "Enssorveteria", "valueCents": 5400, "installments": 1, "dataVencimento": "2026-10-04", "cartao": "cartao_santander"},
+    {"date": "2026-07-19", "description": "ELETROLUX elect", "valueCents": 87390, "installments": 10, "dataVencimento": "2026-09-04", "cartao": "cartao_santander"},
+    {"date": "2026-07-04", "description": "PARC=103ADRIELECARVALHO", "valueCents": 31392, "installments": 3, "dataVencimento": "2026-08-10", "cartao": "cartao_santander"},
+    {"date": "2026-09-02", "description": "MERCADINHO ICHIBAN", "valueCents": 850, "installments": 1, "dataVencimento": "2026-10-11", "cartao": "cartao_santander"},
+    {"date": "2026-09-10", "description": "RosiComercioE", "valueCents": 2000, "installments": 1, "dataVencimento": "2026-10-11", "cartao": "cartao_santander"},
+    {"date": "2026-07-19", "description": "Mercado Livre", "valueCents": 10696, "installments": 2, "dataVencimento": "2026-09-04", "cartao": "cartao_santander"},
+    {"date": "2026-08-29", "description": "OS INDEPENDENTES", "valueCents": 10000, "installments": 1, "dataVencimento": "2026-10-04", "cartao": "cartao_santander"},
+    {"date": "2026-07-04", "description": "PARC-103ADRIELECARVALHO", "valueCents": 31392, "installments": 3, "dataVencimento": "2026-07-04", "cartao": "cartao_santander"}
   ];
+
+  // Função para remover duplicatas existentes
+  const removeDuplicates = (expenses) => {
+    if (!Array.isArray(expenses)) return expenses;
+
+    const seen = new Map();
+    const unique = [];
+    let duplicateCount = 0;
+
+    // Ordenar por data para manter registros mais antigos
+    const sorted = [...expenses].sort((a, b) => {
+      const dateA = new Date(a.date || '1970-01-01');
+      const dateB = new Date(b.date || '1970-01-01');
+      return dateA - dateB;
+    });
+
+    sorted.forEach(exp => {
+      // Normalizar data e descrição para comparação robusta
+      const dateNorm = (exp.date || '').split('T')[0];
+      const descNorm = (exp.description || '').trim().toUpperCase();
+      const valueNorm = parseInt(exp.valueCents || 0);
+
+      // Criar assinatura normalizada
+      const sig = `${dateNorm}|${descNorm}|${valueNorm}`;
+
+      if (!seen.has(sig)) {
+        unique.push(exp);
+        seen.set(sig, true);
+      } else {
+        duplicateCount++;
+        console.log('[DEDUP] ⚠️ Duplicata:', descNorm);
+      }
+    });
+
+    if (duplicateCount > 0) {
+      console.log('[DEDUP] ✓ Removidas', duplicateCount, 'duplicatas. Antes:', expenses.length, '| Depois:', unique.length);
+    }
+
+    return unique;
+  };
 
   const loadFromStorage = () => {
     try {
@@ -2315,7 +2838,7 @@ footer.hint {
         // Se tem dados salvos, usa eles (respeita as alterações do usuário)
         const parsed = JSON.parse(stored);
         if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].id) {
-          // Valida se tem a estrutura correta
+          // Carregar dados sem processamento extra (merge ID-based depois)
           state.expenses = parsed;
         } else {
           // Se localStorage está vazio ou inválido, carrega os padrão
@@ -2510,8 +3033,9 @@ footer.hint {
   const monthOccurrences = () => {
     const key = monthKey(state.viewYear, state.viewMonth);
     return allOccurrences().filter(o => {
-      // Use dataVencimento if available (from new form), otherwise use date
-      const displayDate = (o.dataVencimento || o.date || '');
+      // IMPORTANT: Use purchaseDate for monthly filtering (not dataVencimento)
+      // This ensures expenses appear in the month they were purchased, not when they're due
+      const displayDate = (o.purchaseDate || o.date || '');
       return displayDate.slice(0, 7) === key;
     });
   };
@@ -2521,8 +3045,9 @@ footer.hint {
     const key = monthKey(state.viewYear, state.viewMonth);
     return allOccurrences().filter(o => {
       const cartao = o.cartao || 'cartao_santander';
-      // Use dataVencimento if available (from new form), otherwise use date
-      const displayDate = (o.dataVencimento || o.date || '');
+      // IMPORTANT: Use purchaseDate for monthly filtering (not dataVencimento)
+      // This ensures expenses appear in the month they were purchased, not when they're due
+      const displayDate = (o.purchaseDate || o.date || '');
       return displayDate.slice(0, 7) === key && cartao === 'cartao_santander';
     });
   };
@@ -2598,6 +3123,8 @@ footer.hint {
         if (valeTotalEl) {
           valeTotalEl.textContent = 'R$ ' + valeTotal.toFixed(2).replace('.', ',');
         }
+      } else if (modalId === 'modalReembolsos') {
+        updateReembolsosModal();
       } else if (modalId === 'modalContasFixas') {
         renderContasFixasModal();
       } else if (modalId === 'modalDemaisCartoes') {
@@ -2636,6 +3163,77 @@ footer.hint {
     if (nome.includes('financiamento') || nome.includes('carro')) return '🚗';
     return '📋';
   };
+
+  // Mapear serviços e descrições para logos
+  const getServiceLogo = (description) => {
+    if (!description) return null;
+    const desc = description.toLowerCase().trim();
+
+    const services = {
+      'netflix': 'https://upload.wikimedia.org/wikipedia/commons/6/69/Netflix_logo.svg',
+      'spotify': 'https://upload.wikimedia.org/wikipedia/commons/1/1d/Spotify_logo_without_text.svg',
+      'amazon': 'https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg',
+      'deezer': 'https://cdns-files-dzcdn.dzcdn.net/cache/common/44/444ce88f24a8a621baecc0e108e876d7.png',
+      'youtube': 'https://upload.wikimedia.org/wikipedia/commons/0/09/YouTube_full-color_icon_%282017%29.svg',
+      'disney': 'https://upload.wikimedia.org/wikipedia/commons/3/3e/Disney%2B_logo.svg',
+      'ifood': 'https://upload.wikimedia.org/wikipedia/commons/c/c5/IFood_icon.png',
+      'uber': 'https://upload.wikimedia.org/wikipedia/commons/5/58/Uber_logo_2018.svg',
+      '99': 'https://www.99taxis.com/assets/logo-99-colored-1-white.svg',
+      'cabify': 'https://upload.wikimedia.org/wikipedia/commons/c/ca/Cabify_logo.svg',
+      'rappi': 'https://s3.amazonaws.com/cdn.designscode.io/logos/rappi-logo.png',
+      'loggi': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Loggi_logo.png/440px-Loggi_logo.png',
+      'mercado pago': 'https://http2.mlstatic.com/frontend-assets/ui-navigation/5.16.0/mercadopago/37x37.png',
+      'paypal': 'https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg',
+      'nubank': 'https://upload.wikimedia.org/wikipedia/commons/0/04/Nubank_logo.svg',
+      'itaú': 'https://upload.wikimedia.org/wikipedia/commons/5/58/Ita%C3%BA_logo.svg',
+      'bradesco': 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Banco_Bradesco_Logo.svg/1200px-Banco_Bradesco_Logo.svg',
+      'caixa': 'https://upload.wikimedia.org/wikipedia/commons/f/f5/Logomarca_CAIXA_ECONOMICA_FEDERAL.svg',
+      'santander': 'https://upload.wikimedia.org/wikipedia/commons/0/0a/Banco_Santander.svg',
+      'bmg': 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/BMG_logo.png/220px-BMG_logo.png',
+      'bb': 'https://upload.wikimedia.org/wikipedia/commons/8/8e/Banco_do_Brasil_logo.svg',
+      'vivo': 'https://upload.wikimedia.org/wikipedia/commons/7/7c/Vivo_%28telecom%29_logo.svg',
+      'oi': 'https://upload.wikimedia.org/wikipedia/commons/7/7c/Oi_Brasil_logo.svg',
+      'claro': 'https://upload.wikimedia.org/wikipedia/commons/e/e8/Claro_Logo.svg',
+      'tim': 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/TIM_logo.svg/1200px-TIM_logo.svg',
+      'netflix': 'https://upload.wikimedia.org/wikipedia/commons/6/69/Netflix_logo.svg',
+      'drogaria': 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Drogaria_S%C3%A3o_Paulo_logo.png/220px-Drogaria_S%C3%A3o_Paulo_logo.png',
+      'farmaecia': 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Drogaria_S%C3%A3o_Paulo_logo.png/220px-Drogaria_S%C3%A3o_Paulo_logo.png',
+      'farmácia': 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Drogaria_S%C3%A3o_Paulo_logo.png/220px-Drogaria_S%C3%A3o_Paulo_logo.png',
+      'carrefour': 'https://upload.wikimedia.org/wikipedia/commons/9/9e/Carrefour_Logo.svg',
+      'walmart': 'https://upload.wikimedia.org/wikipedia/commons/c/ca/Walmart_logo.svg',
+      'extra': 'https://upload.wikimedia.org/wikipedia/commons/8/8c/Extra_Hypermercados_logo.svg',
+      'são paulo': 'https://www.saopaulo.sp.gov.br/favicon.ico',
+      'prefeitura': 'https://www.saopaulo.sp.gov.br/favicon.ico',
+      'iptu': 'https://www.saopaulo.sp.gov.br/favicon.ico',
+      'enel': 'https://upload.wikimedia.org/wikipedia/commons/7/7a/Enel_logo.svg',
+      'cpfl': 'https://upload.wikimedia.org/wikipedia/commons/f/f4/CPFL_Energia_logo.svg',
+      'elektro': 'https://upload.wikimedia.org/wikipedia/commons/7/78/Elektro_logo.svg',
+      'cemig': 'https://upload.wikimedia.org/wikipedia/commons/3/38/CEMIG_logo.svg',
+      'sabesp': 'https://upload.wikimedia.org/wikipedia/commons/7/78/Sabesp_logo.svg',
+      'copasa': 'https://upload.wikimedia.org/wikipedia/commons/e/ee/Copasa_Logo.svg',
+      'hotéis.com': 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Hotels-com_logo.svg/440px-Hotels-com_logo.svg',
+      'booking': 'https://upload.wikimedia.org/wikipedia/commons/f/f8/Booking.com_logo.svg',
+      'airbnb': 'https://upload.wikimedia.org/wikipedia/commons/6/69/Airbnb_Logo_B%C3%A9lo.svg',
+      'decathlon': 'https://upload.wikimedia.org/wikipedia/commons/e/e8/Decathlon_logo.svg',
+      'nike': 'https://upload.wikimedia.org/wikipedia/commons/a/a7/Camponotus_flavomarginatus_ant.jpg',
+      'adidas': 'https://upload.wikimedia.org/wikipedia/commons/1/1f/Adidas_Logo.svg',
+      'puma': 'https://upload.wikimedia.org/wikipedia/commons/2/22/Puma_Logo.svg',
+      'uniqlo': 'https://upload.wikimedia.org/wikipedia/commons/9/95/Uniqlo_logo.svg',
+      'zara': 'https://upload.wikimedia.org/wikipedia/commons/9/9c/Zara_Logo.svg',
+      'h&m': 'https://upload.wikimedia.org/wikipedia/commons/5/53/H%26M-logo.svg',
+      'riachuelo': 'https://upload.wikimedia.org/wikipedia/commons/6/6e/Riachuelo_logo.svg'
+    };
+
+    for (const [key, url] of Object.entries(services)) {
+      if (desc.includes(key)) {
+        return url;
+      }
+    }
+    return null;
+  };
+
+  // Cache de logos para evitar recarregar a mesma imagem
+  const logoCache = {};
 
   const monthNames = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
 
@@ -2726,9 +3324,14 @@ footer.hint {
                   const valorExp = (occ.valueCents || 0) / 100;
                   const parcelaInfo = occ.installments && occ.installments > 1 ? ' • Parcela ' + occ.index + ' de ' + occ.installments : '';
                   const typeIcon = occ.installments > 1 ? '🎁' : '💳';
+                  const logoUrl = getServiceLogo(occ.description);
 
                   html += '<div style="display: flex; gap: 12px; padding: 12px 12px; margin: 6px 0; border-radius: 6px; background: var(--paper-raised); border: 1px solid var(--line); align-items: flex-start; cursor: pointer;" data-expense-id="' + (occ.occId || idx) + '" class="expense-row">';
-                  html += '<div style="font-size: 18px; flex-shrink: 0;">' + typeIcon + '</div>';
+                  if (logoUrl) {
+                    html += '<img src="' + logoUrl + '" alt="logo" style="width: 32px; height: 32px; flex-shrink: 0; border-radius: 6px; object-fit: contain; object-position: center; background: var(--paper); padding: 3px; border: 1px solid var(--line);" onerror="this.innerHTML=\'💳\';" />';
+                  } else {
+                    html += '<div style="font-size: 18px; flex-shrink: 0;">' + typeIcon + '</div>';
+                  }
                   html += '<div style="flex: 1;">';
                   html += '<div style="font-weight: 600; font-size: 13px; color: var(--ink); margin-bottom: 2px;">' + occ.description + '</div>';
                   html += '<div style="font-size: 11px; color: var(--ink-faint);">' + (occ.installments > 1 ? '🎁' : '💳') + ' ' + (occ.installments > 1 ? 'Parcelado' : 'Crédito') + parcelaInfo + '</div>';
@@ -2796,6 +3399,162 @@ footer.hint {
     openModal('modalDayDetails');
   };
 
+  const showDayDetailsComplete = (day, contas, expenses) => {
+    const container = document.getElementById('dayDetailsContainer');
+    if (container) {
+      const monthName = monthNames[state.viewMonth];
+      let html = '<h3 style="margin-bottom: 20px; color: var(--ink); font-size: 18px; font-weight: 700;">Dia ' + day + ' de ' + monthName + '</h3>';
+
+      // Mostrar despesas primeiro (se houver)
+      if (expenses && expenses.length > 0) {
+        const y = state.viewYear;
+        const m = state.viewMonth;
+
+        // Filtrar despesas por cartão
+        const byCard = {};
+        expenses.forEach(exp => {
+          const card = exp.cartao || 'cartao_santander';
+          if (!byCard[card]) byCard[card] = [];
+          byCard[card].push(exp);
+        });
+
+        html += '<div style="display: flex; flex-direction: column; gap: 0;">';
+
+        // Mostrar cada cartão
+        Object.keys(byCard).forEach((card, cardIdx) => {
+          const cardLabel = {
+            'cartao_santander': '🏦 Cartão Santander Camila',
+            'sicoob': '🏦 Sicoob',
+            'mercado_pago_carla': '🛒 Mercado Pago (Carla)',
+            'mercado_pago_iasmim': '🛒 Mercado Pago (Iasmim)',
+            'digio': '📱 Digio'
+          }[card] || card;
+
+          if (cardIdx > 0) {
+            html += '<div style="height: 1px; background: var(--line); margin: 0;"></div>';
+          }
+
+          const expsInCard = byCard[card];
+          let totalCard = 0;
+          expsInCard.forEach(e => totalCard += e.valueCents);
+
+          html += '<div style="padding: 14px 12px; margin: 8px 0; border-radius: 8px; background: var(--paper); border: 1px solid var(--line); font-weight: 600; color: var(--ink);">';
+          html += '<div style="font-size: 13px; margin-bottom: 8px; opacity: 0.8;">' + cardLabel + '</div>';
+          html += '<div style="font-size: 15px; color: var(--accent);">Total: R$ ' + (totalCard / 100).toFixed(2).replace('.', ',') + '</div>';
+          html += '</div>';
+
+          expsInCard.forEach((exp, idx) => {
+            const dataCompra = exp.purchaseDate || exp.date || '';
+            const dataParts = dataCompra.split('-');
+            const dataFormatada = dataParts.length === 3 ? dataParts[2] + '/' + dataParts[1] + '/' + dataParts[0] : 'Sem data';
+            const valorExp = (exp.valueCents || 0) / 100;
+            const parcelaInfo = exp.installments && exp.installments > 1 ? ' • Parcela ' + exp.index + ' de ' + exp.installments : '';
+            const typeIcon = exp.installments > 1 ? '🎁' : '💳';
+
+            html += '<div style="display: flex; gap: 12px; padding: 12px 12px; margin: 6px 0; border-radius: 6px; background: var(--paper-raised); border: 1px solid var(--line); align-items: flex-start; cursor: pointer;" data-expense-id="' + (exp.occId || idx) + '" class="expense-row">';
+            html += '<div style="font-size: 18px; flex-shrink: 0;">' + typeIcon + '</div>';
+            html += '<div style="flex: 1;">';
+            html += '<div style="font-weight: 600; font-size: 13px; color: var(--ink); margin-bottom: 2px;">' + exp.description + '</div>';
+            html += '<div style="font-size: 11px; color: var(--ink-faint);">' + (exp.installments > 1 ? '🎁' : '💳') + ' ' + (exp.installments > 1 ? 'Parcelado' : 'Crédito') + parcelaInfo + '</div>';
+            html += '<div style="font-size: 11px; color: var(--ink-faint); margin-top: 2px;">📅 Compra: ' + dataFormatada + '</div>';
+            html += '</div>';
+            html += '<div style="text-align: right; flex-shrink: 0;">';
+            html += '<div style="font-weight: 700; font-size: 13px; color: var(--accent); margin-bottom: 4px;">R$ ' + valorExp.toFixed(2).replace('.', ',') + '</div>';
+            html += '</div>';
+            html += '</div>';
+          });
+        });
+
+        html += '</div>';
+      }
+
+      // Mostrar contas fixas
+      if (contas && contas.length > 0) {
+        if (expenses && expenses.length > 0) {
+          html += '<div style="height: 1px; background: var(--line); margin: 12px 0;"></div>';
+        }
+
+        html += '<div style="display: flex; flex-direction: column; gap: 0;">';
+
+        contas.forEach((conta, idx) => {
+          const contaNome = typeof conta === 'string' ? conta : conta.nomeCompleto;
+          const contaValor = typeof conta === 'string' ? 0 : (conta.valor || 0);
+          const contaId = typeof conta === 'string' ? null : (conta.id || null);
+          const icon = getIconForConta(contaNome);
+
+          if (idx > 0) {
+            html += '<div style="height: 1px; background: var(--line); margin: 0;"></div>';
+          }
+
+          html += '<div style="display: flex; gap: 12px; padding: 14px 12px; margin: 8px 0; border-radius: 8px; background: var(--paper); border: 1px solid var(--line); align-items: flex-start; cursor: pointer;" data-conta-id="' + contaId + '" class="conta-row">';
+          html += '<span style="font-size: 22px; flex-shrink: 0;">' + icon + '</span>';
+          html += '<div style="flex: 1;">';
+          html += '<div style="font-weight: 600; font-size: 14px; color: var(--ink);">' + contaNome + '</div>';
+          html += '</div>';
+          html += '<div style="text-align: right; flex-shrink: 0;">';
+          html += '<div style="font-weight: 700; font-size: 14px; color: var(--accent);">R$ ' + contaValor.toFixed(2).replace('.', ',') + '</div>';
+          html += '</div>';
+          html += '</div>';
+        });
+
+        html += '</div>';
+      }
+
+      if ((!expenses || expenses.length === 0) && (!contas || contas.length === 0)) {
+        html += '<p style="text-align: center; color: var(--ink-soft);">Nenhuma conta ou despesa neste dia</p>';
+      }
+
+      container.innerHTML = html;
+
+      // Adicionar event listeners para editar valores de contas
+      if (contas && contas.length > 0) {
+        const contaRows = container.querySelectorAll('.conta-row');
+        contaRows.forEach(row => {
+          row.addEventListener('click', (e) => {
+            const contaId = row.getAttribute('data-conta-id');
+            const conta = contas.find(c => c.id === contaId);
+            if (conta) {
+              window.editarValorConta(contaId, conta.nomeCompleto, conta.valor);
+            }
+          });
+        });
+      }
+    }
+    openModal('modalDayDetails');
+  };
+
+  const updateReembolsosModal = () => {
+    const reembolsos = loadReembolsos();
+    const container = document.getElementById('reembolsosListaContainer');
+    if (!container) return;
+
+    if (reembolsos.length === 0) {
+      container.innerHTML = '<div style="font-size: 13px; color: var(--ink-faint); text-align: center; padding: 12px;">Nenhum reembolso registrado</div>';
+      return;
+    }
+
+    container.innerHTML = reembolsos.map(r => `
+      <div style="padding: 10px; background: var(--accent-soft); border-radius: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <div style="font-weight: 600; color: var(--ink);">R$ ${r.valor.toFixed(2).replace('.', ',')}</div>
+          <div style="font-size: 12px; color: var(--ink-soft);">${r.descricao}</div>
+          <div style="font-size: 11px; color: var(--ink-faint);">${new Date(r.data).toLocaleDateString('pt-BR')}</div>
+        </div>
+        <button onclick="deleteReembolsoUI(${r.id})" style="background: var(--danger); color: white; border: none; border-radius: 6px; padding: 6px 10px; cursor: pointer; font-size: 12px; font-weight: 600;">
+          Excluir
+        </button>
+      </div>
+    `).join('');
+  };
+
+  window.deleteReembolsoUI = (id) => {
+    if (confirm('Tem certeza que quer excluir este reembolso?')) {
+      deleteReembolso(id);
+      updateReembolsosModal();
+      renderSummary();
+    }
+  };
+
   const renderSummary = () => {
     // Summary sempre mostra apenas despesas do Cartão Santander (não é afetado pelo activeTab)
     const list = monthOccurrencesSantander();
@@ -2835,6 +3594,19 @@ footer.hint {
     const summaryConfig = loadSummaryConfig();
     const valeAlimentacao = summaryConfig.valeAlimentacaoCarla + summaryConfig.valeAlimentacaoIasmim;
 
+    // Reembolsos
+    const reembolsos = loadReembolsos();
+    let totalReembolsos = 0;
+    reembolsos.forEach(r => totalReembolsos += r.valor);
+    const reembolsosEl = document.getElementById('reembolsosTotal');
+    if (reembolsosEl) {
+      reembolsosEl.textContent = 'R$ ' + totalReembolsos.toFixed(2).replace('.', ',');
+    }
+    const summaryReembolsosEl = document.getElementById('summaryReembolsos');
+    if (summaryReembolsosEl) {
+      summaryReembolsosEl.textContent = '+R$ ' + totalReembolsos.toFixed(2).replace('.', ',');
+    }
+
     // Contas fixas dinâmicas - calcular total para o mês atual
     let contas = 0;
     const contasFixas = loadContasFixas();
@@ -2872,8 +3644,9 @@ footer.hint {
       totalEntradaEl.textContent = 'R$ ' + totalEntrada.toFixed(2).replace('.', ',');
     }
 
-    // Disponível = Renda Líquida + Vale Alimentação - Contas - Cartão Santander - Demais Cartões
-    const disponivel = rendaLiquida + valeAlimentacao - contas - totalEmReais - demaisCartoesEmReais;
+    // Disponível = Renda Líquida - Contas - Cartão Santander - Demais Cartões + Reembolsos
+    // Vale Alimentação é mantido completamente separado, sem interação com as despesas
+    const disponivel = rendaLiquida - contas - totalEmReais - demaisCartoesEmReais + totalReembolsos;
     const disponibilidadeText = 'R$ ' + disponivel.toFixed(2).replace('.', ',');
 
     // Atualizar elemento e cor baseado no valor
@@ -2973,8 +3746,12 @@ footer.hint {
     const metaHtml = instChip ? '<div class="entry-meta">' + instChip + '</div>' : '';
     const deleteLabel = o.installments > 1 ? 'Excluir (todas)' : 'Excluir';
     const confirmLabel = o.installments > 1 ? 'Confirmar exclusão' : 'Confirmar';
-    const displayValue = o.valueCents;  // Já é o valor correto da parcela (calculado em purchaseOccurrences)
-    row.innerHTML = '<div class="entry-main"><div class="entry-info"><div class="' + descClass + '">' + descText + '</div>' + metaHtml + '</div><div class="entry-value">' + formatCentsBRL(displayValue) + '</div></div><div class="entry-actions"><button type="button" class="btn-edit">Editar</button><button type="button" class="btn-delete">' + deleteLabel + '</button></div>';
+
+    // Obter logo do serviço
+    const logoUrl = getServiceLogo(o.description);
+    const logoHtml = logoUrl ? '<img src="' + logoUrl + '" alt="logo" class="entry-logo" onerror="this.replaceWith(document.createTextNode(\'💳\'))">' : '<span class="entry-icon">💳</span>';
+
+    row.innerHTML = '<div class="entry-main"><div class="entry-info">' + logoHtml + '<div style="flex: 1;"><div class="' + descClass + '">' + descText + '</div>' + metaHtml + '</div></div><div class="entry-value">' + formatCentsBRL(o.valueCents) + '</div></div><div class="entry-actions"><button type="button" class="btn-edit">Editar</button><button type="button" class="btn-delete">' + deleteLabel + '</button></div>';
 
     row.addEventListener('click', ev => {
       if (ev.target.closest('.btn-edit') || ev.target.closest('.btn-delete')) return;
@@ -3037,66 +3814,28 @@ footer.hint {
     el.dateInput.value = formatted;
   });
 
+  el.dataVencimentoInput?.addEventListener('input', () => {
+    let v = el.dataVencimentoInput.value.replace(/\D/g, '');
+    if (v.length > 8) v = v.slice(0, 8);
+    let formatted = '';
+    if (v.length <= 2) formatted = v;
+    else if (v.length <= 4) formatted = v.slice(0, 2) + '/' + v.slice(2);
+    else formatted = v.slice(0, 2) + '/' + v.slice(2, 4) + '/' + v.slice(4, 8);
+    el.dataVencimentoInput.value = formatted;
+  });
+
   const parseValueCents = () => {
-    // First, try to get from data-cents attribute
-    let digits = el.valueInput?.getAttribute('data-cents') || '';
-
-    console.log('[DEBUG-PARSE] ===== PARSE START =====');
-    console.log('[DEBUG-PARSE] data-cents attribute:', digits);
-
-    // If data-cents is empty or not set, parse from the displayed value as fallback
-    if (!digits || digits === '0') {
-      const displayedValue = el.valueInput?.value || '';
-      console.log('[DEBUG-PARSE] Fallback: displayed value:', displayedValue);
-      digits = displayedValue.replace(/\D/g, '');
-      console.log('[DEBUG-PARSE] Fallback: extracted digits:', digits);
-    }
-
-    const result = parseInt(digits, 10) || 0;
-    console.log('[DEBUG-PARSE] Final result:', result, 'centavos');
-    console.log('[DEBUG-PARSE] ===== PARSE END =====');
-    return result;
+    const digits = el.valueInput?.getAttribute('data-cents') || '0';
+    return parseInt(digits, 10) || 0;
   };
 
-  let isUpdatingValue = false;
-
-  el.valueInput?.addEventListener('input', (event) => {
-    if (isUpdatingValue) {
-      console.log('[DEBUG] Skipping recursive input event');
-      return;
-    }
-
-    const rawValue = el.valueInput.value;
-    console.log('[DEBUG-DETAIL] ===== INPUT EVENT START =====');
-    console.log('[DEBUG-DETAIL] el.valueInput.value:', rawValue);
-    console.log('[DEBUG-DETAIL] value.length:', rawValue.length);
-    console.log('[DEBUG-DETAIL] value chars:', Array.from(rawValue).map((c, i) => i + ':' + c + '(code:' + c.charCodeAt(0) + ')').join(', '));
-
-    let digits = rawValue.replace(/\D/g, '');
-    console.log('[DEBUG-DETAIL] After /\D/g replace:', digits);
-
+  el.valueInput?.addEventListener('input', () => {
+    let digits = el.valueInput.value.replace(/\D/g, '');
     digits = digits.replace(/^0+(?=\d)/, '');
-    console.log('[DEBUG-DETAIL] After removing leading zeros:', digits);
-
-    if (digits.length > 9) {
-      console.log('[DEBUG-DETAIL] Digits too long, truncating:', digits.slice(0, 9));
-      digits = digits.slice(0, 9);
-    }
-
-    console.log('[DEBUG-DETAIL] Final digits:', digits);
-    console.log('[DEBUG-DETAIL] Setting data-cents to:', digits || '0');
-
+    if (digits.length > 9) digits = digits.slice(0, 9);
     el.valueInput.setAttribute('data-cents', digits || '0');
     const num = (parseInt(digits || '0', 10)) / 100;
-    console.log('[DEBUG-DETAIL] Parsed as cents, num value:', num);
-
-    isUpdatingValue = true;
-    const formattedValue = digits ? brl.format(num).replace('R$', '').trim() : '';
-    console.log('[DEBUG-DETAIL] Formatted value to display:', formattedValue);
-    el.valueInput.value = formattedValue;
-    isUpdatingValue = false;
-
-    console.log('[DEBUG-DETAIL] ===== INPUT EVENT END =====');
+    el.valueInput.value = digits ? brl.format(num).replace('R$', '').trim() : '';
     renderInstallments();
   });
 
@@ -3107,6 +3846,7 @@ footer.hint {
     el.valueInput.setAttribute('data-cents', '0');
     el.descInput.value = '';
     el.dateInput.value = formatDateToDMY(todayISO());
+    el.dataVencimentoInput.value = '';
     state.installments = 1;
     renderInstallments();
   };
@@ -3121,6 +3861,7 @@ footer.hint {
     el.valueInput.value = brl.format(e.valueCents / 100).replace('R$', '').trim();
     el.descInput.value = e.description || '';
     el.dateInput.value = formatDateToDMY(e.date);
+    el.dataVencimentoInput.value = e.dataVencimento ? formatDateToDMY(e.dataVencimento) : '';
     state.installments = e.installments || 1;
     renderInstallments();
     el.addForm.scrollIntoView({behavior: 'smooth', block: 'center'});
@@ -3131,9 +3872,7 @@ footer.hint {
 
   el.addForm?.addEventListener('submit', ev => {
     ev.preventDefault();
-    console.log('[DEBUG] Form submit - data-cents attr:', el.valueInput.getAttribute('data-cents'));
     const cents = parseValueCents();
-    console.log('[DEBUG] Form submit - parsed cents:', cents);
 
     // Validações
     if (cents <= 0) {
@@ -3150,9 +3889,15 @@ footer.hint {
     }
     const inputDate = el.dateInput.value;
     const dateISO = formatDateToISO(inputDate);
-    if (dateISO === todayISO() && !inputDate) {
+    if (!inputDate || dateISO === 'NaN-NaN-NaN') {
       showToast('⚠️ Data inválida', 'warning');
       return;
+    }
+
+    // Parse dataVencimento (optional, defaults to date if not provided)
+    let dataVencimentoISO = dateISO;
+    if (el.dataVencimentoInput && el.dataVencimentoInput.value.trim()) {
+      dataVencimentoISO = formatDateToISO(el.dataVencimentoInput.value);
     }
 
     const payload = {
@@ -3160,13 +3905,9 @@ footer.hint {
       description: el.descInput.value.trim(),
       installments: state.installments,
       date: dateISO,
-      cartao: el.cartaoSelect?.value || 'cartao_santander'
+      dataVencimento: dataVencimentoISO,
+      cartao: 'cartao_santander'
     };
-
-    console.log('[DEBUG-SUBMIT] ===== FINAL PAYLOAD =====');
-    console.log('[DEBUG-SUBMIT] Payload:', JSON.stringify(payload, null, 2));
-    console.log('[DEBUG-SUBMIT] valueCents is:', payload.valueCents, 'type:', typeof payload.valueCents);
-    console.log('[DEBUG-SUBMIT] ===== END PAYLOAD =====');
     if (state.editingId) {
       updateExpense(state.editingId, payload);
       resetForm();
@@ -3188,6 +3929,7 @@ footer.hint {
     saveToStorage();
     renderAll();
     renderCalendar();
+    if (supabaseConfig.enabled) scheduleAutoSync();
 
     // Se tem Firestore, sincroniza
     if (db && expensesCol) {
@@ -3209,6 +3951,7 @@ footer.hint {
     if (e) {
       Object.assign(e, payload);
       saveToStorage();
+      if (supabaseConfig.enabled) scheduleAutoSync();
     }
 
     // Sincroniza com Firestore se existir
@@ -3219,7 +3962,7 @@ footer.hint {
     }
   };
 
-  const deleteExpense = id => {
+  const deleteExpense = async id => {
     if (!confirm('⚠️ Tem certeza que deseja deletar esta despesa?\n\nEsta ação não pode ser desfeita.')) {
       return;
     }
@@ -3227,14 +3970,29 @@ footer.hint {
     saveToStorage();
     renderAll();
     renderCalendar();
-    // Re-renderizar modal de Demais Cartões se estiver aberto
-    openModal('modalDemaisCartoes');
     showToast('✓ Despesa deletada com sucesso', 'success');
 
-    if (db && expensesCol && id.indexOf('local-') !== 0) {
-      expensesCol.doc(id).delete().catch(err => {
-        showToast('Erro ao sincronizar com servidor', 'error');
-      });
+    if (supabaseConfig.enabled && supabaseConfig.url && supabaseConfig.key) {
+      try {
+        const response = await fetch(
+          `${supabaseConfig.url}/rest/v1/expenses?id=eq.${id}`,
+          {
+            method: 'DELETE',
+            headers: {
+              'apikey': supabaseConfig.key,
+              'Authorization': `Bearer ${supabaseConfig.key}`,
+              'Content-Type': 'application/json'
+            }
+          }
+        );
+        if (!response.ok) {
+          console.error('[DELETE] Erro:', await response.text());
+        } else {
+          console.log('[DELETE] Despesa deletada do Supabase:', id);
+        }
+      } catch (err) {
+        console.error('[DELETE] Erro ao deletar:', err);
+      }
     }
   };
 
@@ -3320,6 +4078,7 @@ footer.hint {
   window.openModal = openModal;
   window.closeModal = closeModal;
   window.exportData = exportData;
+  window.showDayDetailsComplete = showDayDetailsComplete;
   window.importData = importData;
 
   window.switchTab = tabName => {
@@ -3558,20 +4317,26 @@ footer.hint {
 
       dayEl.className = 'calendar-day';
       if (isToday) dayEl.classList.add('today');
-      if (hasContas) dayEl.classList.add('has-expenses');
+      if (hasExpenses || hasContas) dayEl.classList.add('has-expenses');
 
       let html = '<div class="calendar-day-circle"><span class="calendar-day-number">' + day + '</span></div>';
 
       dayEl.innerHTML = html;
 
       // Adicionar tooltip ao passar o mouse
-      if (hasContas) {
-        const tooltipTexto = contasAtivas[day].map(c => c.nomeCompleto || c).join('\n');
-        dayEl.title = tooltipTexto;
+      if (hasExpenses || hasContas) {
+        const tooltipItens = [];
+        if (hasContas) {
+          tooltipItens.push(...contasAtivas[day].map(c => c.nomeCompleto || c));
+        }
+        if (hasExpenses) {
+          tooltipItens.push(...occsByDay[dayStr].map(o => o.description || ''));
+        }
+        dayEl.title = tooltipItens.join('\n');
         // Adicionar evento de clique para mostrar modal
         dayEl.style.cursor = 'pointer';
         dayEl.addEventListener('click', () => {
-          showDayDetails(day, contasAtivas[day]);
+          showDayDetailsComplete(day, contasAtivas[day] || [], occsByDay[dayStr] || []);
         });
       }
 
@@ -3718,7 +4483,9 @@ footer.hint {
       return;
     }
 
-    const valor = parseFloat(valorStr.replace(',', '.'));
+    // Remover pontos de milhar e converter vírgula para ponto
+    const valorLimpo = valorStr.replace(/\./g, '').replace(',', '.');
+    const valor = parseFloat(valorLimpo);
     if (isNaN(valor) || valor <= 0) {
       showToast('⚠️ Valor inválido', 'warning');
       return;
@@ -3748,6 +4515,12 @@ footer.hint {
             mes >= 1 && mes <= 12 &&
             parts[2].length === 4 &&
             ano >= 2000 && ano <= 2099) {
+          // Validar se a data é válida no calendário
+          const date = new Date(ano, mes - 1, dia);
+          const isValidDate = date.getFullYear() === ano &&
+                              date.getMonth() === mes - 1 &&
+                              date.getDate() === dia;
+          if (!isValidDate) return null;
           return ano + '-' + ('0' + mes).slice(-2) + '-' + ('0' + dia).slice(-2);
         }
       }
@@ -3768,9 +4541,7 @@ footer.hint {
         showToast('⚠️ Data de Vencimento é obrigatória para contas fixas', 'warning');
         return;
       }
-      console.log('Parseando dataVencimentoStr:', dataVencimentoStr);
       dataVencimento = parseDate(dataVencimentoStr, true);
-      console.log('dataVencimento parseado:', dataVencimento);
       if (!dataVencimento) {
         showToast('⚠️ Data de Vencimento inválida. Use DD/MM/YYYY', 'warning');
         return;
@@ -3836,7 +4607,7 @@ footer.hint {
       // Format as DD/MM/YYYY
       if (value.length >= 1) {
         if (value.length <= 2) {
-          e.target.value = value;
+          e.target.value = value.slice(0, 2);
         } else if (value.length <= 4) {
           e.target.value = value.slice(0, 2) + '/' + value.slice(2);
         } else {
@@ -3879,80 +4650,70 @@ footer.hint {
 
   const handleNovaCompraCartaoSubmit = (ev) => {
     ev.preventDefault();
+
+    // Pegar valores do formulário
     const descricao = document.getElementById('compraDescricao').value.trim();
     const valorStr = document.getElementById('compraValor').value.trim();
     const dataCompraStr = document.getElementById('compraDataCompra').value.trim();
     const dataVencimentoStr = document.getElementById('compraDataVencimento').value.trim();
     const cartao = document.getElementById('compraCartao').value.trim();
 
-    if (!descricao || !valorStr || !cartao) {
-      showToast('⚠️ Preencha todos os campos obrigatórios', 'warning');
+    // Validações básicas
+    if (!descricao) {
+      showToast('⚠️ Preencha a Descrição', 'warning');
+      return;
+    }
+    if (!valorStr) {
+      showToast('⚠️ Preencha o Valor', 'warning');
+      return;
+    }
+    if (!cartao) {
+      showToast('⚠️ Selecione um Cartão', 'warning');
+      return;
+    }
+    if (!dataVencimentoStr) {
+      showToast('⚠️ Preencha a Data de Vencimento', 'warning');
       return;
     }
 
-    const valor = parseFloat(valorStr.replace(',', '.'));
+    // Converter valor (remover ponto de milhar, converter vírgula)
+    const valorLimpo = valorStr.replace(/\./g, '').replace(',', '.');
+    const valor = parseFloat(valorLimpo);
     if (isNaN(valor) || valor <= 0) {
-      showToast('⚠️ Valor inválido', 'warning');
+      showToast('⚠️ Valor deve ser maior que zero', 'warning');
       return;
     }
 
-    const valueCents = Math.round(valor * 100);
-
-    // Função auxiliar para validar e converter data
-    const parseDate = (dateStr, isRequired = false) => {
-      if (!dateStr) {
-        return isRequired ? null : todayISO();
-      }
-
-      // Validar formato: deve ter exatamente 10 caracteres (DD/MM/YYYY)
-      if (dateStr.length !== 10 || dateStr[2] !== '/' || dateStr[5] !== '/') {
-        return null;
-      }
-
+    // Converter datas (DD/MM/YYYY → YYYY-MM-DD)
+    const convertDate = (dateStr) => {
+      if (!dateStr || dateStr.length !== 10) return null;
       const parts = dateStr.split('/');
-      if (parts.length === 3) {
-        const dia = parseInt(parts[0]);
-        const mes = parseInt(parts[1]);
-        const ano = parseInt(parts[2]);
-
-        if (!isNaN(dia) && !isNaN(mes) && !isNaN(ano) &&
-            dia >= 1 && dia <= 31 &&
-            mes >= 1 && mes <= 12 &&
-            parts[2].length === 4 &&
-            ano >= 2000 && ano <= 2099) {
-          return ano + '-' + ('0' + mes).slice(-2) + '-' + ('0' + dia).slice(-2);
-        }
-      }
-      return null;
+      if (parts.length !== 3) return null;
+      const dia = parseInt(parts[0]);
+      const mes = parseInt(parts[1]);
+      const ano = parseInt(parts[2]);
+      if (isNaN(dia) || isNaN(mes) || isNaN(ano)) return null;
+      if (dia < 1 || dia > 31 || mes < 1 || mes > 12 || ano < 2000 || ano > 2099) return null;
+      return ano + '-' + ('0' + mes).slice(-2) + '-' + ('0' + dia).slice(-2);
     };
 
-    // Data de compra (opcional, padrão hoje)
-    let compraData = parseDate(dataCompraStr, false);
-    if (!compraData && dataCompraStr) {
-      showToast('⚠️ Data de Compra inválida. Use DD/MM/YYYY', 'warning');
-      return;
-    }
+    const dataCompra = dataCompraStr ? convertDate(dataCompraStr) : todayISO();
+    const dataVencimento = convertDate(dataVencimentoStr);
 
-    // Data de vencimento (obrigatória para compras no cartão)
-    let dataVencimento = null;
-    if (!dataVencimentoStr) {
-      showToast('⚠️ Data de Vencimento é obrigatória', 'warning');
-      return;
-    }
-    dataVencimento = parseDate(dataVencimentoStr, true);
     if (!dataVencimento) {
-      showToast('⚠️ Data de Vencimento inválida. Use DD/MM/YYYY', 'warning');
+      showToast('⚠️ Data de Vencimento inválida (use DD/MM/YYYY)', 'warning');
       return;
     }
 
-    // Criar despesa parcelada para cartão
+    // Criar e adicionar despesa
+    const valueCents = Math.round(valor * 100);
     const payload = {
       valueCents: valueCents,
       description: descricao,
       installments: novaCompraParcelas,
-      date: compraData,
+      date: dataCompra,
       dataVencimento: dataVencimento,
-      purchaseDate: compraData,
+      purchaseDate: dataCompra,
       cartao: cartao,
       createdAt: new Date().toISOString()
     };
@@ -3960,7 +4721,7 @@ footer.hint {
     addExpense(payload);
     showToast('✓ Compra parcelada adicionada (' + novaCompraParcelas + 'x)', 'success');
 
-    // Reset state
+    // Limpar formulário
     novaCompraParcelas = 1;
     updateCompraParcValue();
     closeModal('modalNovaCompraCartao');
@@ -3972,6 +4733,33 @@ footer.hint {
   // Auto-format date inputs for card form
   formatDateInput(document.getElementById('compraDataCompra'));
   formatDateInput(document.getElementById('compraDataVencimento'));
+
+  // REEMBOLSOS FORM
+  const handleNovoReembolsoSubmit = (ev) => {
+    ev.preventDefault();
+    const valor = document.getElementById('reembolsoValor').value.trim();
+    const descricao = document.getElementById('reembolsoDescricao').value.trim();
+
+    if (!valor) {
+      alert('Por favor, digite um valor');
+      return;
+    }
+
+    const valorLimpo = valor.replace(/\./g, '').replace(',', '.');
+    const valorNum = parseFloat(valorLimpo);
+
+    if (isNaN(valorNum) || valorNum <= 0) {
+      alert('Valor inválido');
+      return;
+    }
+
+    addReembolso(valorNum, descricao);
+    updateReembolsosModal();
+    renderSummary();
+    document.getElementById('novoReembolsoForm').reset();
+  };
+
+  document.getElementById('novoReembolsoForm')?.addEventListener('submit', handleNovoReembolsoSubmit);
 
   const RENDA_KEY = 'fluxo_renda_config';
 
@@ -4011,6 +4799,7 @@ footer.hint {
     };
     try {
       localStorage.setItem(SUMMARY_KEY, JSON.stringify(config));
+      if (supabaseConfig.enabled) scheduleAutoSync();
     } catch(e) {}
     return config;
   };
@@ -4089,6 +4878,7 @@ footer.hint {
       const chave = contaId + '_' + ano + '-' + pad2(mes + 1);
       valores[chave] = valor;
       localStorage.setItem(CONTAS_VALORES_MES_KEY, JSON.stringify(valores));
+      if (supabaseConfig.enabled) scheduleAutoSync();
     } catch(e) {
       // Erro ao salvar valor do mês no localStorage
     }
@@ -4138,7 +4928,45 @@ footer.hint {
   const saveContasFixas = (contas) => {
     try {
       localStorage.setItem(CONTAS_KEY, JSON.stringify(contas));
+      if (supabaseConfig.enabled) scheduleAutoSync();
     } catch(e) {}
+  };
+
+  // REEMBOLSOS
+  const REEMBOLSOS_KEY = 'fluxo_reembolsos';
+
+  const loadReembolsos = () => {
+    try {
+      const stored = localStorage.getItem(REEMBOLSOS_KEY);
+      if (stored) return JSON.parse(stored);
+    } catch(e) {}
+    return [];
+  };
+
+  const saveReembolsos = (reembolsos) => {
+    try {
+      localStorage.setItem(REEMBOLSOS_KEY, JSON.stringify(reembolsos));
+      if (supabaseConfig.enabled) scheduleAutoSync();
+    } catch(e) {}
+  };
+
+  const addReembolso = (valor, descricao) => {
+    const reembolsos = loadReembolsos();
+    reembolsos.push({
+      id: Date.now(),
+      valor: parseFloat(valor),
+      descricao: descricao || 'Reembolso',
+      data: new Date().toISOString().split('T')[0]
+    });
+    saveReembolsos(reembolsos);
+    return reembolsos;
+  };
+
+  const deleteReembolso = (id) => {
+    let reembolsos = loadReembolsos();
+    reembolsos = reembolsos.filter(r => r.id !== id);
+    saveReembolsos(reembolsos);
+    return reembolsos;
   };
 
   // Helper function to get base name without parcel numbers
@@ -4181,6 +5009,7 @@ footer.hint {
     contaEmEdicao = contaId;
     document.getElementById('editarContaNome').textContent = 'Editar ' + conta.nome;
     document.getElementById('editarContaValorInput').value = conta.valor.toFixed(2).replace('.', ',');
+    document.getElementById('editarContaDiaInput').value = conta.dia.toString();
     document.getElementById('editarContaValorInput').focus();
     openModal('modalEditarContaFixa');
   };
@@ -4208,12 +5037,26 @@ footer.hint {
     ev.preventDefault();
     if (!contaEmEdicao) return;
 
-    const input = document.getElementById('editarContaValorInput');
-    const valor = parseFloat(input.value.replace(',', '.'));
+    const valorInput = document.getElementById('editarContaValorInput');
+    const diaInput = document.getElementById('editarContaDiaInput');
+    const valor = parseFloat(valorInput.value.replace(',', '.'));
+    const diaStr = diaInput.value.trim();
 
     if (isNaN(valor) || valor < 0) {
       alert('Por favor, digite um valor válido');
       return;
+    }
+
+    // Validar dia
+    let dia = null;
+    if (diaStr === 'quinto_util') {
+      dia = 'quinto_util';
+    } else {
+      dia = parseInt(diaStr);
+      if (isNaN(dia) || dia < 1 || dia > 31) {
+        alert('Por favor, digite um dia válido (1-31) ou "quinto_util"');
+        return;
+      }
     }
 
     const conta = contasFixas[contaEmEdicao];
@@ -4222,8 +5065,9 @@ footer.hint {
     if (contasVariaveis.includes(contaEmEdicao)) {
       setValorContaMes(contaEmEdicao, state.viewYear, state.viewMonth, valor);
     } else {
-      // Se é conta fixa, salva normalmente
+      // Se é conta fixa, salva valor E dia
       conta.valor = valor;
+      conta.dia = dia;
       saveContasFixas(contasFixas);
     }
 
@@ -4234,9 +5078,14 @@ footer.hint {
     }
 
     closeModal('modalEditarContaFixa');
-    alert('Valor atualizado com sucesso!');
+    alert('Conta atualizada com sucesso! (Valor e vencimento)');
     contaEmEdicao = null;
     renderAll();
+
+    // Sincronizar mudanças
+    if (supabaseConfig.enabled) {
+      syncConfigurationsToSupabase().catch(e => console.log('Sync error:', e));
+    }
   });
 
   const renderContasFixasModal = () => {
@@ -4257,14 +5106,11 @@ footer.hint {
       { id: 'internet', nome: 'Internet', dia: 10 },
       { id: 'vivo_celular', nome: 'Vivo Celular (Iasmim)', dia: 6 },
       { id: 'vivo_telefone', nome: 'Vivo Telefone (Carla)', dia: 10 },
-      { id: 'mercado_pago_carla', nome: 'Mercado Pago (Carla)', dia: 4 },
-      { id: 'sicob', nome: 'Sicob (Carla)', dia: 11 },
       { id: 'porto_carla', nome: 'Porto Seguro (Carla)', dia: 7 },
       { id: 'dindin', nome: 'Dindin Santander', dia: 7 },
       { id: 'porto_iasmim', nome: 'Porto Seguro (Iasmim)', dia: 8 },
       { id: 'santander_carla', nome: 'Santander (Carla)', dia: 26 },
       { id: 'santander_iasmim', nome: 'Santander (Iasmim)', dia: 9 },
-      { id: 'mercado_pago_iasmim', nome: 'Mercado Pago (Iasmim)', dia: 4 },
       { id: 'otica', nome: 'Ótica (Carla)', dia: 10 },
       { id: 'renata', nome: 'Renata (Carla)', dia: 'quinto_util' },
       { id: 'financiamento', nome: 'Financiamento Carro', dia: 25 }
@@ -4412,6 +5258,7 @@ footer.hint {
     };
     try {
       localStorage.setItem(RENDA_KEY, JSON.stringify(config));
+      if (supabaseConfig.enabled) scheduleAutoSync();
     } catch(e) {}
     return config;
   };
@@ -4426,8 +5273,65 @@ footer.hint {
     renderSummary();
   });
 
-  const boot = () => {
+  // Função para mesclar dados de backup com dados existentes
+  const ensureBackupDataLoaded = () => {
+    // Verifique se há dados críticos, se não, use valores padrão mínimos
+    const hasExpenses = state.expenses && state.expenses.length > 0;
+    const hasContasFixas = Object.keys(loadContasFixas()).length > 0;
+    const hasRendaConfig = loadRendaConfig().salarioCarla > 0;
+
+    // Se faltam dados críticos, é porque a app está vazia
+    if (!hasExpenses || !hasContasFixas || !hasRendaConfig) {
+      console.log('[INIT] Detectado dados incompletos, restaurando configuração padrão...');
+
+      // Carregar configuração padrão se necessário
+      if (!hasContasFixas) {
+        // Contas fixas padrão já estão no loadContasFixas()
+        const defaultContas = loadContasFixas();
+        localStorage.setItem('fluxo_contas', JSON.stringify(defaultContas));
+        console.log('[INIT] ✓ Contas fixas restauradas');
+      }
+
+      if (!hasRendaConfig) {
+        const defaultRenda = {
+          salarioCarla: 1961.79,
+          salarioIasmim: 5213.57,
+          emprestimoPersonal: 597.23,
+          abono: 0,
+          meritocracia: 0
+        };
+        localStorage.setItem('fluxo_renda_config', JSON.stringify(defaultRenda));
+        console.log('[INIT] ✓ Renda restaurada');
+      }
+
+      const defaultSummary = {
+        valeAlimentacaoCarla: 191.92,
+        valeAlimentacaoIasmim: 374.00
+      };
+      localStorage.setItem('fluxo_summary_config', JSON.stringify(defaultSummary));
+      console.log('[INIT] ✓ Vale alimentação restaurado');
+    }
+  };
+
+  const boot = async () => {
+    // Carregar dados locais primeiro
     loadFromStorage();
+
+    // Garantir que configuração padrão está presente
+    ensureBackupDataLoaded();
+
+    // Recarregar dados após garantir backup
+    loadFromStorage();
+
+    // Carregar configuração do Supabase e tentar buscar dados da nuvem
+    loadSupabaseConfig();
+    if (supabaseConfig.enabled) {
+      console.log('[SYNC] Carregando dados do Supabase na inicialização...');
+      await loadInitialDataFromSupabase();
+      // Iniciar polling de background para detectar mudanças de outros dispositivos
+      startSyncPolling();
+    }
+
     el.dateInput.value = formatDateToDMY(todayISO());
     renderInstallments();
     renderAll();
@@ -4536,12 +5440,46 @@ footer.hint {
   };
 
   // Configuração Firebase
-  // Firebase config removed - using Supabase only
+  const firebaseConfig = {
+    apiKey: "AIzaSyABpWSJh2P_SASAdQxJz2XD5IStjrwx2SQ",
+    authDomain: "fluxo-financeiro-ee3a3.firebaseapp.com",
+    projectId: "fluxo-financeiro-ee3a3",
+    storageBucket: "fluxo-financeiro-ee3a3.firebasestorage.app",
+    messagingSenderId: "255340364435",
+    appId: "1:255340364435:web:10f8093626c3315021c366"
+  };
 
   // Registrar Service Worker para PWA
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/service-worker.js').catch(error => {
-      // Service Worker registration failed - this is OK
+    navigator.serviceWorker.register('/service-worker.js').then(registration => {
+      // Após o service worker estar registrado, configurar Firebase Messaging
+      if ('firebase' in window && firebase.messaging) {
+        try {
+          const messaging = firebase.messaging();
+
+          // Pedir permissão para notificações
+          Notification.requestPermission().then(permission => {
+            if (permission === 'granted') {
+              // Registrar para receber mensagens quando o app está em primeiro plano
+              messaging.onMessage(payload => {
+                const notificationTitle = payload.notification.title;
+                const notificationOptions = {
+                  body: payload.notification.body,
+                  icon: '💰',
+                  badge: '💰',
+                  tag: 'fluxo-notificacao'
+                };
+
+                registration.showNotification(notificationTitle, notificationOptions);
+              });
+            }
+          });
+        } catch (error) {
+          // Erro ao configurar Firebase Messaging
+        }
+      }
+    }).catch(error => {
+      // Erro ao registrar Service Worker
     });
   }
 
@@ -4582,9 +5520,22 @@ footer.hint {
 </script>
 
 <!-- Firebase App (modular version) -->
-<!-- Firebase Messaging removed -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js"></script>
 
-<!-- Firebase removed - using Supabase only -->
+<script>
+  // Inicializar Firebase
+  if (typeof firebase !== 'undefined') {
+    firebase.initializeApp({
+      apiKey: "AIzaSyABpWSJh2P_SASAdQxJz2XD5IStjrwx2SQ",
+      authDomain: "fluxo-financeiro-ee3a3.firebaseapp.com",
+      projectId: "fluxo-financeiro-ee3a3",
+      storageBucket: "fluxo-financeiro-ee3a3.firebasestorage.app",
+      messagingSenderId: "255340364435",
+      appId: "1:255340364435:web:10f8093626c3315021c366"
+    });
+  }
+</script>
 
 </body>
 </html>
