@@ -2807,6 +2807,9 @@ footer.hint {
     const baseDate = e.dataVencimento || e.date;
 
     for (let i = 0; i < n; i++) {
+      // Para parcelas: primeira usa a data fornecida, depois +1 mês para cada
+      const monthsToAdd = i;
+
       occs.push({
         occId: e.id + '#' + i,
         expenseId: e.id,
@@ -2815,8 +2818,8 @@ footer.hint {
         valueCents: base + (i < remainder ? 1 : 0),
         description: e.description,
         purchaseDate: e.date,
-        date: addMonthsClamped(baseDate, i),
-        dataVencimento: addMonthsClamped(baseDate, i),
+        date: addMonthsClamped(baseDate, monthsToAdd),
+        dataVencimento: addMonthsClamped(baseDate, monthsToAdd),
         createdAt: e.createdAt,
         cartao: e.cartao
       });
