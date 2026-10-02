@@ -2048,44 +2048,21 @@ footer.hint {
 
       console.log('[SYNC] ✓ Carregados', cloudExpenses.length, 'registros iniciais');
 
-      // Construir mapa de dados da nuvem
-      const cloudMap = new Map();
-      cloudExpenses.forEach(e => {
-        if (e.id) {
-          cloudMap.set(e.id, {
-            id: e.id,
-            date: e.date || e.data || '',
-            description: e.description || '',
-            valueCents: parseInt(e.valuecents || e.valueCents || 0),
-            installments: parseInt(e.installments || 1),
-            createdAt: e.createdat || e.createdAt || new Date().toISOString(),
-            cartao: e.cartao || 'cartao_santander',
-            dataVencimento: e.datavencimento || e.dataVencimento || e.date || ''
-          });
-        }
-      });
+      // IMPORTANTE: Substituir COMPLETAMENTE com dados do Supabase
+      // Descartar dados locais padrão (exp_0, exp_1, etc) para evitar duplicatas
+      state.expenses = cloudExpenses.map(e => ({
+        id: e.id,
+        date: e.date || e.data || '',
+        description: e.description || '',
+        valueCents: parseInt(e.valuecents || e.valueCents || 0),
+        installments: parseInt(e.installments || 1),
+        createdAt: e.createdat || e.createdAt || new Date().toISOString(),
+        cartao: e.cartao || 'cartao_santander',
+        dataVencimento: e.datavencimento || e.dataVencimento || e.date || ''
+      }));
 
-      // Se tem dados locais, fazer merge com comparação de timestamps
-      if (state.expenses.length > 0) {
-        const merged = [];
-        const seenIds = new Set();
-
-        // Para sincronização entre dispositivos, SEMPRE usar Cloud
-        // Isso garante que todos os devices veem os mesmos dados
-        cloudMap.forEach((cloudExp, id) => {
-          merged.push(cloudExp);  // Cloud tem PRIORIDADE ABSOLUTA
-          seenIds.add(id);
-        });
-
-        // Não adicionar dados locais antigos - usar APENAS dados do Supabase
-        // Isso evita duplicatas e conflitos de sincronização
-        state.expenses = merged;
-      } else {
-        // Nenhum dado local, usar dados da nuvem
-        state.expenses = Array.from(cloudMap.values());
-      }
-
-      console.log('[SYNC] ✓ Inicializado com', state.expenses.length, 'registros');
+      console.log('[SYNC] ✓ Inicializado com', state.expenses.length, 'registros do Supabase');
+      console.log('[SYNC] ✓ Dados locais foram descartados - usando APENAS Supabase');
       return true;
     } catch (e) {
       console.error('[SYNC] Erro ao carregar dados iniciais:', e);
