@@ -4924,6 +4924,121 @@ footer.hint {
     renderSummary();
   });
 
+  // ============================================================================
+  // SUPABASE REALTIME SYNC - Sincronização em Tempo Real a cada 3 segundos
+  // ============================================================================
+  let pollInterval = null;
+  let isLoadingFromCloud = false;
+
+  async function startRealtimeSync() {
+    if (!supabaseConfig.enabled) {
+      console.log('[REALTIME] Supabase não configurado');
+      return;
+    }
+
+    console.log('[REALTIME] ✓ Iniciando sincronização em tempo real (a cada 3 segundos)...');
+
+    // Polling a cada 3 segundos para detectar mudanças de outros dispositivos
+    if (pollInterval) clearInterval(pollInterval);
+
+    pollInterval = setInterval(async () => {
+      if (isLoadingFromCloud) return;
+      await checkAndMergeCloudChanges();
+    }, 3000);
+  }
+
+  async function checkAndMergeCloudChanges() {
+    if (!supabaseConfig.enabled || !supabaseConfig.url || !supabaseConfig.key) {
+      return;
+    }
+
+    try {
+      isLoadingFromCloud = true;
+
+      const response = await fetch(
+        `${supabaseConfig.url}/rest/v1/expenses?order=created_at.asc`,
+        {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${supabaseConfig.key}`,
+            'apikey': supabaseConfig.key,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      if (!response.ok) {
+        return;
+      }
+
+      const cloudExpenses = await response.json();
+      if (!cloudExpenses || cloudExpenses.length === 0) {
+        return;
+      }
+
+      // Construir mapa dos dados da nuvem
+      const cloudMap = new Map();
+      cloudExpenses.forEach(e => {
+        if (e.id) {
+          cloudMap.set(e.id, {
+            id: e.id,
+            date: e.date || e.data || '',
+            description: e.description || '',
+            valueCents: parseInt(e.valuecents || e.valueCents || 0),
+            installments: parseInt(e.installments || 1),
+            createdAt: e.createdat || e.createdAt || new Date().toISOString(),
+            cartao: e.cartao || 'cartao_santander',
+            dataVencimento: e.datavencimento || e.dataVencimento || e.date || ''
+          });
+        }
+      });
+
+      // Construir mapa dos dados locais
+      const localMap = new Map();
+      state.expenses.forEach(e => {
+        if (e.id) localMap.set(e.id, e);
+      });
+
+      // Verificar se houve mudanças
+      let hasChanges = false;
+      cloudMap.forEach((cloudExp, id) => {
+        if (!localMap.has(id)) {
+          hasChanges = true;
+          console.log('[REALTIME] Novo dado detectado:', id);
+        }
+      });
+
+      localMap.forEach((localExp, id) => {
+        if (!cloudMap.has(id)) {
+          hasChanges = true;
+        }
+      });
+
+      if (hasChanges) {
+        console.log('[REALTIME] ✓ Atualizando dados - ' + cloudMap.size + ' despesas sincronizadas');
+
+        // Merge: nuvem tem prioridade
+        const merged = new Map();
+        cloudMap.forEach((val, key) => merged.set(key, val));
+        localMap.forEach((val, key) => {
+          if (!cloudMap.has(key)) {
+            merged.set(key, val);
+          }
+        });
+
+        state.expenses = Array.from(merged.values());
+        saveToStorage();
+        renderAll();
+        renderCalendar();
+        updateSyncStatus('success');
+      }
+    } catch (e) {
+      // Silencioso - não spam no console
+    } finally {
+      isLoadingFromCloud = false;
+    }
+  }
+
   const boot = async () => {
     // Carregar dados locais primeiro
     loadFromStorage();
@@ -4933,8 +5048,8 @@ footer.hint {
     if (supabaseConfig.enabled) {
       console.log('[SYNC] Carregando dados do Supabase na inicialização...');
       await loadInitialDataFromSupabase();
-      // Iniciar polling de background para detectar mudanças de outros dispositivos
-      startSyncPolling();
+      // Iniciar sync em tempo real
+      startRealtimeSync();
     }
 
     el.dateInput.value = formatDateToDMY(todayISO());
