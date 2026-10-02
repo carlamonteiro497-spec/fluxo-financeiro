@@ -2070,32 +2070,15 @@ footer.hint {
         const merged = [];
         const seenIds = new Set();
 
-        // Comparar cada expense - usar versão mais recente
+        // Para sincronização entre dispositivos, SEMPRE usar Cloud
+        // Isso garante que todos os devices veem os mesmos dados
         cloudMap.forEach((cloudExp, id) => {
-          const localExp = state.expenses.find(e => e.id === id);
-          
-          if (!localExp) {
-            merged.push(cloudExp);
-          } else {
-            const cloudTime = new Date(cloudExp.updatedAt || cloudExp.createdAt || 0).getTime();
-            const localTime = new Date(localExp.updatedAt || localExp.createdAt || 0).getTime();
-
-            if (localTime >= cloudTime) {
-              merged.push(localExp);  // Local é mais recente OU igual (preferir local)
-            } else {
-              merged.push(cloudExp);  // Cloud é mais recente
-            }
-          }
+          merged.push(cloudExp);  // Cloud tem PRIORIDADE ABSOLUTA
           seenIds.add(id);
         });
 
-        // Adicionar dados locais não sincronizados
-        state.expenses.forEach(localExp => {
-          if (localExp.id && !seenIds.has(localExp.id)) {
-            merged.push(localExp);
-          }
-        });
-
+        // Não adicionar dados locais antigos - usar APENAS dados do Supabase
+        // Isso evita duplicatas e conflitos de sincronização
         state.expenses = merged;
       } else {
         // Nenhum dado local, usar dados da nuvem
