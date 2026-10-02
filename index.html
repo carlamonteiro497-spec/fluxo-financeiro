@@ -1235,10 +1235,6 @@ footer.hint {
 
 </style>
 
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js"></script>
-<script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js"></script>
 </head>
 <body>
 
@@ -2279,9 +2275,6 @@ footer.hint {
 
   // Inicializar hash
   lastSyncHash = getDataHash();
-
-  let db = null;
-  let expensesCol = null;
 
   const el = {};
   ['summaryTotal', 'summaryCount', 'editingFlag', 'editingText', 'cancelEdit',
@@ -3649,68 +3642,6 @@ footer.hint {
 
   window.deletarContaFixa = deletarContaFixa;
 
-  const initDb = dbNs => {
-    db = dbNs;
-    expensesCol = db.collection('passou_anotou_expenses');
-
-    // Sempre limpa localStorage (para não usar dados antigos duplicados)
-    localStorage.removeItem(STORAGE_KEY);
-
-    // Verifica Firestore e limpa se tiver mais que 100 docs (duplicação)
-    expensesCol.get().then(qs => {
-      // Se tiver MUITOS docs (duplicação), deleta tudo
-      if (qs.docs.length > 100) {
-        const promises = qs.docs.map(doc => expensesCol.doc(doc.id).delete());
-        return Promise.all(promises).then(() => 'deleted');
-      } else if (qs.docs.length === 0) {
-        return 'load_default';
-      } else {
-        return 'use_existing';
-      }
-    }).then(action => {
-      if (action === 'deleted' || action === 'load_default') {
-        const promises = defaultExpenses.map(e => {
-          return expensesCol.add({
-            date: e.date,
-            description: e.description,
-            valueCents: e.valueCents,
-            installments: e.installments,
-            createdAt: new Date(e.date + 'T10:00:00Z').toISOString()
-          });
-        });
-        return Promise.all(promises);
-      }
-    }).then(() => {
-      setupListener();
-    }).catch(err => {
-      setupListener();
-    });
-
-    const setupListener = () => {
-      expensesCol.orderBy('date', 'desc').limit(500).onSnapshot(
-        qs => {
-          state.expenses = qs.docs.map(snap => {
-            const d = snap.data() || {};
-            return {
-              id: snap.id,
-              valueCents: typeof d.valueCents === 'number' ? d.valueCents : 0,
-              description: d.description || '',
-              installments: d.installments || 1,
-              date: d.date || todayISO(),
-              cartao: d.cartao || 'cartao_santander',
-              createdAt: d.createdAt || ''
-            };
-          });
-          saveToStorage();
-          renderAll();
-          renderCalendar();
-        },
-        err => {
-          // Erro ao ouvir atualizações do Firestore
-        }
-      );
-    };
-  };
 
   window.openModal = openModal;
   window.closeModal = closeModal;
@@ -4901,15 +4832,15 @@ footer.hint {
       return;
     }
 
-    console.log('[REALTIME] ✓ Iniciando sincronização em tempo real (a cada 3 segundos)...');
+    console.log('[REALTIME] ✓ Iniciando sincronização em tempo real (a cada 30 segundos)...');
 
-    // Polling a cada 3 segundos para detectar mudanças de outros dispositivos
+    // Polling a cada 30 segundos para detectar mudanças de outros dispositivos
     if (pollInterval) clearInterval(pollInterval);
 
     pollInterval = setInterval(async () => {
       if (isLoadingFromCloud) return;
       await checkAndMergeCloudChanges();
-    }, 3000);
+    }, 30000);
   }
 
   async function checkAndMergeCloudChanges() {
@@ -5025,17 +4956,6 @@ footer.hint {
     updateDespesasMonthYear();
     updateContasFixasTotal();
     renderCalendar();
-
-    // Tenta inicializar o banco de dados para sincronização
-    if (window.claude && typeof window.claude.use === 'function') {
-      window.claude.use('db').then(dbNs => {
-        if (dbNs) {
-          initDb(dbNs);
-        }
-      }).catch(err => {
-        // Banco de dados não disponível, usando localStorage
-      });
-    }
   };
 
   // Verificar vencimentos próximos (hoje e amanhã)
@@ -5124,46 +5044,10 @@ footer.hint {
     if (container) container.classList.remove('show');
   };
 
-  // Configuração Firebase
-  const firebaseConfig = {
-    apiKey: "AIzaSyABpWSJh2P_SASAdQxJz2XD5IStjrwx2SQ",
-    authDomain: "fluxo-financeiro-ee3a3.firebaseapp.com",
-    projectId: "fluxo-financeiro-ee3a3",
-    storageBucket: "fluxo-financeiro-ee3a3.firebasestorage.app",
-    messagingSenderId: "255340364435",
-    appId: "1:255340364435:web:10f8093626c3315021c366"
-  };
 
   // Registrar Service Worker para PWA
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/service-worker.js').then(registration => {
-      // Após o service worker estar registrado, configurar Firebase Messaging
-      if ('firebase' in window && firebase.messaging) {
-        try {
-          const messaging = firebase.messaging();
-
-          // Pedir permissão para notificações
-          Notification.requestPermission().then(permission => {
-            if (permission === 'granted') {
-              // Registrar para receber mensagens quando o app está em primeiro plano
-              messaging.onMessage(payload => {
-                const notificationTitle = payload.notification.title;
-                const notificationOptions = {
-                  body: payload.notification.body,
-                  icon: '💰',
-                  badge: '💰',
-                  tag: 'fluxo-notificacao'
-                };
-
-                registration.showNotification(notificationTitle, notificationOptions);
-              });
-            }
-          });
-        } catch (error) {
-          // Erro ao configurar Firebase Messaging
-        }
-      }
-    }).catch(error => {
+    navigator.serviceWorker.register('/service-worker.js').catch(error => {
       // Erro ao registrar Service Worker
     });
   }
@@ -5202,24 +5086,6 @@ footer.hint {
   window.manualSyncSupabase = manualSyncSupabase;
   window.updateSyncStatus = updateSyncStatus;
 })();
-</script>
-
-<!-- Firebase App (modular version) -->
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js"></script>
-
-<script>
-  // Inicializar Firebase
-  if (typeof firebase !== 'undefined') {
-    firebase.initializeApp({
-      apiKey: "AIzaSyABpWSJh2P_SASAdQxJz2XD5IStjrwx2SQ",
-      authDomain: "fluxo-financeiro-ee3a3.firebaseapp.com",
-      projectId: "fluxo-financeiro-ee3a3",
-      storageBucket: "fluxo-financeiro-ee3a3.firebasestorage.app",
-      messagingSenderId: "255340364435",
-      appId: "1:255340364435:web:10f8093626c3315021c366"
-    });
-  }
 </script>
 
 </body>
