@@ -1235,6 +1235,10 @@ footer.hint {
 
 </style>
 
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js"></script>
 </head>
 <body>
 
@@ -1988,19 +1992,25 @@ footer.hint {
     const seenIds = new Set();
 
     // Comparar cada expense na nuvem com versão local
-    // IMPORTANTE: Para sincronização entre dispositivos, CLOUD tem PRIORIDADE!
     cloudMap.forEach((cloudExp, id) => {
       const localExp = state.expenses.find(e => e.id === id);
-
+      
       if (!localExp) {
         // Não existe localmente, usar versão da nuvem
         merged.push(cloudExp);
-        console.log('[SYNC] Adicionando do cloud:', id);
       } else {
-        // Para sincronização entre dispositivos, SEMPRE usar dados do Cloud (Supabase)
-        // Isso garante que todos os devices vejam os mesmos dados
-        merged.push(cloudExp);  // CLOUD tem PRIORIDADE ABSOLUTA
-        console.log('[SYNC] Sincronizando com versão do cloud para:', id);
+        // Comparar timestamps para determinar qual é mais recente
+        const cloudTime = new Date(cloudExp.updatedAt || cloudExp.createdAt || 0).getTime();
+        const localTime = new Date(localExp.updatedAt || localExp.createdAt || 0).getTime();
+
+        // Use whichever version is newer (preferir local se timestamps forem iguais)
+        if (localTime >= cloudTime) {
+          merged.push(localExp);  // Local é mais recente OU igual (preferir local)
+          console.log('[SYNC] Mantendo versão local para:', id);
+        } else {
+          merged.push(cloudExp);  // Cloud é mais recente
+          console.log('[SYNC] Usando versão da nuvem para:', id);
+        }
       }
       seenIds.add(id);
     });
@@ -2044,21 +2054,61 @@ footer.hint {
 
       console.log('[SYNC] ✓ Carregados', cloudExpenses.length, 'registros iniciais');
 
-      // IMPORTANTE: Substituir COMPLETAMENTE com dados do Supabase
-      // Descartar dados locais padrão (exp_0, exp_1, etc) para evitar duplicatas
-      state.expenses = cloudExpenses.map(e => ({
-        id: e.id,
-        date: e.date || e.data || '',
-        description: e.description || '',
-        valueCents: parseInt(e.valuecents || e.valueCents || 0),
-        installments: parseInt(e.installments || 1),
-        createdAt: e.createdat || e.createdAt || new Date().toISOString(),
-        cartao: e.cartao || 'cartao_santander',
-        dataVencimento: e.datavencimento || e.dataVencimento || e.date || ''
-      }));
+      // Construir mapa de dados da nuvem
+      const cloudMap = new Map();
+      cloudExpenses.forEach(e => {
+        if (e.id) {
+          cloudMap.set(e.id, {
+            id: e.id,
+            date: e.date || e.data || '',
+            description: e.description || '',
+            valueCents: parseInt(e.valuecents || e.valueCents || 0),
+            installments: parseInt(e.installments || 1),
+            createdAt: e.createdat || e.createdAt || new Date().toISOString(),
+            cartao: e.cartao || 'cartao_santander',
+            dataVencimento: e.datavencimento || e.dataVencimento || e.date || ''
+          });
+        }
+      });
 
-      console.log('[SYNC] ✓ Inicializado com', state.expenses.length, 'registros do Supabase');
-      console.log('[SYNC] ✓ Dados locais foram descartados - usando APENAS Supabase');
+      // Se tem dados locais, fazer merge com comparação de timestamps
+      if (state.expenses.length > 0) {
+        const merged = [];
+        const seenIds = new Set();
+
+        // Comparar cada expense - usar versão mais recente
+        cloudMap.forEach((cloudExp, id) => {
+          const localExp = state.expenses.find(e => e.id === id);
+          
+          if (!localExp) {
+            merged.push(cloudExp);
+          } else {
+            const cloudTime = new Date(cloudExp.updatedAt || cloudExp.createdAt || 0).getTime();
+            const localTime = new Date(localExp.updatedAt || localExp.createdAt || 0).getTime();
+
+            if (localTime >= cloudTime) {
+              merged.push(localExp);  // Local é mais recente OU igual (preferir local)
+            } else {
+              merged.push(cloudExp);  // Cloud é mais recente
+            }
+          }
+          seenIds.add(id);
+        });
+
+        // Adicionar dados locais não sincronizados
+        state.expenses.forEach(localExp => {
+          if (localExp.id && !seenIds.has(localExp.id)) {
+            merged.push(localExp);
+          }
+        });
+
+        state.expenses = merged;
+      } else {
+        // Nenhum dado local, usar dados da nuvem
+        state.expenses = Array.from(cloudMap.values());
+      }
+
+      console.log('[SYNC] ✓ Inicializado com', state.expenses.length, 'registros');
       return true;
     } catch (e) {
       console.error('[SYNC] Erro ao carregar dados iniciais:', e);
@@ -2275,6 +2325,9 @@ footer.hint {
 
   // Inicializar hash
   lastSyncHash = getDataHash();
+
+  let db = null;
+  let expensesCol = null;
 
   const el = {};
   ['summaryTotal', 'summaryCount', 'editingFlag', 'editingText', 'cancelEdit',
@@ -3536,11 +3589,7 @@ footer.hint {
     saveToStorage();
     renderAll();
     renderCalendar();
-    // SINCRONIZAR IMEDIATAMENTE para Supabase (não agendar!)
-    if (supabaseConfig.enabled) {
-      console.log('[SYNC] Sincronizando imediatamente após adicionar despesa...');
-      syncToSupabase().catch(e => console.error('[SYNC] Erro ao sincronizar:', e));
-    }
+    if (supabaseConfig.enabled) scheduleAutoSync();
 
     // Se tem Firestore, sincroniza
     if (db && expensesCol) {
@@ -3562,11 +3611,7 @@ footer.hint {
     if (e) {
       Object.assign(e, payload);
       saveToStorage();
-      // SINCRONIZAR IMEDIATAMENTE (não agendar!)
-      if (supabaseConfig.enabled) {
-        console.log('[SYNC] Sincronizando imediatamente após editar despesa...');
-        syncToSupabase().catch(e => console.error('[SYNC] Erro ao sincronizar:', e));
-      }
+      if (supabaseConfig.enabled) scheduleAutoSync();
     }
 
     // Sincroniza com Firestore se existir
@@ -3609,13 +3654,10 @@ footer.hint {
     renderCalendar();
     showToast('✓ Despesa deletada com sucesso', 'success');
 
-    // Sincronizar deleção com Supabase IMEDIATAMENTE
+    // Sincronizar deleção com Supabase IMEDIATAMENTE (não usar scheduleAutoSync)
     if (supabaseConfig.enabled && id.indexOf('local-') !== 0) {
-      console.log('[SYNC] Sincronizando deleção imediatamente...');
       deletarDoSupabase(id).then(() => {
         console.log('[SYNC] Deleção sincronizada com Supabase');
-        // Sincronizar estado completo para todos os devices
-        syncToSupabase().catch(e => console.error('[SYNC] Erro:', e));
       });
     }
 
@@ -3642,6 +3684,68 @@ footer.hint {
 
   window.deletarContaFixa = deletarContaFixa;
 
+  const initDb = dbNs => {
+    db = dbNs;
+    expensesCol = db.collection('passou_anotou_expenses');
+
+    // Sempre limpa localStorage (para não usar dados antigos duplicados)
+    localStorage.removeItem(STORAGE_KEY);
+
+    // Verifica Firestore e limpa se tiver mais que 100 docs (duplicação)
+    expensesCol.get().then(qs => {
+      // Se tiver MUITOS docs (duplicação), deleta tudo
+      if (qs.docs.length > 100) {
+        const promises = qs.docs.map(doc => expensesCol.doc(doc.id).delete());
+        return Promise.all(promises).then(() => 'deleted');
+      } else if (qs.docs.length === 0) {
+        return 'load_default';
+      } else {
+        return 'use_existing';
+      }
+    }).then(action => {
+      if (action === 'deleted' || action === 'load_default') {
+        const promises = defaultExpenses.map(e => {
+          return expensesCol.add({
+            date: e.date,
+            description: e.description,
+            valueCents: e.valueCents,
+            installments: e.installments,
+            createdAt: new Date(e.date + 'T10:00:00Z').toISOString()
+          });
+        });
+        return Promise.all(promises);
+      }
+    }).then(() => {
+      setupListener();
+    }).catch(err => {
+      setupListener();
+    });
+
+    const setupListener = () => {
+      expensesCol.orderBy('date', 'desc').limit(500).onSnapshot(
+        qs => {
+          state.expenses = qs.docs.map(snap => {
+            const d = snap.data() || {};
+            return {
+              id: snap.id,
+              valueCents: typeof d.valueCents === 'number' ? d.valueCents : 0,
+              description: d.description || '',
+              installments: d.installments || 1,
+              date: d.date || todayISO(),
+              cartao: d.cartao || 'cartao_santander',
+              createdAt: d.createdAt || ''
+            };
+          });
+          saveToStorage();
+          renderAll();
+          renderCalendar();
+        },
+        err => {
+          // Erro ao ouvir atualizações do Firestore
+        }
+      );
+    };
+  };
 
   window.openModal = openModal;
   window.closeModal = closeModal;
@@ -4820,121 +4924,6 @@ footer.hint {
     renderSummary();
   });
 
-  // ============================================================================
-  // SUPABASE REALTIME SYNC - Sincronização em Tempo Real a cada 3 segundos
-  // ============================================================================
-  let pollInterval = null;
-  let isLoadingFromCloud = false;
-
-  async function startRealtimeSync() {
-    if (!supabaseConfig.enabled) {
-      console.log('[REALTIME] Supabase não configurado');
-      return;
-    }
-
-    console.log('[REALTIME] ✓ Iniciando sincronização em tempo real (a cada 30 segundos)...');
-
-    // Polling a cada 30 segundos para detectar mudanças de outros dispositivos
-    if (pollInterval) clearInterval(pollInterval);
-
-    pollInterval = setInterval(async () => {
-      if (isLoadingFromCloud) return;
-      await checkAndMergeCloudChanges();
-    }, 30000);
-  }
-
-  async function checkAndMergeCloudChanges() {
-    if (!supabaseConfig.enabled || !supabaseConfig.url || !supabaseConfig.key) {
-      return;
-    }
-
-    try {
-      isLoadingFromCloud = true;
-
-      const response = await fetch(
-        `${supabaseConfig.url}/rest/v1/expenses?order=created_at.asc`,
-        {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${supabaseConfig.key}`,
-            'apikey': supabaseConfig.key,
-            'Content-Type': 'application/json'
-          }
-        }
-      );
-
-      if (!response.ok) {
-        return;
-      }
-
-      const cloudExpenses = await response.json();
-      if (!cloudExpenses || cloudExpenses.length === 0) {
-        return;
-      }
-
-      // Construir mapa dos dados da nuvem
-      const cloudMap = new Map();
-      cloudExpenses.forEach(e => {
-        if (e.id) {
-          cloudMap.set(e.id, {
-            id: e.id,
-            date: e.date || e.data || '',
-            description: e.description || '',
-            valueCents: parseInt(e.valuecents || e.valueCents || 0),
-            installments: parseInt(e.installments || 1),
-            createdAt: e.createdat || e.createdAt || new Date().toISOString(),
-            cartao: e.cartao || 'cartao_santander',
-            dataVencimento: e.datavencimento || e.dataVencimento || e.date || ''
-          });
-        }
-      });
-
-      // Construir mapa dos dados locais
-      const localMap = new Map();
-      state.expenses.forEach(e => {
-        if (e.id) localMap.set(e.id, e);
-      });
-
-      // Verificar se houve mudanças
-      let hasChanges = false;
-      cloudMap.forEach((cloudExp, id) => {
-        if (!localMap.has(id)) {
-          hasChanges = true;
-          console.log('[REALTIME] Novo dado detectado:', id);
-        }
-      });
-
-      localMap.forEach((localExp, id) => {
-        if (!cloudMap.has(id)) {
-          hasChanges = true;
-        }
-      });
-
-      if (hasChanges) {
-        console.log('[REALTIME] ✓ Atualizando dados - ' + cloudMap.size + ' despesas sincronizadas');
-
-        // Merge: nuvem tem prioridade
-        const merged = new Map();
-        cloudMap.forEach((val, key) => merged.set(key, val));
-        localMap.forEach((val, key) => {
-          if (!cloudMap.has(key)) {
-            merged.set(key, val);
-          }
-        });
-
-        state.expenses = Array.from(merged.values());
-        saveToStorage();
-        renderAll();
-        renderCalendar();
-        updateSyncStatus('success');
-      }
-    } catch (e) {
-      // Silencioso - não spam no console
-    } finally {
-      isLoadingFromCloud = false;
-    }
-  }
-
   const boot = async () => {
     // Carregar dados locais primeiro
     loadFromStorage();
@@ -4944,8 +4933,8 @@ footer.hint {
     if (supabaseConfig.enabled) {
       console.log('[SYNC] Carregando dados do Supabase na inicialização...');
       await loadInitialDataFromSupabase();
-      // Iniciar sync em tempo real
-      startRealtimeSync();
+      // Iniciar polling de background para detectar mudanças de outros dispositivos
+      startSyncPolling();
     }
 
     el.dateInput.value = formatDateToDMY(todayISO());
@@ -4956,6 +4945,17 @@ footer.hint {
     updateDespesasMonthYear();
     updateContasFixasTotal();
     renderCalendar();
+
+    // Tenta inicializar o banco de dados para sincronização
+    if (window.claude && typeof window.claude.use === 'function') {
+      window.claude.use('db').then(dbNs => {
+        if (dbNs) {
+          initDb(dbNs);
+        }
+      }).catch(err => {
+        // Banco de dados não disponível, usando localStorage
+      });
+    }
   };
 
   // Verificar vencimentos próximos (hoje e amanhã)
@@ -5044,10 +5044,46 @@ footer.hint {
     if (container) container.classList.remove('show');
   };
 
+  // Configuração Firebase
+  const firebaseConfig = {
+    apiKey: "AIzaSyABpWSJh2P_SASAdQxJz2XD5IStjrwx2SQ",
+    authDomain: "fluxo-financeiro-ee3a3.firebaseapp.com",
+    projectId: "fluxo-financeiro-ee3a3",
+    storageBucket: "fluxo-financeiro-ee3a3.firebasestorage.app",
+    messagingSenderId: "255340364435",
+    appId: "1:255340364435:web:10f8093626c3315021c366"
+  };
 
   // Registrar Service Worker para PWA
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/service-worker.js').catch(error => {
+    navigator.serviceWorker.register('/service-worker.js').then(registration => {
+      // Após o service worker estar registrado, configurar Firebase Messaging
+      if ('firebase' in window && firebase.messaging) {
+        try {
+          const messaging = firebase.messaging();
+
+          // Pedir permissão para notificações
+          Notification.requestPermission().then(permission => {
+            if (permission === 'granted') {
+              // Registrar para receber mensagens quando o app está em primeiro plano
+              messaging.onMessage(payload => {
+                const notificationTitle = payload.notification.title;
+                const notificationOptions = {
+                  body: payload.notification.body,
+                  icon: '💰',
+                  badge: '💰',
+                  tag: 'fluxo-notificacao'
+                };
+
+                registration.showNotification(notificationTitle, notificationOptions);
+              });
+            }
+          });
+        } catch (error) {
+          // Erro ao configurar Firebase Messaging
+        }
+      }
+    }).catch(error => {
       // Erro ao registrar Service Worker
     });
   }
@@ -5086,6 +5122,24 @@ footer.hint {
   window.manualSyncSupabase = manualSyncSupabase;
   window.updateSyncStatus = updateSyncStatus;
 })();
+</script>
+
+<!-- Firebase App (modular version) -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js"></script>
+
+<script>
+  // Inicializar Firebase
+  if (typeof firebase !== 'undefined') {
+    firebase.initializeApp({
+      apiKey: "AIzaSyABpWSJh2P_SASAdQxJz2XD5IStjrwx2SQ",
+      authDomain: "fluxo-financeiro-ee3a3.firebaseapp.com",
+      projectId: "fluxo-financeiro-ee3a3",
+      storageBucket: "fluxo-financeiro-ee3a3.firebasestorage.app",
+      messagingSenderId: "255340364435",
+      appId: "1:255340364435:web:10f8093626c3315021c366"
+    });
+  }
 </script>
 
 </body>
