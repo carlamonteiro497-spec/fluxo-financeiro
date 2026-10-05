@@ -2,10 +2,16 @@ import express from 'express';
 import cors from 'cors';
 import { createClient } from '@supabase/supabase-js';
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 dotenv.config();
 
 const app = express();
+
+// Configurar __dirname para ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Inicializar Supabase
 const supabase = createClient(
@@ -16,6 +22,9 @@ const supabase = createClient(
 // Middlewares
 app.use(cors());
 app.use(express.json());
+
+// Servir arquivos estáticos da pasta public
+app.use(express.static(path.join(__dirname, '../public')));
 
 // ============================================
 // API ENDPOINTS
@@ -92,9 +101,9 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'OK' });
 });
 
-// Health check na raiz
-app.get('/', (req, res) => {
-  res.json({ message: 'Fluxo Financeiro API - Real-time Sync' });
+// SPA fallback - servir index.html para qualquer rota não encontrada
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/index.html'));
 });
 
 // Exportar para Vercel Serverless
