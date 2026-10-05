@@ -6,7 +6,6 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
 
 // Inicializar Supabase
 const supabase = createClient(
@@ -93,9 +92,10 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'OK' });
 });
 
-// Iniciar servidor
-app.listen(PORT, () => {
-  console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
+// Health check na raiz
+app.get('/', (req, res) => {
+  res.json({ message: 'Fluxo Financeiro API - Real-time Sync' });
 });
 
+// Exportar para Vercel Serverless
 export default app;
