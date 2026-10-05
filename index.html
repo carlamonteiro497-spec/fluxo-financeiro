@@ -2731,10 +2731,9 @@ footer.hint {
   const monthOccurrences = () => {
     const key = monthKey(state.viewYear, state.viewMonth);
     return allOccurrences().filter(o => {
-      const cartao = o.cartao || 'cartao_santander';
       // Use dataVencimento if available (from new form), otherwise use date
       const displayDate = (o.dataVencimento || o.date || '');
-      return displayDate.slice(0, 7) === key && cartao === 'cartao_santander';
+      return displayDate.slice(0, 7) === key;
     });
   };
 
@@ -3638,24 +3637,38 @@ footer.hint {
   window.deleteExpense = deleteExpense;
 
   const removeDuplicates = () => {
-    // Detectar duplicatas comparando: description + valueCents + date + cartao
+    console.log('[DUPLICATES] Iniciando verificação...');
+    console.log('[DUPLICATES] Total de expenses:', state.expenses.length);
+
+    // Detectar duplicatas comparando: description + valueCents + cartao (ignorar data)
     const seen = new Map();
     const duplicates = [];
+    const duplicatesByKey = {};
 
     state.expenses.forEach(expense => {
-      const key = `${expense.description}|${expense.valueCents}|${expense.date}|${expense.cartao || 'cartao_santander'}`;
+      // Chave: description + valueCents + cartao (data pode variar)
+      const key = `${(expense.description || '').toLowerCase()}|${expense.valueCents}|${expense.cartao || 'cartao_santander'}`;
 
-      if (seen.has(key)) {
-        // Já vimos esta combinação, é uma duplicata
-        duplicates.push(expense.id);
-      } else {
-        // Primeira ocorrência, guardar
-        seen.set(key, expense.id);
+      if (!duplicatesByKey[key]) {
+        duplicatesByKey[key] = [];
+      }
+      duplicatesByKey[key].push(expense.id);
+    });
+
+    // Encontrar grupos com mais de uma ocorrência
+    Object.keys(duplicatesByKey).forEach(key => {
+      if (duplicatesByKey[key].length > 1) {
+        // Manter a primeira, marcar as outras como duplicatas
+        const ids = duplicatesByKey[key];
+        console.log('[DUPLICATES] Encontrado grupo:', key, 'com', ids.length, 'ocorrências');
+        duplicates.push(...ids.slice(1)); // Pegar todas MENOS a primeira
       }
     });
 
+    console.log('[DUPLICATES] Total de duplicatas encontradas:', duplicates.length);
+
     if (duplicates.length === 0) {
-      showToast('✓ Nenhuma duplicata encontrada', 'success');
+      alert('✓ Nenhuma duplicata encontrada');
       return;
     }
 
@@ -3664,8 +3677,12 @@ footer.hint {
       return;
     }
 
+    console.log('[DUPLICATES] Removendo:', duplicates);
+
     // Remover duplicatas do estado
     state.expenses = state.expenses.filter(e => !duplicates.includes(e.id));
+
+    console.log('[DUPLICATES] Novo total de expenses:', state.expenses.length);
 
     // Salvar e sincronizar
     saveToStorage();
@@ -3678,7 +3695,7 @@ footer.hint {
       syncToSupabase().catch(e => console.error('[SYNC] Erro:', e));
     }
 
-    showToast(`🗑️ ${duplicates.length} duplicata(s) removida(s)`, 'success');
+    alert(`🗑️ ${duplicates.length} duplicata(s) removida(s) com sucesso!`);
   };
 
   window.removeDuplicates = removeDuplicates;
