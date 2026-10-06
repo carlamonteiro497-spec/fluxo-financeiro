@@ -5250,55 +5250,87 @@ footer.hint {
   window.logout = async function() {
     if (supabase) {
       await supabase.auth.signOut();
+      // Limpar dados após logout
+      localStorage.removeItem('passoa_omorfau_expenses');
+      localStorage.removeItem('fluxo_contas_fixas');
+      localStorage.removeItem('passoa_omorton_contas_versao');
+      localStorage.removeItem('fluxo_expenses');
       window.location.reload();
     }
   };
 </script>
 
-<!-- SINCRONIZAÇÃO SUPABASE AUTOMÁTICA -->
+<!-- AUTENTICAÇÃO + SINCRONIZAÇÃO COM GOOGLE -->
 <script>
   let supabaseSync = null;
+  let currentUser = null;
 
-  // Inicializar sincronização após Supabase estar pronto
+  const SUPABASE_URL = 'https://nklszryrglsrzsgkyzob.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_NQd9TQurcr-w20Z1YUi6Qw_gnUdQ7d5';
+
+  // Inicializar
   setTimeout(() => {
     if (window.supabase) {
-      supabaseSync = window.supabase.createClient(
-        'https://nklszryrglsrzsgkyzob.supabase.co',
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5rbHN6cnlyZ2xzcnpzZ2t5em9iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzE0OTkwODAsImV4cCI6MjA0NzA3NTA4MH0.yL8D6rZhqm7JZL5n0Ys0f7bj3S1lG_M-vKx9pL2z_YA'
-      );
-
-      // Sincronizar ao carregar
-      syncToSupabase();
-      loadFromSupabase();
-
-      // Sincronizar a cada 30 segundos
-      setInterval(syncToSupabase, 30000);
-      setInterval(loadFromSupabase, 30000);
-
-      console.log('✓ Sincronização Supabase iniciada (a cada 30s)');
+      supabaseSync = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      checkAuth();
     }
   }, 500);
 
+  // Verificar autenticação
+  async function checkAuth() {
+    const { data: { session } } = await supabaseSync.auth.getSession();
+    currentUser = session?.user || null;
+
+    if (currentUser) {
+      console.log('✓ Autenticado como:', currentUser.email);
+      // Carregar dados da nuvem
+      loadFromSupabase();
+      // Sincronizar a cada 30s
+      setInterval(syncToSupabase, 30000);
+      setInterval(loadFromSupabase, 30000);
+    } else {
+      console.log('✗ Não autenticado - limpando dados');
+      // LIMPAR TUDO se não estiver logado
+      clearAllData();
+    }
+  }
+
+  // Limpar localStorage
+  function clearAllData() {
+    localStorage.removeItem('passoa_omorfau_expenses');
+    localStorage.removeItem('fluxo_contas_fixas');
+    localStorage.removeItem('passoa_omorton_contas_versao');
+    localStorage.removeItem('fluxo_expenses');
+    // Recarregar página
+    setTimeout(() => location.reload(), 500);
+  }
+
   // Sincronizar dados locais para Supabase
   async function syncToSupabase() {
-    if (!supabaseSync) return;
+    if (!supabaseSync || !currentUser) return;
 
     try {
       const syncStatus = document.getElementById('syncStatus');
       if (syncStatus) syncStatus.textContent = '⏳ Sincronizando...';
 
-      // Pegar dados do localStorage
-      const expenses = JSON.parse(localStorage.getItem('fluxo_expenses') || '[]');
+      // Pegar dados CORRETOS do localStorage
+      const rawExpenses = localStorage.getItem('passoa_omorfau_expenses');
+      if (!rawExpenses) {
+        if (syncStatus) syncStatus.textContent = '✓ Sincronizado (vazio)';
+        return;
+      }
+
+      const data = JSON.parse(rawExpenses);
+      const expenses = data.expenses || [];
 
       if (expenses.length === 0) {
         if (syncStatus) syncStatus.textContent = '✓ Sincronizado (vazio)';
         return;
       }
 
-      // Enviar para Supabase sem autenticação
+      // Enviar para Supabase
       for (const expense of expenses) {
         if (expense.id) {
-          // Enviar TODOS os campos do expense
           const expenseData = {
             id: expense.id,
             date: expense.date,
@@ -5309,7 +5341,7 @@ footer.hint {
             updated_at: new Date().toISOString()
           };
 
-          // Adicionar campos extras se existirem (para não perder dados)
+          // Adicionar campos extras
           if (expense.installment_date) expenseData.installment_date = expense.installment_date;
           if (expense.due_date) expenseData.due_date = expense.due_date;
           if (expense.vencimento) expenseData.vencimento = expense.vencimento;
@@ -5341,7 +5373,7 @@ footer.hint {
 
   // Carregar dados de Supabase
   async function loadFromSupabase() {
-    if (!supabaseSync) return;
+    if (!supabaseSync || !currentUser) return;
 
     try {
       const { data, error } = await supabaseSync
@@ -5353,8 +5385,10 @@ footer.hint {
       if (error) throw error;
       if (!data || data.length === 0) return;
 
-      // Pegar dados atuais do localStorage
-      const localExpenses = JSON.parse(localStorage.getItem('fluxo_expenses') || '[]');
+      // Pegar dados atuais do localStorage no formato correto
+      const rawExpenses = localStorage.getItem('passoa_omorfau_expenses');
+      const localData = rawExpenses ? JSON.parse(rawExpenses) : { expenses: [] };
+      const localExpenses = localData.expenses || [];
       const localIds = new Set(localExpenses.map(e => e.id));
 
       // Verificar se há novos dados da nuvem
@@ -5369,14 +5403,14 @@ footer.hint {
       // Se houver novos dados, atualizar localStorage
       if (hasNewData) {
         // IMPORTANTE: Mesclar dados da nuvem com dados locais para não perder campos
-        const mergedData = [];
+        const mergedExpenses = [];
         const cloudIds = new Set(data.map(e => e.id));
 
         // Adicionar dados da nuvem
         for (const cloudExpense of data) {
           const localExpense = localExpenses.find(e => e.id === cloudExpense.id);
           // Mesclar: campos da nuvem, mas manter campos locais não sincronizados
-          mergedData.push({
+          mergedExpenses.push({
             ...localExpense,
             ...cloudExpense
           });
@@ -5385,12 +5419,14 @@ footer.hint {
         // Adicionar dados locais não encontrados na nuvem
         for (const localExpense of localExpenses) {
           if (!cloudIds.has(localExpense.id)) {
-            mergedData.push(localExpense);
+            mergedExpenses.push(localExpense);
           }
         }
 
-        localStorage.setItem('fluxo_expenses', JSON.stringify(mergedData));
-        console.log('✓ Carregado:', mergedData.length, 'despesas (mescladas com dados locais)');
+        // Salvar no formato correto
+        localData.expenses = mergedExpenses;
+        localStorage.setItem('passoa_omorfau_expenses', JSON.stringify(localData));
+        console.log('✓ Carregado:', mergedExpenses.length, 'despesas (mescladas com dados locais)');
 
         // Renderizar na tela
         if (typeof renderAll === 'function') {
@@ -5405,6 +5441,7 @@ footer.hint {
   // Expor funções globalmente
   window.syncToSupabase = syncToSupabase;
   window.loadFromSupabase = loadFromSupabase;
+  window.checkAuth = checkAuth;
 </script>
 
 </body>
