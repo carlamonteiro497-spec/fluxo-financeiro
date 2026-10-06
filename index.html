@@ -4934,13 +4934,18 @@ footer.hint {
       salarioCarla: parseFloat(document.getElementById('salarioCarla').value.replace(',', '.')) || 1961.79,
       salarioIasmim: parseFloat(document.getElementById('salarioIasmim').value.replace(',', '.')) || 5213.57,
       emprestimoPersonal: parseFloat(document.getElementById('emprestimoPersonal').value.replace(',', '.')) || 597.23,
-      abono: parseFloat(document.getElementById('abono').value.replace(',', '.')) || 0,
-      meritocracia: parseFloat(document.getElementById('meritocracia').value.replace(',', '.')) || 0
+      abono: 0,
+      meritocracia: 0,
+      valeAlimentacaoCarla: parseFloat(document.getElementById('valeAlimentacaoCarla').value.replace(',', '.')) || 191.92,
+      valeAlimentacaoIasmim: parseFloat(document.getElementById('valeAlimentacaoIasmim').value.replace(',', '.')) || 374.00
     };
+    console.log('[RENDA] Salvando config:', config);
     try {
       localStorage.setItem(RENDA_KEY, JSON.stringify(config));
       if (supabaseConfig.enabled) scheduleAutoSync();
-    } catch(e) {}
+    } catch(e) {
+      console.error('[RENDA] Erro ao salvar:', e);
+    }
     return config;
   };
 
