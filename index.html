@@ -5222,5 +5222,38 @@ footer.hint {
   }
 </script>
 
+<!-- SUPABASE AUTH - MINIMALISTA -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.0.0/dist/module.umd.min.js"></script>
+<script>
+  let supabase = null;
+  setTimeout(() => {
+    if (window.supabase) {
+      supabase = window.supabase.createClient(
+        'https://nklszryrglsrzsgkyzob.supabase.co',
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5rbHN6cnlyZ2xzcnpzZ2t5em9iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzE0OTkwODAsImV4cCI6MjA0NzA3NTA4MH0.yL8D6rZhqm7JZL5n0Ys0f7bj3S1lG_M-vKx9pL2z_YA'
+      );
+      console.log('✓ Supabase pronto');
+    }
+  }, 100);
+  
+  window.loginWithGoogle = async function() {
+    if (!supabase) {
+      alert('Carregando... tente novamente');
+      return;
+    }
+    supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: window.location.origin }
+    });
+  };
+  
+  window.logout = async function() {
+    if (supabase) {
+      await supabase.auth.signOut();
+      window.location.reload();
+    }
+  };
+</script>
+
 </body>
 </html>
