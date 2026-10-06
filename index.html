@@ -4268,13 +4268,16 @@ footer.hint {
     } else if (categoria === 'contas_fixas') {
       // Se é conta fixa, adicionar às contas fixas
       const novaContaId = 'conta_' + Date.now();
+
+      // Extrair o dia do vencimento (YYYY-MM-DD -> dia)
+      const diaVencimento = parseInt(dataVencimento.split('-')[2]);
+
       const novaConta = {
         nome: nome,
         valor: valor,
         parcelaAtual: 1,
         parcelaTotal: 1,
-        dataVencimento: dataVencimento,
-        dataCriacao: compraData
+        vencimento: diaVencimento  // Dia do mês (1-31)
       };
       console.log('Salvando conta fixa:', novaConta);
       contasFixas[novaContaId] = novaConta;
@@ -4282,7 +4285,7 @@ footer.hint {
       console.log('Contas fixas após salvar:', loadContasFixas());
       renderAll();
       renderCalendar();
-      showToast('✓ Conta fixa adicionada com vencimento em ' + dataVencimento, 'success');
+      showToast('✓ Conta fixa adicionada com vencimento no dia ' + diaVencimento, 'success');
     }
 
     novaContaParcelas = 1;
@@ -4585,8 +4588,6 @@ footer.hint {
 
   const contasFixasDefault = {
     'aluguel': { nome: 'Aluguel + IPTU', valor: 2346.00, parcelaAtual: 0, parcelaTotal: 0, dia: 10 },
-    'agua': { nome: 'Água', valor: 0.00, parcelaAtual: 0, parcelaTotal: 0, dia: 8 },
-    'luz': { nome: 'Luz', valor: 0.00, parcelaAtual: 0, parcelaTotal: 0, dia: 10 },
     'internet': { nome: 'Internet', valor: 220.00, parcelaAtual: 0, parcelaTotal: 0, dia: 10 },
     'vivo_celular': { nome: 'Vivo Celular (Iasmim)', valor: 72.00, parcelaAtual: 0, parcelaTotal: 0, dia: 6 },
     'vivo_telefone': { nome: 'Vivo Telefone (Carla)', valor: 39.00, parcelaAtual: 0, parcelaTotal: 0, dia: 10 },
@@ -4779,8 +4780,6 @@ footer.hint {
     // Mapear contas e suas informações
     const contasInfo = [
       { id: 'aluguel', nome: 'Aluguel + IPTU', dia: 10 },
-      { id: 'agua', nome: 'Água', dia: 8 },
-      { id: 'luz', nome: 'Luz', dia: 10 },
       { id: 'internet', nome: 'Internet', dia: 10 },
       { id: 'vivo_celular', nome: 'Vivo Celular (Iasmim)', dia: 6 },
       { id: 'vivo_telefone', nome: 'Vivo Telefone (Carla)', dia: 10 },
