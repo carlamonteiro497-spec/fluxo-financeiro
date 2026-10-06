@@ -5298,17 +5298,26 @@ footer.hint {
       // Enviar para Supabase sem autenticação
       for (const expense of expenses) {
         if (expense.id) {
+          // Enviar TODOS os campos do expense
+          const expenseData = {
+            id: expense.id,
+            date: expense.date,
+            description: expense.description,
+            valuecents: expense.valuecents,
+            installments: expense.installments || 1,
+            cartao: expense.cartao,
+            updated_at: new Date().toISOString()
+          };
+
+          // Adicionar campos extras se existirem (para não perder dados)
+          if (expense.installment_date) expenseData.installment_date = expense.installment_date;
+          if (expense.due_date) expenseData.due_date = expense.due_date;
+          if (expense.vencimento) expenseData.vencimento = expense.vencimento;
+          if (expense.parcelado) expenseData.parcelado = expense.parcelado;
+
           await supabaseSync
             .from('expenses')
-            .upsert({
-              id: expense.id,
-              date: expense.date,
-              description: expense.description,
-              valuecents: expense.valuecents,
-              installments: expense.installments || 1,
-              cartao: expense.cartao,
-              updated_at: new Date().toISOString()
-            }, { onConflict: 'id' })
+            .upsert(expenseData, { onConflict: 'id' })
             .then(({ error }) => {
               if (error) throw error;
             });
@@ -5359,8 +5368,29 @@ footer.hint {
 
       // Se houver novos dados, atualizar localStorage
       if (hasNewData) {
-        localStorage.setItem('fluxo_expenses', JSON.stringify(data));
-        console.log('✓ Carregado:', data.length, 'despesas da nuvem (novos dados encontrados)');
+        // IMPORTANTE: Mesclar dados da nuvem com dados locais para não perder campos
+        const mergedData = [];
+        const cloudIds = new Set(data.map(e => e.id));
+
+        // Adicionar dados da nuvem
+        for (const cloudExpense of data) {
+          const localExpense = localExpenses.find(e => e.id === cloudExpense.id);
+          // Mesclar: campos da nuvem, mas manter campos locais não sincronizados
+          mergedData.push({
+            ...localExpense,
+            ...cloudExpense
+          });
+        }
+
+        // Adicionar dados locais não encontrados na nuvem
+        for (const localExpense of localExpenses) {
+          if (!cloudIds.has(localExpense.id)) {
+            mergedData.push(localExpense);
+          }
+        }
+
+        localStorage.setItem('fluxo_expenses', JSON.stringify(mergedData));
+        console.log('✓ Carregado:', mergedData.length, 'despesas (mescladas com dados locais)');
 
         // Renderizar na tela
         if (typeof renderAll === 'function') {
