@@ -5255,5 +5255,127 @@ footer.hint {
   };
 </script>
 
+<!-- SINCRONIZAÇÃO SUPABASE AUTOMÁTICA -->
+<script>
+  let supabaseSync = null;
+
+  // Inicializar sincronização após Supabase estar pronto
+  setTimeout(() => {
+    if (window.supabase) {
+      supabaseSync = window.supabase.createClient(
+        'https://nklszryrglsrzsgkyzob.supabase.co',
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5rbHN6cnlyZ2xzcnpzZ2t5em9iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzE0OTkwODAsImV4cCI6MjA0NzA3NTA4MH0.yL8D6rZhqm7JZL5n0Ys0f7bj3S1lG_M-vKx9pL2z_YA'
+      );
+
+      // Sincronizar ao carregar
+      syncToSupabase();
+      loadFromSupabase();
+
+      // Sincronizar a cada 30 segundos
+      setInterval(syncToSupabase, 30000);
+      setInterval(loadFromSupabase, 30000);
+
+      console.log('✓ Sincronização Supabase iniciada (a cada 30s)');
+    }
+  }, 500);
+
+  // Sincronizar dados locais para Supabase
+  async function syncToSupabase() {
+    if (!supabaseSync) return;
+
+    try {
+      const syncStatus = document.getElementById('syncStatus');
+      if (syncStatus) syncStatus.textContent = '⏳ Sincronizando...';
+
+      // Pegar dados do localStorage
+      const expenses = JSON.parse(localStorage.getItem('fluxo_expenses') || '[]');
+
+      if (expenses.length === 0) {
+        if (syncStatus) syncStatus.textContent = '✓ Sincronizado (vazio)';
+        return;
+      }
+
+      // Enviar para Supabase sem autenticação
+      for (const expense of expenses) {
+        if (expense.id) {
+          await supabaseSync
+            .from('expenses')
+            .upsert({
+              id: expense.id,
+              date: expense.date,
+              description: expense.description,
+              valuecents: expense.valuecents,
+              installments: expense.installments || 1,
+              cartao: expense.cartao,
+              updated_at: new Date().toISOString()
+            }, { onConflict: 'id' })
+            .then(({ error }) => {
+              if (error) throw error;
+            });
+        }
+      }
+
+      if (syncStatus) {
+        syncStatus.textContent = '✓ Sincronizado: ' + expenses.length + ' item(ns)';
+        setTimeout(() => {
+          syncStatus.textContent = '✓ Pronto';
+        }, 3000);
+      }
+
+      console.log('✓ Sincronizado:', expenses.length, 'despesas');
+    } catch (e) {
+      console.error('Erro ao sincronizar:', e.message);
+      const syncStatus = document.getElementById('syncStatus');
+      if (syncStatus) syncStatus.textContent = '✗ Erro na sincronização';
+    }
+  }
+
+  // Carregar dados de Supabase
+  async function loadFromSupabase() {
+    if (!supabaseSync) return;
+
+    try {
+      const { data, error } = await supabaseSync
+        .from('expenses')
+        .select('*')
+        .order('date', { ascending: false })
+        .limit(500);
+
+      if (error) throw error;
+      if (!data || data.length === 0) return;
+
+      // Pegar dados atuais do localStorage
+      const localExpenses = JSON.parse(localStorage.getItem('fluxo_expenses') || '[]');
+      const localIds = new Set(localExpenses.map(e => e.id));
+
+      // Verificar se há novos dados da nuvem
+      let hasNewData = false;
+      for (const expense of data) {
+        if (!localIds.has(expense.id)) {
+          hasNewData = true;
+          break;
+        }
+      }
+
+      // Se houver novos dados, atualizar localStorage
+      if (hasNewData) {
+        localStorage.setItem('fluxo_expenses', JSON.stringify(data));
+        console.log('✓ Carregado:', data.length, 'despesas da nuvem (novos dados encontrados)');
+
+        // Renderizar na tela
+        if (typeof renderAll === 'function') {
+          renderAll();
+        }
+      }
+    } catch (e) {
+      console.error('Erro ao carregar:', e.message);
+    }
+  }
+
+  // Expor funções globalmente
+  window.syncToSupabase = syncToSupabase;
+  window.loadFromSupabase = loadFromSupabase;
+</script>
+
 </body>
 </html>
