@@ -1716,40 +1716,7 @@ footer.hint {
   </div>
 </div>
 
-<!-- MODAL SUPABASE -->
-<div id="supabaseModal" class="modal">
-  <div class="modal-dialog">
-    <div class="modal-header">🔄 Configurar Sincronização em Nuvem</div>
-
-    <div style="background: #eff6ff; border-left: 4px solid #2563eb; padding: 12px; border-radius: 6px; margin-bottom: 16px; font-size: 13px; color: #1e40af; line-height: 1.5;">
-      ℹ️ Você já criou a tabela no Supabase? Se não, volte e siga os passos anteriores primeiro!
-    </div>
-
-    <div class="modal-form-group">
-      <label>URL do Projeto Supabase</label>
-      <input type="text" id="supabaseUrl" placeholder="https://seu-projeto.supabase.co">
-    </div>
-
-    <div class="modal-form-group">
-      <label>Chave Anon (Pública)</label>
-      <input type="password" id="supabaseKey" placeholder="sb_publishable_...">
-    </div>
-
-    <div class="modal-checkbox-group">
-      <input type="checkbox" id="showKeyCheckbox" onchange="toggleSupabaseKeyVisibility()">
-      <label for="showKeyCheckbox" style="cursor: pointer;">Mostrar chave</label>
-    </div>
-
-    <div id="supabaseStatus" class="modal-status"></div>
-
-    <div class="modal-buttons">
-      <button type="button" class="modal-btn modal-btn-secondary" onclick="closeSupabaseModal()">Cancelar</button>
-      <button type="button" class="modal-btn modal-btn-primary" onclick="saveSupabaseConfigViaModal()">Salvar e Conectar</button>
-    </div>
-  </div>
-
-  </div>
-</div>
+<!-- MODAL SUPABASE - REMOVIDA (usar auth-supabase-complete.js) -->
 
 <script>
 (function(){
@@ -2102,81 +2069,8 @@ footer.hint {
     return JSON.stringify(data);
   }
 
-  function openSupabaseModal() {
-    const modal = document.getElementById('supabaseModal');
-    const urlInput = document.getElementById('supabaseUrl');
-    const keyInput = document.getElementById('supabaseKey');
-    const statusDiv = document.getElementById('supabaseStatus');
-
-    // Se já tem config, carrega nos campos
-    if (supabaseConfig.enabled) {
-      urlInput.value = supabaseConfig.url;
-      keyInput.value = supabaseConfig.key;
-    } else {
-      urlInput.value = '';
-      keyInput.value = '';
-    }
-
-    // Limpa mensagem de status
-    statusDiv.textContent = '';
-    statusDiv.classList.remove('show', 'success', 'error');
-    document.getElementById('showKeyCheckbox').checked = false;
-    keyInput.type = 'password';
-
-    modal.classList.add('show');
-  }
-
-  function closeSupabaseModal() {
-    const modal = document.getElementById('supabaseModal');
-    modal.classList.remove('show');
-  }
-
-  function toggleSupabaseKeyVisibility() {
-    const keyInput = document.getElementById('supabaseKey');
-    const checkbox = document.getElementById('showKeyCheckbox');
-    keyInput.type = checkbox.checked ? 'text' : 'password';
-  }
-
-  function saveSupabaseConfigViaModal() {
-    const url = document.getElementById('supabaseUrl').value.trim();
-    const key = document.getElementById('supabaseKey').value.trim();
-    const statusDiv = document.getElementById('supabaseStatus');
-
-    if (!url || !key) {
-      statusDiv.textContent = '❌ Preencha URL e Chave!';
-      statusDiv.className = 'modal-status show error';
-      return;
-    }
-
-    if (!url.includes('supabase.co')) {
-      statusDiv.textContent = '❌ URL deve conter "supabase.co"';
-      statusDiv.className = 'modal-status show error';
-      return;
-    }
-
-    if (!key.startsWith('sb_')) {
-      statusDiv.textContent = '❌ Chave deve começar com "sb_"';
-      statusDiv.className = 'modal-status show error';
-      return;
-    }
-
-    // Salvar configuração
-    saveSupabaseConfig(url, key);
-
-    statusDiv.textContent = '✅ Configurado com sucesso!';
-    statusDiv.className = 'modal-status show success';
-
-    // Fechar modal após 1.5 segundos
-    setTimeout(() => {
-      closeSupabaseModal();
-      showToast('✓ Supabase configurado! Sincronizando...', 'success');
-      syncToSupabase().catch(e => {});
-    }, 1500);
-  }
-
-  function showSupabaseSetup() {
-    openSupabaseModal();
-  }
+  // REMOVIDAS: openSupabaseModal, closeSupabaseModal, toggleSupabaseKeyVisibility, saveSupabaseConfigViaModal, showSupabaseSetup
+  // Usar auth-supabase-complete.js para autenticação com Google
 
   function updateSyncStatus(status) {
     const statusEl = document.getElementById('syncStatus');
@@ -5159,12 +5053,7 @@ footer.hint {
     }
   });
 
-  // Expor funções Supabase para o escopo global (para onclick HTML)
-  window.showSupabaseSetup = showSupabaseSetup;
-  window.openSupabaseModal = openSupabaseModal;
-  window.closeSupabaseModal = closeSupabaseModal;
-  window.toggleSupabaseKeyVisibility = toggleSupabaseKeyVisibility;
-  window.saveSupabaseConfigViaModal = saveSupabaseConfigViaModal;
+  // Expor funções para o escopo global
   window.manualSyncSupabase = manualSyncSupabase;
   window.updateSyncStatus = updateSyncStatus;
 })();
