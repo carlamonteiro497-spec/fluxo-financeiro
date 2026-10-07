@@ -1235,10 +1235,8 @@ footer.hint {
 
 </style>
 
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js"></script>
-<script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js"></script>
+<!-- Supabase SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
@@ -5204,23 +5202,8 @@ footer.hint {
 })();
 </script>
 
-<!-- Firebase App (modular version) -->
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js"></script>
-
-<script>
-  // Inicializar Firebase
-  if (typeof firebase !== 'undefined') {
-    firebase.initializeApp({
-      apiKey: "AIzaSyABpWSJh2P_SASAdQxJz2XD5IStjrwx2SQ",
-      authDomain: "fluxo-financeiro-ee3a3.firebaseapp.com",
-      projectId: "fluxo-financeiro-ee3a3",
-      storageBucket: "fluxo-financeiro-ee3a3.firebasestorage.app",
-      messagingSenderId: "255340364435",
-      appId: "1:255340364435:web:10f8093626c3315021c366"
-    });
-  }
-</script>
+<!-- Auth + Supabase -->
+<script src="auth-supabase-complete.js"></script>
 
 </body>
 </html>
