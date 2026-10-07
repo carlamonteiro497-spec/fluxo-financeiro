@@ -332,16 +332,16 @@
       } else {
         console.log('✓ Carregadas', expenses?.length || 0, 'despesas');
 
-        // Preencher state
+        // Preencher state (mapear colunas do banco para o estado)
         if (window.state && expenses) {
           window.state.expenses = expenses.map(e => ({
             id: e.id,
             date: e.date,
             description: e.description,
-            valueCents: e.valuecents || 0,
-            installments: e.installments || 1,
-            cartao: e.cartao || 'santander',
-            dataVencimento: e.datavencimento || e.date,
+            valueCents: e.amount || 0,  // Coluna do banco: "amount"
+            installments: e.parcels ? 2 : 1,  // Coluna do banco: "parcels" (boolean)
+            cartao: e.cartao || e.card || 'santander',  // Coluna do banco: "cartao" ou "card"
+            dataVencimento: e.due_date || e.date,  // Coluna do banco: "due_date"
             createdAt: e.created_at
           }));
         }
