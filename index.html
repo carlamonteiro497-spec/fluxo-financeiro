@@ -4994,17 +4994,13 @@ footer.hint {
     // Carregar dados locais primeiro
     loadFromStorage();
 
-    // Carregar configuração do Supabase
+    // Carregar configuração do Supabase e tentar buscar dados da nuvem
     loadSupabaseConfig();
-
-    // ⭐ IMPORTANTE: Verificar autenticação ANTES de sincronizar
-    // A função checkAuth() cuidará de mostrar a modal de login se necessário
-    // A sincronização só ocorrerá APÓS login bem-sucedido
-    if (supabaseConfig.enabled && typeof window.checkAuth === 'function') {
-      console.log('[SYNC] Verificando autenticação Supabase...');
-      // checkAuth vai verificar se há sessão, mostrar modal se não houver
-      // e iniciar sync apenas se autenticado
-      window.checkAuth();
+    if (supabaseConfig.enabled) {
+      console.log('[SYNC] Carregando dados do Supabase na inicialização...');
+      await loadInitialDataFromSupabase();
+      // Iniciar sync em tempo real
+      startRealtimeSync();
     }
 
     el.dateInput.value = formatDateToDMY(todayISO());
