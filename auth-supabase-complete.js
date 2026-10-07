@@ -15,7 +15,7 @@
   // ========================================================================
   // CONFIGURAÇÃO SUPABASE
   // ========================================================================
-  const SUPABASE_URL = 'https://xkizyq1srsgfyqb.supabase.co';
+  const SUPABASE_URL = 'https://nklszryglsrzsgkyzob.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_NQd9TQurcr-w20Z1YUi6Qw_gnUdQ7d5';
   const AUTHORIZED_EMAILS = [
     'carlamonteiro497@gmail.com',
