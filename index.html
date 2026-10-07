@@ -1215,7 +1215,7 @@ footer.hint {
 
 @media (min-width: 768px) {
   .tools-grid {
-    grid-template-columns: 1fr 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
   }
 }
 </style>
@@ -1446,7 +1446,6 @@ footer.hint {
     <h3 style="font-size: 13px; font-weight: 600; color: var(--ink-soft); margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.5px;">⚙️ Ferramentas</h3>
     <div class="tools-grid">
       <button onclick="manualSyncSupabase()" style="background: var(--accent); color: var(--accent-ink); border: none; padding: 12px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.3s;" title="Sincronizar dados com Supabase" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">🔄 Sincronizar</button>
-      <button onclick="showSupabaseSetup()" style="background: var(--accent); color: var(--accent-ink); border: none; padding: 12px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.3s;" title="Configurar sincronização em nuvem" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">⚙️ Configuração</button>
       <button onclick="exportData()" style="background: var(--accent); color: var(--accent-ink); border: none; padding: 12px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.3s;" title="Exportar dados para backup" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">📥 Exportar</button>
       <button onclick="document.getElementById('importFile').click()" style="background: var(--accent); color: var(--accent-ink); border: none; padding: 12px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.3s;" title="Importar dados de backup" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">📤 Importar</button>
       <input type="file" id="importFile" accept=".json" style="display:none;" onchange="importData(event)">
