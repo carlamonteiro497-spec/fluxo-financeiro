@@ -13,6 +13,9 @@ app.use(express.json());
 const SUPABASE_URL = 'https://nklszryglsrzsgkyzob.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_NQd9TQurcr-w20Z1YUi6Qw_gnUdQ7d5';
 
+console.log('🚀 Iniciando servidor...');
+console.log(`📁 Diretório atual: ${__dirname}`);
+
 // ============================================================================
 // PROXY PARA AUTENTICAÇÃO - Contorna bloqueio de DNS
 // ============================================================================
@@ -86,14 +89,28 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'Auth proxy running!' });
 });
 
-// Servir arquivos estáticos (front-end)
-app.use(express.static(path.join(__dirname, '.')));
+// ============================================================================
+// SERVIR ARQUIVOS ESTÁTICOS
+// ============================================================================
+app.use(express.static(__dirname));
 
-// Fallback para SPA
+// Health check para status
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+// Fallback para SPA - qualquer rota que não seja API vira index.html
 app.get('*', (req, res) => {
-  if (!req.path.startsWith('/api')) {
-    res.sendFile(path.join(__dirname, 'index.html'));
+  if (req.path.startsWith('/api/')) {
+    return res.status(404).json({ error: 'Endpoint não encontrado' });
   }
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+// Error handler
+app.use((err, req, res, next) => {
+  console.error('❌ Erro:', err);
+  res.status(500).json({ error: err.message });
 });
 
 // Start server
@@ -101,4 +118,5 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`🚀 Server rodando em porta ${PORT}`);
   console.log(`📝 Auth proxy: ${process.env.NODE_ENV === 'production' ? 'https://fluxo-financeiro-strk.onrender.com' : 'http://localhost:3000'}`);
+  console.log(`✓ Pronto para receber requisições!`);
 });
