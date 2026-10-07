@@ -4803,32 +4803,6 @@ footer.hint {
     if (container) container.classList.remove('show');
   };
 
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/service-worker.js').then(registration => {
-      if ('firebase' in window && firebase.messaging) {
-        try {
-          const messaging = firebase.messaging();
-
-          Notification.requestPermission().then(permission => {
-            if (permission === 'granted') {
-              messaging.onMessage(payload => {
-                const notificationTitle = payload.notification.title;
-                const notificationOptions = {
-                  body: payload.notification.body,
-                  icon: '💰',
-                  badge: '💰',
-                  tag: 'fluxo-notificacao'
-                };
-
-                registration.showNotification(notificationTitle, notificationOptions);
-              });
-            }
-          });
-        } catch (error) {}
-      }
-    }).catch(error => {});
-  }
-
   boot();
   verificarVencimentosProximos();
 
