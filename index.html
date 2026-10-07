@@ -1801,7 +1801,8 @@ footer.hint {
       localStorage.setItem('device_id', deviceId);
       const now = new Date().toISOString();
 
-      const dataToSync = state.expenses.map(e => {
+      const expensesSource = JSON.parse(localStorage.getItem('expenses')) || state.expenses || [];
+const dataToSync = expensesSource.map(e => {
         if (!e.id) {
           e.id = generateUUID();
         }
@@ -4803,7 +4804,7 @@ footer.hint {
   };
 
 
-window.importData = async function(event) {
+window.importData = function(event) {
     const file = event.target.files[0];
     if (!file) return;
 
@@ -4812,41 +4813,30 @@ window.importData = async function(event) {
         try {
             const data = JSON.parse(e.target.result);
 
-            if (!data.expenses || !Array.isArray(data.expenses)) {
-                alert('❌ O ficheiro JSON não contém uma lista válida de despesas.');
-                return;
+            if (data.expenses) {
+                // Save complete list to localStorage
+                localStorage.setItem('expenses', JSON.stringify(data.expenses));
+                
+                // Update active state in memory
+                if (typeof state !== 'undefined') {
+                    state.expenses = data.expenses;
+                }
             }
-
-            // 1. Atualiza LocalStorage como cache temporário
-            localStorage.setItem('expenses', JSON.stringify(data.expenses));
             if (data.contasFixas) localStorage.setItem('contasFixas', JSON.stringify(data.contasFixas));
             if (data.summaryConfig) localStorage.setItem('summaryConfig', JSON.stringify(data.summaryConfig));
             if (data.rendaConfig) localStorage.setItem('rendaConfig', JSON.stringify(data.rendaConfig));
             if (data.reembolsos) localStorage.setItem('reembolsos', JSON.stringify(data.reembolsos));
 
-            // 2. Envio direto para o Supabase (Nuvem) sem aplicar filtros de 83 registros
-            if (window.supabaseClient) {
-                console.log(`[NUVEM] Enviando todos os ${data.expenses.length} registros para o Supabase...`);
-                
-                // Exemplo de Upsert/Inserção em massa na tabela do Supabase:
-                const { error } = await window.supabaseClient
-                    .from('expenses')
-                    .upsert(data.expenses, { onConflict: 'id' });
+            alert('✅ Backup restaurado com sucesso!');
 
-                if (error) {
-                    console.error('[NUVEM] Erro ao sincronizar com Supabase:', error);
-                    alert('⚠️ Dados salvos localmente, mas ocorreu um erro no Supabase: ' + error.message);
-                } else {
-                    alert(`✅ Backup com ${data.expenses.length} registros restaurado com sucesso na NUVEM!`);
-                }
+            // Dispara a sincronização total com o Supabase
+            if (typeof syncToSupabase === 'function') {
+                await syncToSupabase();
             } else if (typeof manualSyncSupabase === 'function') {
                 await manualSyncSupabase();
-                alert('✅ Backup restaurado e sincronização disparada!');
-            } else {
-                alert('✅ Backup carregado!');
             }
 
-            // 3. Recarrega a interface
+            // Recarrega a interface
             if (typeof boot === 'function') {
                 boot();
             } else {
