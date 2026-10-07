@@ -4801,9 +4801,47 @@ footer.hint {
     const container = document.getElementById('vencimentosContainer');
     if (container) container.classList.remove('show');
   };
+};
 
-  boot();
-  verificarVencimentosProximos();
+window.importData = function(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const data = JSON.parse(e.target.result);
+
+            if (data.expenses) localStorage.setItem('expenses', JSON.stringify(data.expenses));
+            if (data.contasFixas) localStorage.setItem('contasFixas', JSON.stringify(data.contasFixas));
+            if (data.summaryConfig) localStorage.setItem('summaryConfig', JSON.stringify(data.summaryConfig));
+            if (data.rendaConfig) localStorage.setItem('rendaConfig', JSON.stringify(data.rendaConfig));
+            if (data.reembolsos) localStorage.setItem('reembolsos', JSON.stringify(data.reembolsos));
+
+            alert('✅ Backup restaurado com sucesso!');
+            
+            if (typeof boot === 'function') {
+                boot();
+            } else {
+                window.location.reload();
+            }
+
+            if (typeof manualSyncSupabase === 'function') {
+                manualSyncSupabase();
+            }
+
+ } catch (err) {
+            console.error('Erro na importação:', err);
+ alert('❌ Ficheiro JSON inválido ou corrompido.');
+        }
+    };
+
+    reader.readAsText(file);
+    event.target.value = '';
+};
+
+boot();
+verificarVencimentosProximos();
 
   window.toggleToolsMenu = function() {
     const panel = document.getElementById('toolsPanel');
