@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
-const fetch = require('node-fetch');
 const path = require('path');
+const fs = require('fs');
 
 const app = express();
 
@@ -94,17 +94,38 @@ app.get('/api/health', (req, res) => {
 // ============================================================================
 app.use(express.static(__dirname));
 
-// Health check para status
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
-});
-
 // Fallback para SPA - qualquer rota que não seja API vira index.html
 app.get('*', (req, res) => {
+  // API routes
   if (req.path.startsWith('/api/')) {
     return res.status(404).json({ error: 'Endpoint não encontrado' });
   }
-  res.sendFile(path.join(__dirname, 'index.html'));
+
+  // SPA fallback
+  const indexPath = path.join(__dirname, 'index.html');
+
+  if (fs.existsSync(indexPath)) {
+    res.sendFile(indexPath);
+  } else {
+    res.status(200).send(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <title>Fluxo Financeiro</title>
+      </head>
+      <body>
+        <h1>✓ Servidor rodando!</h1>
+        <p>APIs disponíveis:</p>
+        <ul>
+          <li>POST /api/auth/signup - Criar conta</li>
+          <li>POST /api/auth/signin - Fazer login</li>
+          <li>GET /api/health - Status</li>
+        </ul>
+      </body>
+      </html>
+    `);
+  }
 });
 
 // Error handler
