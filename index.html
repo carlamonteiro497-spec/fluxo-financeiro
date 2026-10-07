@@ -2041,10 +2041,10 @@ footer.hint {
         date: e.date || e.data || '',
         description: e.description || '',
         valueCents: parseInt(e.amount || e.valuecents || e.valueCents || 0),  // Supabase usa "amount"
-        installments: (e.parcels ? 2 : 1) || parseInt(e.installments || 1),  // Supabase usa "parcels" (boolean)
+        installments: (e.parcelado ? 2 : 1) || parseInt(e.installments || 1),  // Supabase usa "parcelado" (boolean)
         createdAt: e.created_at || e.createdat || e.createdAt || new Date().toISOString(),  // Supabase usa "created_at"
         cartao: e.cartao || e.card || 'santander',  // Supabase pode ter "card" ou "cartao"
-        dataVencimento: e.due_date || e.datavencimento || e.dataVencimento || e.date || ''  // Supabase usa "due_date"
+        dataVencimento: e.datavencimento || e.due_date || e.dataVencimento || e.date || ''  // Supabase usa "datavencimento"
       }));
 
       console.log('[SYNC] ✓ Inicializado com', state.expenses.length, 'registros do Supabase');
@@ -4948,10 +4948,10 @@ footer.hint {
             date: e.date || e.data || '',
             description: e.description || '',
             valueCents: parseInt(e.amount || e.valuecents || e.valueCents || 0),  // Supabase usa "amount"
-            installments: (e.parcels ? 2 : 1) || parseInt(e.installments || 1),  // Supabase usa "parcels" (boolean)
+            installments: (e.parcelado ? 2 : 1) || parseInt(e.installments || 1),  // Supabase usa "parcelado" (boolean)
             createdAt: e.created_at || e.createdat || e.createdAt || new Date().toISOString(),  // Supabase usa "created_at"
             cartao: e.cartao || e.card || 'santander',  // Supabase pode ter "card" ou "cartao"
-            dataVencimento: e.due_date || e.datavencimento || e.dataVencimento || e.date || ''  // Supabase usa "due_date"
+            dataVencimento: e.datavencimento || e.due_date || e.dataVencimento || e.date || ''  // Supabase usa "datavencimento"
           });
         }
       });
