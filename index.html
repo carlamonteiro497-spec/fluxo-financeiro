@@ -3451,19 +3451,56 @@ const deleteExpense = async id => {
 
   window.deleteExpense = deleteExpense;
 
-  const deletarContaFixa = (contaId) => {
+ const saveContasFixas = async (contas) => {
+    // 1. Salva localmente
+    localStorage.setItem('contasFixas', JSON.stringify(contas));
+    if (typeof state !== 'undefined') {
+        state.contasFixas = contas;
+    }
+
+    // 2. Envia para o Supabase (Nuvem)
+    try {
+        const config = JSON.parse(localStorage.getItem('supabase_config') || '{}');
+        const url = config.url || (typeof supabaseConfig !== 'undefined' ? supabaseConfig.url : null);
+        const key = config.key || (typeof supabaseConfig !== 'undefined' ? supabaseConfig.key : null);
+
+        if (url && key) {
+            await fetch(`${url}/rest/v1/app_config`, {
+                method: 'POST',
+                headers: {
+                    'apikey': key,
+                    'Authorization': `Bearer ${key}`,
+                    'Content-Type': 'application/json',
+                    'Prefer': 'resolution=merge-duplicates'
+                },
+                body: JSON.stringify({
+                    id: 'contasFixas',
+                    data: contas,
+                    updated_at: new Date().toISOString()
+                })
+            });
+            console.log('[SYNC] Contas fixas sincronizadas no Supabase com sucesso!');
+        }
+    } catch (err) {
+        console.error('[SYNC] Erro ao sincronizar contas fixas no Supabase:', err);
+    }
+};
+
+window.saveContasFixas = saveContasFixas;
+
+const deletarContaFixa = async (contaId) => {
     if (!confirm('⚠️ Tem certeza que deseja deletar esta conta?\n\nEsta ação não pode ser desfeita.')) {
-      return;
+        return;
     }
     contasFixas = loadContasFixas();
     delete contasFixas[contaId];
-    saveContasFixas(contasFixas);
+    await saveContasFixas(contasFixas);
     renderAll();
     renderCalendar();
-    showToast('✓ Conta deletada com sucesso', 'success');
-  };
+    showToast('✔️ Conta deletada com sucesso', 'success');
+};
 
-  window.deletarContaFixa = deletarContaFixa;
+window.deletarContaFixa = deletarContaFixa;
 
   const initDb = dbNs => {
     db = dbNs;
@@ -4187,17 +4224,86 @@ const deleteExpense = async id => {
     };
   };
 
-  const saveSummaryConfig = () => {
-    const config = {
-      valeAlimentacaoCarla: parseFloat(document.getElementById('valeAlimentacaoCarla').value.replace(',', '.')) || 191.92,
-      valeAlimentacaoIasmim: parseFloat(document.getElementById('valeAlimentacaoIasmim').value.replace(',', '.')) || 374.00
-    };
+const saveRendaConfig = async (configData) => {
+    const renda = configData || (typeof loadRendaConfig === 'function' ? loadRendaConfig() : {});
+
+    // 1. Guarda localmente
+    localStorage.setItem('rendaConfig', JSON.stringify(renda));
+    if (typeof state !== 'undefined') {
+        state.rendaConfig = renda;
+    }
+
+    // 2. Envia para o Supabase (Nuvem)
     try {
-      localStorage.setItem(SUMMARY_KEY, JSON.stringify(config));
-      if (supabaseConfig.enabled) scheduleAutoSync();
-    } catch(e) {}
-    return config;
-  };
+        const config = JSON.parse(localStorage.getItem('supabase_config') || '{}');
+        const url = config.url || (typeof supabaseConfig !== 'undefined' ? supabaseConfig.url : null);
+        const key = config.key || (typeof supabaseConfig !== 'undefined' ? supabaseConfig.key : null);
+
+        if (url && key) {
+            await fetch(`${url}/rest/v1/app_config`, {
+                method: 'POST',
+                headers: {
+                    'apikey': key,
+                    'Authorization': `Bearer ${key}`,
+                    'Content-Type': 'application/json',
+                    'Prefer': 'resolution=merge-duplicates'
+                },
+                body: JSON.stringify({
+                    id: 'rendaConfig',
+                    data: renda,
+                    updated_at: new Date().toISOString()
+                })
+            });
+            console.log('[SYNC] Renda/Salário atualizado no Supabase!');
+        }
+    } catch (err) {
+        console.error('[SYNC] Erro ao sincronizar renda no Supabase:', err);
+    }
+};
+
+window.saveRendaConfig = saveRendaConfig;
+
+  const saveSummaryConfig = async () => {
+    const configData = {
+        valeAlimentacaoCarla: parseFloat(document.getElementById('valeAlimentacaoCarla').value.replace(',', '.')) || 191.92,
+        valeAlimentacaoIasmim: parseFloat(document.getElementById('valeAlimentacaoIasmim').value.replace(',', '.')) || 374.00
+    };
+
+    // 1. Salva localmente
+    localStorage.setItem(SUMMARY_KEY, JSON.stringify(configData));
+    if (typeof state !== 'undefined') {
+        state.summaryConfig = configData;
+    }
+
+    // 2. Envia para o Supabase (Nuvem)
+    try {
+        const config = JSON.parse(localStorage.getItem('supabase_config') || '{}');
+        const url = config.url || (typeof supabaseConfig !== 'undefined' ? supabaseConfig.url : null);
+        const key = config.key || (typeof supabaseConfig !== 'undefined' ? supabaseConfig.key : null);
+
+        if (url && key) {
+            await fetch(`${url}/rest/v1/app_config`, {
+                method: 'POST',
+                headers: {
+                    'apikey': key,
+                    'Authorization': `Bearer ${key}`,
+                    'Content-Type': 'application/json',
+                    'Prefer': 'resolution=merge-duplicates'
+                },
+                body: JSON.stringify({
+                    id: 'summaryConfig',
+                    data: configData,
+                    updated_at: new Date().toISOString()
+                })
+            });
+            console.log('[SYNC] Configurações do Resumo salvas no Supabase!');
+        }
+    } catch (err) {
+        console.error('[SYNC] Erro ao sincronizar resumo no Supabase:', err);
+    }
+
+    return configData;
+};
 
   window.resetDatabase = () => {
     localStorage.removeItem('passou_anotou_loaded_defaults');
@@ -4206,7 +4312,7 @@ const deleteExpense = async id => {
     }
   };
 
-  window.adicionarBonus = () => {
+  window.adicionarBonus = async () => {
     const valor = parseFloat(document.getElementById('novoValor').value.replace(',', '.')) || 0;
     const tipo = document.getElementById('novoTipo').value;
 
@@ -4221,7 +4327,7 @@ const deleteExpense = async id => {
     } else {
       config.meritocracia += valor;
     }
-    saveRendaConfig();
+    await saveRendaConfig(config);
 
     const lista = document.getElementById('bonusLista');
     const items = lista.querySelectorAll('.bonus-item');
@@ -4308,14 +4414,7 @@ const deleteExpense = async id => {
     return defaultCopy;
   };
 
-  const saveContasFixas = (contas) => {
-    try {
-      localStorage.setItem(CONTAS_KEY, JSON.stringify(contas));
-      if (supabaseConfig.enabled) scheduleAutoSync();
-    } catch(e) {}
-  };
-
-  const REEMBOLSOS_KEY = 'fluxo_reembolsos';
+    const REEMBOLSOS_KEY = 'fluxo_reembolsos';
 
   const loadReembolsos = () => {
     try {
@@ -4325,14 +4424,46 @@ const deleteExpense = async id => {
     return [];
   };
 
-  const saveReembolsos = (reembolsos) => {
+ const saveReembolsos = async (reembolsos) => {
+    // 1. Salva localmente
     try {
-      localStorage.setItem(REEMBOLSOS_KEY, JSON.stringify(reembolsos));
-      if (supabaseConfig.enabled) scheduleAutoSync();
+        localStorage.setItem(REEMBOLSOS_KEY, JSON.stringify(reembolsos));
+        if (typeof state !== 'undefined') {
+            state.reembolsos = reembolsos;
+        }
     } catch(e) {}
-  };
 
-  const addReembolso = (valor, descricao) => {
+    // 2. Envia para o Supabase (Nuvem)
+    try {
+        const config = JSON.parse(localStorage.getItem('supabase_config') || '{}');
+        const url = config.url || (typeof supabaseConfig !== 'undefined' ? supabaseConfig.url : null);
+        const key = config.key || (typeof supabaseConfig !== 'undefined' ? supabaseConfig.key : null);
+
+        if (url && key) {
+            await fetch(`${url}/rest/v1/app_config`, {
+                method: 'POST',
+                headers: {
+                    'apikey': key,
+                    'Authorization': `Bearer ${key}`,
+                    'Content-Type': 'application/json',
+                    'Prefer': 'resolution=merge-duplicates'
+                },
+                body: JSON.stringify({
+                    id: REEMBOLSOS_KEY,
+                    data: reembolsos,
+                    updated_at: new Date().toISOString()
+                })
+            });
+            console.log('[SYNC] Reembolsos sincronizados no Supabase com sucesso!');
+        }
+    } catch (err) {
+        console.error('[SYNC] Erro ao sincronizar reembolsos no Supabase:', err);
+    }
+};
+
+window.saveReembolsos = saveReembolsos;
+
+  onst addReembolso = async (valor, descricao) => {
     const reembolsos = loadReembolsos();
     reembolsos.push({
       id: Date.now(),
@@ -4344,12 +4475,12 @@ const deleteExpense = async id => {
     return reembolsos;
   };
 
-  const deleteReembolso = (id) => {
+const deleteReembolso = async (id) => {
     let reembolsos = loadReembolsos();
     reembolsos = reembolsos.filter(r => r.id !== id);
-    saveReembolsos(reembolsos);
+    await saveReembolsos(reembolsos);
     return reembolsos;
-  };
+};
 
   const getBaseContaNome = (nome) => {
     if (!nome) return nome;
@@ -4898,6 +5029,75 @@ verificarVencimentosProximos();
   window.saveSupabaseConfigViaModal = saveSupabaseConfigViaModal;
   window.manualSyncSupabase = manualSyncSupabase;
   window.updateSyncStatus = updateSyncStatus;
+  // ==========================================
+// CARREGAMENTO CENTRALIZADO DO SUPABASE
+// ==========================================
+async function loadAllFromSupabase() {
+    const config = JSON.parse(localStorage.getItem('supabase_config') || '{}');
+    const url = config.url || (typeof supabaseConfig !== 'undefined' ? supabaseConfig.url : null);
+    const key = config.key || (typeof supabaseConfig !== 'undefined' ? supabaseConfig.key : null);
+
+    if (!url || !key) {
+        console.warn('[SYNC] Configuração do Supabase não encontrada.');
+        return;
+    }
+
+    try {
+        console.log('[SYNC] Baixando dados mais recentes da nuvem...');
+
+        // 1. Carrega Despesas Variáveis (Tabela 'expenses')
+        const resExp = await fetch(`${url}/rest/v1/expenses?select=*`, {
+            headers: { 'apikey': key, 'Authorization': `Bearer ${key}` }
+        });
+        if (resExp.ok) {
+            const expensesData = await resExp.json();
+            if (expensesData && Array.isArray(expensesData)) {
+                localStorage.setItem('expenses', JSON.stringify(expensesData));
+                if (typeof state !== 'undefined') state.expenses = expensesData;
+            }
+        }
+
+        // 2. Carrega Modularmente as Abas (contasFixas, rendaConfig, summaryConfig, fluxo_reembolsos)
+        const resCfg = await fetch(`${url}/rest/v1/app_config?select=*`, {
+            headers: { 'apikey': key, 'Authorization': `Bearer ${key}` }
+        });
+        if (resCfg.ok) {
+            const configs = await resCfg.json();
+            configs.forEach(item => {
+                localStorage.setItem(item.id, JSON.stringify(item.data));
+                if (typeof state !== 'undefined') {
+                    state[item.id] = item.data;
+                }
+            });
+        }
+        console.log('[SYNC] Sincronização de inicialização concluída com sucesso!');
+    } catch (err) {
+        console.error('[SYNC] Erro ao carregar dados do Supabase na inicialização:', err);
+    }
+}
+
+window.loadAllFromSupabase = loadAllFromSupabase;
+
+// ==========================================
+// ARRANQUE DA APLICAÇÃO (BOOT)
+// ==========================================
+async function boot() {
+    // 1. Busca os dados mais recentes do Supabase antes de renderizar
+    await loadAllFromSupabase();
+
+    // 2. Renderiza a interface do utilizador com os dados atualizados
+    if (typeof renderAll === 'function') {
+        renderAll();
+    }
+    if (typeof renderCalendar === 'function') {
+        renderCalendar();
+    }
+}
+
+// Inicia o sistema assim que a página é carregada
+document.addEventListener('DOMContentLoaded', () => {
+    boot();
+});
 })();
 </script>
 </body>
