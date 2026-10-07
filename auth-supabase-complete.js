@@ -525,6 +525,8 @@
   window.logout = logout;
   window.checkAuth = checkAuth;
   window.loadDataFromSupabase = loadDataFromSupabase;
+  window.showLoginModal = showLoginModal;
+  window.hideLoginModal = hideLoginModal;
 
   console.log('✓ Funções globais expostas');
 
