@@ -4463,7 +4463,7 @@ window.saveRendaConfig = saveRendaConfig;
 
 window.saveReembolsos = saveReembolsos;
 
-  onst addReembolso = async (valor, descricao) => {
+  const addReembolso = async (valor, descricao) => {
     const reembolsos = loadReembolsos();
     reembolsos.push({
       id: Date.now(),
