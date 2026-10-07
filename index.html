@@ -4803,36 +4803,59 @@ footer.hint {
   };
 
 
-window.importData = function(event) {
+window.importData = async function(event) {
     const file = event.target.files[0];
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = function(e) {
+    reader.onload = async function(e) {
         try {
             const data = JSON.parse(e.target.result);
 
-            if (data.expenses) localStorage.setItem('expenses', JSON.stringify(data.expenses));
+            if (!data.expenses || !Array.isArray(data.expenses)) {
+                alert('❌ O ficheiro JSON não contém uma lista válida de despesas.');
+                return;
+            }
+
+            // 1. Atualiza LocalStorage como cache temporário
+            localStorage.setItem('expenses', JSON.stringify(data.expenses));
             if (data.contasFixas) localStorage.setItem('contasFixas', JSON.stringify(data.contasFixas));
             if (data.summaryConfig) localStorage.setItem('summaryConfig', JSON.stringify(data.summaryConfig));
             if (data.rendaConfig) localStorage.setItem('rendaConfig', JSON.stringify(data.rendaConfig));
             if (data.reembolsos) localStorage.setItem('reembolsos', JSON.stringify(data.reembolsos));
 
-            alert('✅ Backup restaurado com sucesso!');
-            
+            // 2. Envio direto para o Supabase (Nuvem) sem aplicar filtros de 83 registros
+            if (window.supabaseClient) {
+                console.log(`[NUVEM] Enviando todos os ${data.expenses.length} registros para o Supabase...`);
+                
+                // Exemplo de Upsert/Inserção em massa na tabela do Supabase:
+                const { error } = await window.supabaseClient
+                    .from('expenses')
+                    .upsert(data.expenses, { onConflict: 'id' });
+
+                if (error) {
+                    console.error('[NUVEM] Erro ao sincronizar com Supabase:', error);
+                    alert('⚠️ Dados salvos localmente, mas ocorreu um erro no Supabase: ' + error.message);
+                } else {
+                    alert(`✅ Backup com ${data.expenses.length} registros restaurado com sucesso na NUVEM!`);
+                }
+            } else if (typeof manualSyncSupabase === 'function') {
+                await manualSyncSupabase();
+                alert('✅ Backup restaurado e sincronização disparada!');
+            } else {
+                alert('✅ Backup carregado!');
+            }
+
+            // 3. Recarrega a interface
             if (typeof boot === 'function') {
                 boot();
             } else {
                 window.location.reload();
             }
 
-            if (typeof manualSyncSupabase === 'function') {
-                manualSyncSupabase();
-            }
-
- } catch (err) {
+        } catch (err) {
             console.error('Erro na importação:', err);
- alert('❌ Ficheiro JSON inválido ou corrompido.');
+            alert('❌ Ficheiro JSON inválido ou corrompido.');
         }
     };
 
