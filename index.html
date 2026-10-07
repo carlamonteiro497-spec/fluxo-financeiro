@@ -232,7 +232,6 @@ body {
   background: rgba(255, 255, 255, 0.3);
   border-color: rgba(255, 255, 255, 0.5);
 }
-}
 
 .tabs {
   display: flex;
@@ -288,6 +287,13 @@ body {
   padding: 16px;
   text-align: center;
   border: 2px solid var(--line);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.flow-box:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
 .flow-box.income { border-color: #10b981; background: #f0fdf4; }
@@ -672,16 +678,6 @@ footer.hint {
   color: #10b981 !important;
 }
 
-.flow-box {
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.flow-box:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
-
 .modal-overlay {
   display: none;
   position: fixed;
@@ -840,6 +836,8 @@ footer.hint {
   justify-content: center;
   align-items: center;
   font-size: 12px;
+  position: relative;
+  min-height: 75px;
 }
 
 @media (min-width: 480px) {
@@ -851,9 +849,6 @@ footer.hint {
     border-radius: 8px;
     font-size: 14px;
   }
-}
-  position: relative;
-  min-height: 75px;
 }
 
 .calendar-day:hover {
@@ -1106,15 +1101,6 @@ footer.hint {
   }
 }
 
-.modal-header {
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--ink);
-  margin-bottom: 16px;
-  padding-bottom: 12px;
-  border-bottom: 2px solid var(--line);
-}
-
 .modal-form-group {
   display: flex;
   flex-direction: column;
@@ -1232,7 +1218,6 @@ footer.hint {
     grid-template-columns: 1fr 1fr 1fr 1fr;
   }
 }
-
 </style>
 
 <!-- Firebase SDK -->
@@ -1243,7 +1228,7 @@ footer.hint {
 <body>
 
 <div class="container">
-    <div class="header">
+  <div class="header">
     <div class="header-content">
       <svg class="header-logo" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
         <defs>
@@ -1459,6 +1444,18 @@ footer.hint {
 
     <div class="ledger" id="ledger" style="margin-top: 20px;"></div>
     <footer class="hint">Toque para editar ou excluir.</footer>
+  </div>
+
+  <!-- CARD DE FERRAMENTAS E CONFIGURAÇÃO -->
+  <div style="background: linear-gradient(135deg, rgba(53, 70, 122, 0.05) 0%, rgba(132, 150, 214, 0.05) 100%); border: 1px solid var(--line-strong); border-radius: 12px; padding: 20px; margin-top: 20px;">
+    <h3 style="font-size: 13px; font-weight: 600; color: var(--ink-soft); margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.5px;">⚙️ Ferramentas</h3>
+    <div class="tools-grid">
+      <button onclick="manualSyncSupabase()" style="background: var(--accent); color: var(--accent-ink); border: none; padding: 12px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.3s;" title="Sincronizar dados com Supabase" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">🔄 Sincronizar</button>
+      <button onclick="showSupabaseSetup()" style="background: var(--accent); color: var(--accent-ink); border: none; padding: 12px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.3s;" title="Configurar sincronização em nuvem" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">⚙️ Configuração</button>
+      <button onclick="exportData()" style="background: var(--accent); color: var(--accent-ink); border: none; padding: 12px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.3s;" title="Exportar dados para backup" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">📥 Exportar</button>
+      <button onclick="document.getElementById('importFile').click()" style="background: var(--accent); color: var(--accent-ink); border: none; padding: 12px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.3s;" title="Importar dados de backup" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">📤 Importar</button>
+      <input type="file" id="importFile" accept=".json" style="display:none;" onchange="importData(event)">
+    </div>
   </div>
 </div>
 
@@ -1749,20 +1746,6 @@ footer.hint {
       <button type="button" class="modal-btn modal-btn-primary" onclick="saveSupabaseConfigViaModal()">Salvar e Conectar</button>
     </div>
   </div>
-
-  </div>
-
-  <!-- CARD DE FERRAMENTAS E CONFIGURAÇÃO -->
-  <div style="background: linear-gradient(135deg, rgba(53, 70, 122, 0.05) 0%, rgba(132, 150, 214, 0.05) 100%); border: 1px solid var(--line-strong); border-radius: 12px; padding: 20px; margin-top: 20px;">
-    <h3 style="font-size: 13px; font-weight: 600; color: var(--ink-soft); margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.5px;">⚙️ Ferramentas</h3>
-    <div class="tools-grid">
-      <button onclick="manualSyncSupabase()" style="background: var(--accent); color: var(--accent-ink); border: none; padding: 12px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.3s;" title="Sincronizar dados com Supabase" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">🔄 Sincronizar</button>
-      <button onclick="showSupabaseSetup()" style="background: var(--accent); color: var(--accent-ink); border: none; padding: 12px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.3s;" title="Configurar sincronização em nuvem" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">⚙️ Configuração</button>
-      <button onclick="exportData()" style="background: var(--accent); color: var(--accent-ink); border: none; padding: 12px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.3s;" title="Exportar dados para backup" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">📥 Exportar</button>
-      <button onclick="document.getElementById('importFile').click()" style="background: var(--accent); color: var(--accent-ink); border: none; padding: 12px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.3s;" title="Importar dados de backup" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">📤 Importar</button>
-      <input type="file" id="importFile" accept=".json" style="display:none;" onchange="importData(event)">
-    </div>
-  </div>
 </div>
 
 <script>
@@ -1824,14 +1807,9 @@ footer.hint {
       localStorage.setItem('device_id', deviceId);
       const now = new Date().toISOString();
 
-      // Preparar dados com APENAS os campos que existem na tabela Supabase
-      // IMPORTANTE: Enviar 'id' porque cada despesa já tem um ID local único
-      // O ID é necessário para UPSERT funcionar corretamente
-      // Se uma despesa não tiver ID (migração de versão anterior), gerar um novo
       const dataToSync = state.expenses.map(e => {
-        // Garantir que cada expense tem um ID válido
         if (!e.id) {
-          e.id = generateUUID();  // Gerar UUID se não existir
+          e.id = generateUUID();
         }
         return {
           id: e.id,
@@ -1839,7 +1817,7 @@ footer.hint {
           description: e.description || 'Sem descrição',
           valuecents: parseInt(e.valueCents || 0),
           installments: parseInt(e.installments || 1),
-          createdat: e.createdAt || now,  // Usar createdat (é a coluna correta para esta app)
+          createdat: e.createdAt || now,
           datavencimento: e.dataVencimento || e.date || new Date().toISOString().split('T')[0],
           cartao: e.cartao || 'cartao_santander'
         };
@@ -1851,10 +1829,7 @@ footer.hint {
       }
 
       console.log('[SYNC] Preparando envio de', dataToSync.length, 'registros');
-      console.log('[SYNC] Primeiro registro:', JSON.stringify(dataToSync[0]));
 
-      // Usar UPSERT (mais seguro que DELETE+INSERT)
-      console.log('[SYNC] Enviando registros com UPSERT...');
       const response = await fetch(
         `${supabaseConfig.url}/rest/v1/expenses`,
         {
@@ -1875,12 +1850,7 @@ footer.hint {
         await loadAndMergeFromSupabase();
         return true;
       } else {
-        const errorText = await response.text();
         console.error('[SYNC] ❌ Erro ao sincronizar - Status:', response.status);
-        console.error('[SYNC] Detalhes:', errorText);
-
-        // Fallback: inserir registro por registro
-        console.log('[SYNC] Tentando inserir individualmente...');
         let successCount = 0;
 
         for (let i = 0; i < dataToSync.length; i++) {
@@ -1902,9 +1872,6 @@ footer.hint {
 
             if (indvResponse.ok) {
               successCount++;
-            } else {
-              const errMsg = await indvResponse.text();
-              console.warn('[SYNC] Erro ao inserir registro', i);
             }
           } catch (e) {
             console.error('[SYNC] Erro ao inserir registro:', e);
@@ -1912,7 +1879,6 @@ footer.hint {
         }
 
         if (successCount > 0) {
-          console.log('[SYNC] ✓ Inseridos', successCount, 'de', dataToSync.length, 'registros');
           updateSyncStatus('success');
           await loadAndMergeFromSupabase();
           return true;
@@ -1957,19 +1923,12 @@ footer.hint {
   }
 
   async function loadAndMergeFromSupabase() {
-    // Carrega dados do Supabase após sincronização e atualiza a interface
     const cloudExpenses = await loadFromSupabase();
 
     if (!cloudExpenses || cloudExpenses.length === 0) {
-      console.log('[SYNC] Nenhum dado na nuvem para carregar');
       return;
     }
 
-    console.log('[SYNC] ✓ Carregados', cloudExpenses.length, 'registros da nuvem');
-    console.log('[SYNC] Antes da merge: state.expenses tem', state.expenses.length, 'registros');
-
-    // IMPORTANTE: Atualizar state.expenses com dados da nuvem
-    // Fazer merge inteligente baseado em IDs
     const cloudMap = new Map();
     cloudExpenses.forEach(e => {
       if (e.id) {
@@ -1986,70 +1945,37 @@ footer.hint {
       }
     });
 
-    // Fazer merge: comparar timestamps para resolver conflitos
-    // Priorizar a versão mais recente (cloud ou local)
     const merged = [];
     const seenIds = new Set();
 
-    // Comparar cada expense na nuvem com versão local
-    // IMPORTANTE: Para sincronização entre dispositivos, CLOUD tem PRIORIDADE!
     cloudMap.forEach((cloudExp, id) => {
-      const localExp = state.expenses.find(e => e.id === id);
-
-      if (!localExp) {
-        // Não existe localmente, usar versão da nuvem
-        merged.push(cloudExp);
-        console.log('[SYNC] Adicionando do cloud:', id);
-      } else {
-        // Para sincronização entre dispositivos, SEMPRE usar dados do Cloud (Supabase)
-        // Isso garante que todos os devices vejam os mesmos dados
-        merged.push(cloudExp);  // CLOUD tem PRIORIDADE ABSOLUTA
-        console.log('[SYNC] Sincronizando com versão do cloud para:', id);
-      }
+      merged.push(cloudExp);
       seenIds.add(id);
     });
 
-    // Adicionar dados locais que não estão na nuvem (novos itens ainda não sincronizados)
     state.expenses.forEach(localExp => {
       if (localExp.id && !seenIds.has(localExp.id)) {
         merged.push(localExp);
-        console.log('[SYNC] Adicionando novo item local:', localExp.id);
       }
     });
 
-    // Atualizar state.expenses com dados mesclados
     state.expenses = merged;
-    console.log('[SYNC] Depois da merge: state.expenses tem', state.expenses.length, 'registros');
-
-    // Salvar dados merged no localStorage
     saveToStorage();
-
-    // Re-renderizar a interface
     renderAll();
-
-    console.log('✓ Dados sincronizados e mesclados com sucesso');
   }
 
   async function loadInitialDataFromSupabase() {
-    // Carregar dados iniciais do Supabase na inicialização do app
     if (!supabaseConfig.enabled || !supabaseConfig.url || !supabaseConfig.key) {
-      console.log('[SYNC] Supabase não configurado, usando dados locais');
       return false;
     }
 
     try {
-      console.log('[SYNC] Carregando dados iniciais do Supabase...');
       const cloudExpenses = await loadFromSupabase();
 
       if (!cloudExpenses || cloudExpenses.length === 0) {
-        console.log('[SYNC] Nenhum dado na nuvem, usando dados locais');
         return false;
       }
 
-      console.log('[SYNC] ✓ Carregados', cloudExpenses.length, 'registros iniciais');
-
-      // IMPORTANTE: Substituir COMPLETAMENTE com dados do Supabase
-      // Descartar dados locais padrão (exp_0, exp_1, etc) para evitar duplicatas
       state.expenses = cloudExpenses.map(e => ({
         id: e.id,
         date: e.date || e.data || '',
@@ -2061,50 +1987,33 @@ footer.hint {
         dataVencimento: e.datavencimento || e.dataVencimento || e.date || ''
       }));
 
-      console.log('[SYNC] ✓ Inicializado com', state.expenses.length, 'registros do Supabase');
-      console.log('[SYNC] ✓ Dados locais foram descartados - usando APENAS Supabase');
       return true;
     } catch (e) {
-      console.error('[SYNC] Erro ao carregar dados iniciais:', e);
       return false;
     }
   }
 
-  // Polling de sincronização em background
   let syncPollTimer = null;
   function startSyncPolling() {
     if (!supabaseConfig.enabled) return;
 
-    // Fazer polling a cada 30 segundos para verificar atualizações de outros dispositivos
     syncPollTimer = setInterval(async () => {
       try {
         const cloudExpenses = await loadFromSupabase();
         if (!cloudExpenses) return;
 
-        // Comparar com dados locais
         const currentHash = getDataHash();
         const cloudHash = getHashFromExpenses(cloudExpenses);
 
         if (currentHash !== cloudHash) {
-          console.log('[SYNC] Detectadas mudanças na nuvem, atualizando...');
           await loadAndMergeFromSupabase();
           showToast('📱 Dados sincronizados de outro dispositivo', 'info', 3000);
         }
-      } catch (e) {
-        console.log('[SYNC] Erro no polling:', e);
-      }
-    }, 30000); // A cada 30 segundos
-  }
-
-  function stopSyncPolling() {
-    if (syncPollTimer) {
-      clearInterval(syncPollTimer);
-      syncPollTimer = null;
-    }
+      } catch (e) {}
+    }, 30000);
   }
 
   function getHashFromExpenses(expenses) {
-    // Criar um hash dos dados para comparação rápida
     if (!expenses || !Array.isArray(expenses)) return '';
     const sorted = expenses.sort((a, b) => (a.id || '').localeCompare(b.id || ''));
     const data = sorted.map(e => `${e.id}:${e.valuecents}:${e.date}`).join('|');
@@ -2117,7 +2026,6 @@ footer.hint {
     const keyInput = document.getElementById('supabaseKey');
     const statusDiv = document.getElementById('supabaseStatus');
 
-    // Se já tem config, carrega nos campos
     if (supabaseConfig.enabled) {
       urlInput.value = supabaseConfig.url;
       keyInput.value = supabaseConfig.key;
@@ -2126,7 +2034,6 @@ footer.hint {
       keyInput.value = '';
     }
 
-    // Limpa mensagem de status
     statusDiv.textContent = '';
     statusDiv.classList.remove('show', 'success', 'error');
     document.getElementById('showKeyCheckbox').checked = false;
@@ -2169,13 +2076,11 @@ footer.hint {
       return;
     }
 
-    // Salvar configuração
     saveSupabaseConfig(url, key);
 
     statusDiv.textContent = '✅ Configurado com sucesso!';
     statusDiv.className = 'modal-status show success';
 
-    // Fechar modal após 1.5 segundos
     setTimeout(() => {
       closeSupabaseModal();
       showToast('✓ Supabase configurado! Sincronizando...', 'success');
@@ -2236,13 +2141,11 @@ footer.hint {
     }
   }
 
-  // Sistema inteligente de auto-sync com debounce
   let lastSyncHash = '';
   let syncDebounceTimer = null;
   let hasChanges = false;
 
   function getDataHash() {
-    // Criar hash dos dados para detectar mudanças
     return JSON.stringify(state.expenses.map(e => ({
       id: e.id,
       date: e.date,
@@ -2254,30 +2157,24 @@ footer.hint {
   }
 
   function scheduleAutoSync() {
-    // Marcar que houve mudanças
     hasChanges = true;
 
-    // Cancelar timer anterior se existir
     if (syncDebounceTimer) {
       clearTimeout(syncDebounceTimer);
     }
 
-    // Agendar sincronização 5 segundos após a última mudança
     syncDebounceTimer = setTimeout(() => {
       if (supabaseConfig.enabled && state.expenses.length > 0 && hasChanges) {
         const currentHash = getDataHash();
-        // Só sincronizar se os dados realmente mudaram
         if (currentHash !== lastSyncHash) {
-          console.log('[SYNC] Auto-sync detectou mudanças, sincronizando...');
           lastSyncHash = currentHash;
           hasChanges = false;
           syncToSupabase().catch(e => console.log('Auto-sync error:', e));
         }
       }
-    }, 5000); // 5 segundos de espera após última mudança
+    }, 5000);
   }
 
-  // Inicializar hash
   lastSyncHash = getDataHash();
 
   let db = null;
@@ -2315,7 +2212,6 @@ footer.hint {
     return y + '-' + m + '-' + d;
   };
 
-  // Sistema de notificações Toast
   const showToast = (message, type = 'info', duration = 3000) => {
     let container = document.getElementById('toast-container');
     if (!container) {
@@ -2336,7 +2232,6 @@ footer.hint {
     }, duration);
   };
 
-  // EXPORT / IMPORT
   const exportData = () => {
     const data = {
       version: '6.2',
@@ -2348,7 +2243,6 @@ footer.hint {
       reembolsos: loadReembolsos()
     };
 
-    // Criar CSV com todas as despesas agrupadas por cartão
     const cartaoNomes = {
       'cartao_santander': 'Cartão Santander Camila',
       'cartao_sicoob': 'Sicoob',
@@ -2357,7 +2251,6 @@ footer.hint {
       'contas_fixas': 'Contas Fixas'
     };
 
-    // Agrupar despesas por cartão
     const despesasPorCartao = {};
     state.expenses.forEach(e => {
       const cartaoType = e.cartao || 'cartao_santander';
@@ -2365,11 +2258,9 @@ footer.hint {
       despesasPorCartao[cartaoType].push(e);
     });
 
-    // Criar CSV organizado por cartão
     let csv = 'FLUXO FINANCEIRO - EXPORTAÇÃO DE DESPESAS\n';
     csv += 'Exportado em: ' + new Date().toLocaleString('pt-BR') + '\n\n';
 
-    // Adicionar resumo por cartão
     csv += 'RESUMO POR CARTÃO\n';
     csv += 'Cartão,Quantidade,Total\n';
     let totalGeral = 0;
@@ -2380,7 +2271,6 @@ footer.hint {
     });
     csv += `"TOTAL GERAL","${state.expenses.length}","R$ ${totalGeral.toFixed(2)}"\n\n`;
 
-    // Adicionar detalhes de cada despesa
     csv += 'DETALHES DAS DESPESAS\n';
     csv += 'Data,Descrição,Valor,Parcelamento,Cartão,Data Vencimento\n';
 
@@ -2396,7 +2286,6 @@ footer.hint {
       });
     });
 
-    // Salvar JSON
     const json = JSON.stringify(data, null, 2);
     const jsonBlob = new Blob([json], { type: 'application/json' });
     const jsonUrl = URL.createObjectURL(jsonBlob);
@@ -2408,7 +2297,6 @@ footer.hint {
     document.body.removeChild(jsonLink);
     URL.revokeObjectURL(jsonUrl);
 
-    // Salvar CSV
     const csvBlob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const csvUrl = URL.createObjectURL(csvBlob);
     const csvLink = document.createElement('a');
@@ -2419,7 +2307,6 @@ footer.hint {
     document.body.removeChild(csvLink);
     URL.revokeObjectURL(csvUrl);
 
-    console.log('Exportação - Despesas por cartão:', Object.entries(despesasPorCartao).map(([k, v]) => `${cartaoNomes[k]}: ${v.length}`).join(', '));
     showToast('✅ Dados exportados (JSON + CSV com todos os cartões)!', 'success');
   };
 
@@ -2450,14 +2337,13 @@ footer.hint {
   const STORAGE_KEY = 'passou_anotou_expenses';
   const VERSION_KEY = 'passou_anotou_version';
   const CONTAS_VERSION_KEY = 'passou_anotou_contas_version';
-  const CURRENT_VERSION = '5.4'; // Incrementa quando defaultExpenses muda (5.4: Alertas visuais de vencimentos - hoje e amanhã)
+  const CURRENT_VERSION = '5.4';
 
   const saveToStorage = () => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state.expenses));
       localStorage.setItem(VERSION_KEY, CURRENT_VERSION);
 
-      // Agendar auto-sync inteligente com Supabase
       if (supabaseConfig.enabled) {
         scheduleAutoSync();
       }
@@ -2524,7 +2410,6 @@ footer.hint {
   const loadFromStorage = () => {
     try {
       const storedVersion = localStorage.getItem(VERSION_KEY);
-      // Se versão for diferente, recarrega padrão
       if (storedVersion !== CURRENT_VERSION) {
         loadDefaultExpenses();
         return;
@@ -2532,21 +2417,16 @@ footer.hint {
 
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
-        // Se tem dados salvos, usa eles (respeita as alterações do usuário)
         const parsed = JSON.parse(stored);
         if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].id) {
-          // Valida se tem a estrutura correta
           state.expenses = parsed;
         } else {
-          // Se localStorage está vazio ou inválido, carrega os padrão
           loadDefaultExpenses();
         }
       } else {
-        // Se não tem dados, carrega os dados padrão uma única vez
         loadDefaultExpenses();
       }
     } catch(e) {
-      // Se houver erro, limpa localStorage e carrega padrão
       try {
         localStorage.removeItem(STORAGE_KEY);
         localStorage.removeItem(VERSION_KEY);
@@ -2584,7 +2464,6 @@ footer.hint {
     const remainder = e.valueCents - base * n;
     const occs = [];
 
-    // Use dataVencimento if available (from new form), otherwise use date
     const baseDate = e.dataVencimento || e.date;
 
     for (let i = 0; i < n; i++) {
@@ -2616,15 +2495,11 @@ footer.hint {
     const container = document.getElementById('demaisCartoesContainer');
     if (!container) return;
 
-    // Agrupar despesas por cartão (apenas dos demais cartões, não Santander)
-    // Filtrar apenas as ocorrências do mês atual
     const key = monthKey(state.viewYear, state.viewMonth);
     const cartoesDespesas = {};
     state.expenses.forEach(e => {
       const cartao = e.cartao || 'cartao_santander';
       if (cartao !== 'cartao_santander' && cartao !== 'contas_fixas') {
-        // Adicionar TODAS as despesas (não filtrar por mês aqui)
-        // O filtro por mês será feito ao expandir em ocorrências
         if (!cartoesDespesas[cartao]) {
           cartoesDespesas[cartao] = [];
         }
@@ -2647,29 +2522,24 @@ footer.hint {
           const ocorrencias = purchaseOccurrences(e);
 
           ocorrencias.forEach(occ => {
-            // Filtrar apenas as ocorrências do mês atual
             const occDate = (occ.dataVencimento || occ.date || '');
             if (occDate.slice(0, 7) === key) {
               const instText = occ.installments > 1 ? ' (' + occ.index + '/' + occ.installments + ')' : '';
 
-              // Format vencimento date
               const vencParts = (occ.date || '').split('-');
               const vencDisplay = vencParts.length === 3 ? vencParts[2] + '/' + vencParts[1] + '/' + vencParts[0] : '';
 
-              // Format purchase date
               const compParts = (occ.purchaseDate || '').split('-');
               const compDisplay = compParts.length === 3 ? compParts[2] + '/' + compParts[1] + '/' + compParts[0] : '';
 
               totalCartao += occ.valueCents;
 
-              // Determinar ícone baseado no tipo de transação
               const typeIcon = occ.installments > 1 ? '🎁' : '💳';
               const typeLabel = occ.installments > 1 ? 'Parcelado' : 'Crédito';
               const instLabel = occ.installments > 1 ? ' • Parcela ' + occ.index + ' de ' + occ.installments : '';
 
               html += '<div style="display: flex; gap: 12px; padding: 14px 12px; margin: 8px 0; border-radius: 8px; background: var(--paper); border: 1px solid var(--line); align-items: flex-start;">';
 
-              // Ícone e info principal
               html += '<div style="font-size: 24px; flex-shrink: 0;">' + typeIcon + '</div>';
 
               html += '<div style="flex: 1;">';
@@ -2682,7 +2552,6 @@ footer.hint {
 
               html += '</div>';
 
-              // Valor à direita
               html += '<div style="text-align: right; flex-shrink: 0;">';
               html += '<div style="font-weight: 700; font-size: 15px; color: var(--accent); margin-bottom: 6px;">R$ ' + (occ.valueCents / 100).toFixed(2).replace('.', ',') + '</div>';
               html += '<button onclick="deleteExpense(\'' + e.id + '\')" style="background: none; border: none; cursor: pointer; font-size: 16px; opacity: 0.5; padding: 0; color: var(--danger);">🗑️</button>';
@@ -2703,7 +2572,6 @@ footer.hint {
       }
     });
 
-    // Total geral (apenas do mês atual) - usar monthOccurrences
     let totalGeral = 0;
     const occurrencesThisMonth = monthOccurrences();
     occurrencesThisMonth.forEach(occ => {
@@ -2730,18 +2598,15 @@ footer.hint {
   const monthOccurrences = () => {
     const key = monthKey(state.viewYear, state.viewMonth);
     return allOccurrences().filter(o => {
-      // Use dataVencimento if available (from new form), otherwise use date
       const displayDate = (o.dataVencimento || o.date || '');
       return displayDate.slice(0, 7) === key;
     });
   };
 
-  // Filtra apenas despesas do Cartão Santander Camila para a aba "Passou, Anotou"
   const monthOccurrencesSantander = () => {
     const key = monthKey(state.viewYear, state.viewMonth);
     return allOccurrences().filter(o => {
       const cartao = o.cartao || 'cartao_santander';
-      // Use dataVencimento if available (from new form), otherwise use date
       const displayDate = (o.dataVencimento || o.date || '');
       return displayDate.slice(0, 7) === key && cartao === 'cartao_santander';
     });
@@ -2750,16 +2615,13 @@ footer.hint {
   const openModal = (modalId) => {
     const modal = document.getElementById(modalId);
     if (modal) {
-      // Atualizar modal de Cartão Detalhes
       if (modalId === 'modalCartaoDetalhes') {
-        // Carrega gastos do mês para mostrar no modal (apenas Cartão Santander)
         const list = monthOccurrencesSantander().sort((a, b) => b.purchaseDate.localeCompare(a.purchaseDate));
         const container = document.getElementById('cartaoDetalhesContainer');
         if (container) {
           if (list.length === 0) {
             container.innerHTML = '<p style="text-align: center; color: var(--ink-soft); padding: 20px;">Nenhum gasto neste mês</p>';
           } else {
-            // Agrupar por data de compra (purchaseDate)
             const despesasPorData = {};
             list.forEach(o => {
               const data = o.purchaseDate || '';
@@ -2770,7 +2632,6 @@ footer.hint {
             });
 
             let html = '';
-            // Renderizar agrupado por data (mais recentes primeiro)
             Object.keys(despesasPorData).sort((a, b) => b.localeCompare(a)).forEach(data => {
               const dateParts = data.split('-');
               const dateDisplay = dateParts.length === 3 ? dateParts[2] + '/' + dateParts[1] + '/' + dateParts[0] : '';
@@ -2841,7 +2702,6 @@ footer.hint {
     }
   };
 
-  // Mapear contas para ícones
   const getIconForConta = (nomeConta) => {
     const nome = nomeConta.toLowerCase();
     if (nome.includes('vivo') || nome.includes('telefone') || nome.includes('celular')) return '📱';
@@ -2861,7 +2721,6 @@ footer.hint {
 
   const monthNames = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
 
-  // Contas com valores variáveis (não mostrar valor fixo)
   const contasVariaveis = [];
 
   const showDayDetails = (day, contas) => {
@@ -2872,7 +2731,6 @@ footer.hint {
       if (contas && contas.length > 0) {
         html += '<div style="display: flex; flex-direction: column; gap: 0;">';
 
-        // Agrupar contas por categoria
         const categorias = {};
         contas.forEach((contaObj, index) => {
           const contaNome = typeof contaObj === 'string' ? contaObj : contaObj.nomeCompleto;
@@ -2889,20 +2747,14 @@ footer.hint {
           categorias[categoria].push({ nome: contaNome, icon, index, valor: contaValor, isVariavel, contaId, isCartao });
         });
 
-        // Renderizar contas agrupadas por ícone
         let isFirst = true;
         Object.keys(categorias).forEach(categoria => {
           categorias[categoria].forEach((item, idx) => {
-            const isLastInGroup = idx === categorias[categoria].length - 1;
-            const isLast = item.index === contas.length - 1;
-
             if (!isFirst) {
               html += '<div style="height: 1px; background: var(--line); margin: 0;"></div>';
             }
 
-            // Se for um cartão, mostrar cada despesa individual
             if (item.isCartao) {
-              // Expandir todas as despesas em parcelas e filtrar apenas as deste mês
               const y = state.viewYear;
               const m = state.viewMonth;
               const todasAsOcorrencias = [];
@@ -2914,7 +2766,6 @@ footer.hint {
                 });
               });
 
-              // Filtrar apenas as ocorrências deste cartão e deste mês
               const cartaoExpenses = todasAsOcorrencias.filter(occ => {
                 const cartaoKey = occ.cartao || 'cartao_santander';
                 const cartaoLabel = {
@@ -2924,7 +2775,6 @@ footer.hint {
                   'digio': '📱 Digio'
                 }[cartaoKey];
 
-                // Verificar se é deste cartão e deste mês
                 if (cartaoLabel !== item.nome) return false;
 
                 const occDate = occ.dataVencimento || occ.date;
@@ -2971,7 +2821,6 @@ footer.hint {
                 html += '</div>';
               }
             } else {
-              // Não é cartão, mostrar normalmente com card-based design
               html += '<div style="display: flex; gap: 12px; padding: 14px 12px; margin: 8px 0; border-radius: 8px; background: var(--paper); border: 1px solid var(--line); align-items: flex-start; cursor: pointer;" data-conta-id="' + item.contaId + '" class="conta-row">';
               html += '<span style="font-size: 22px; flex-shrink: 0;">' + item.icon + '</span>';
               html += '<div style="flex: 1;">';
@@ -2981,9 +2830,7 @@ footer.hint {
               }
               html += '</div>';
               html += '<div style="text-align: right; flex-shrink: 0;">';
-              if (item.isVariavel) {
-                // No value display for variable accounts
-              } else if (item.valor > 0) {
+              if (!item.isVariavel && item.valor > 0) {
                 const valorText = item.valor.toFixed(2).replace('.', ',');
                 html += '<div style="font-weight: 700; font-size: 14px; color: var(--accent);">R$ ' + valorText + '</div>';
               }
@@ -3001,7 +2848,6 @@ footer.hint {
       }
       container.innerHTML = html;
 
-      // Adicionar event listeners para editar valores de contas
       if (contas && contas.length > 0) {
         const contaRows = container.querySelectorAll('.conta-row');
         contaRows.forEach(row => {
@@ -3024,12 +2870,7 @@ footer.hint {
       const monthName = monthNames[state.viewMonth];
       let html = '<h3 style="margin-bottom: 20px; color: var(--ink); font-size: 18px; font-weight: 700;">Dia ' + day + ' de ' + monthName + '</h3>';
 
-      // Mostrar despesas primeiro (se houver)
       if (expenses && expenses.length > 0) {
-        const y = state.viewYear;
-        const m = state.viewMonth;
-
-        // Filtrar despesas por cartão
         const byCard = {};
         expenses.forEach(exp => {
           const card = exp.cartao || 'cartao_santander';
@@ -3039,7 +2880,6 @@ footer.hint {
 
         html += '<div style="display: flex; flex-direction: column; gap: 0;">';
 
-        // Mostrar cada cartão
         Object.keys(byCard).forEach((card, cardIdx) => {
           const cardLabel = {
             'cartao_santander': '🏦 Cartão Santander Camila',
@@ -3087,7 +2927,6 @@ footer.hint {
         html += '</div>';
       }
 
-      // Mostrar contas fixas
       if (contas && contas.length > 0) {
         if (expenses && expenses.length > 0) {
           html += '<div style="height: 1px; background: var(--line); margin: 12px 0;"></div>';
@@ -3125,7 +2964,6 @@ footer.hint {
 
       container.innerHTML = html;
 
-      // Adicionar event listeners para editar valores de contas
       if (contas && contas.length > 0) {
         const contaRows = container.querySelectorAll('.conta-row');
         contaRows.forEach(row => {
@@ -3175,7 +3013,6 @@ footer.hint {
   };
 
   const renderSummary = () => {
-    // Summary sempre mostra apenas despesas do Cartão Santander (não é afetado pelo activeTab)
     const list = monthOccurrencesSantander();
     let total = 0;
     list.forEach(o => total += o.valueCents);
@@ -3187,7 +3024,6 @@ footer.hint {
     el.cartaoTotal.textContent = formatCentsBRL(total);
     el.summaryCartao.textContent = '-' + formatCentsBRL(total);
 
-    // Calcular total de Demais Cartões apenas do mês atual
     let totalDemaisCartoes = 0;
     const occurrencesThisMonth = monthOccurrences();
     occurrencesThisMonth.forEach(occ => {
@@ -3200,7 +3036,7 @@ footer.hint {
     if (demaisCartoesEl) {
       demaisCartoesEl.textContent = formatCentsBRL(totalDemaisCartoes);
     }
-    // Atualizar linha de Demais Cartões na tabela de resumo
+
     const demaisCartoesEmReais = totalDemaisCartoes / 100;
     if (el.summaryDemaisCartoes) {
       el.summaryDemaisCartoes.textContent = '-R$ ' + demaisCartoesEmReais.toFixed(2).replace('.', ',');
@@ -3209,11 +3045,9 @@ footer.hint {
     const rendaConfig = loadRendaConfig();
     const rendaLiquida = rendaConfig.salarioCarla + rendaConfig.salarioIasmim + rendaConfig.abono + rendaConfig.meritocracia - rendaConfig.emprestimoPersonal;
 
-    // Vale Alimentação dinâmico
     const summaryConfig = loadSummaryConfig();
     const valeAlimentacao = summaryConfig.valeAlimentacaoCarla + summaryConfig.valeAlimentacaoIasmim;
 
-    // Reembolsos
     const reembolsos = loadReembolsos();
     let totalReembolsos = 0;
     reembolsos.forEach(r => totalReembolsos += r.valor);
@@ -3226,7 +3060,6 @@ footer.hint {
       summaryReembolsosEl.textContent = '+R$ ' + totalReembolsos.toFixed(2).replace('.', ',');
     }
 
-    // Contas fixas dinâmicas - calcular total para o mês atual
     let contas = 0;
     const contasFixas = loadContasFixas();
     Object.keys(contasFixas).forEach(id => {
@@ -3238,37 +3071,30 @@ footer.hint {
       contas += conta.valor || 0;
     });
 
-    // Atualizar linha de Contas + Financiamento na tabela de resumo
     const summaryContasEl = document.getElementById('summaryContas');
     if (summaryContasEl) {
       summaryContasEl.textContent = '-R$ ' + contas.toFixed(2).replace('.', ',');
     }
 
-    // Atualizar card de Renda Líquida (cima)
     const rendaLiquidaEl = document.getElementById('rendaLiquidaCard');
     if (rendaLiquidaEl) {
       rendaLiquidaEl.textContent = 'R$ ' + rendaLiquida.toFixed(2).replace('.', ',');
     }
 
-    // Atualizar Renda Líquida na tabela (embaixo)
     const summaryRendaLiquidaEl = document.getElementById('summaryRendaLiquida');
     if (summaryRendaLiquidaEl) {
       summaryRendaLiquidaEl.textContent = '+R$ ' + rendaLiquida.toFixed(2).replace('.', ',');
     }
 
-    // Total que entra = apenas Renda Líquida
     const totalEntrada = rendaLiquida;
     const totalEntradaEl = document.getElementById('totalEntrada');
     if (totalEntradaEl) {
       totalEntradaEl.textContent = 'R$ ' + totalEntrada.toFixed(2).replace('.', ',');
     }
 
-    // Disponível = Renda Líquida - Contas - Cartão Santander - Demais Cartões + Reembolsos
-    // Vale Alimentação é mantido completamente separado, sem interação com as despesas
     const disponivel = rendaLiquida - contas - totalEmReais - demaisCartoesEmReais + totalReembolsos;
     const disponibilidadeText = 'R$ ' + disponivel.toFixed(2).replace('.', ',');
 
-    // Atualizar elemento e cor baseado no valor
     const disponibilBox = document.getElementById('disponibilBox');
     if (disponivel < 0) {
       el.disponivel.textContent = '⚠️ ' + disponibilidadeText;
@@ -3288,7 +3114,6 @@ footer.hint {
       }
     }
 
-    // Margem com alerta se negativa
     const margemSpan = document.getElementById('margemSpan');
     if (margemSpan) {
       const margemText = 'R$ ' + disponivel.toFixed(2).replace('.', ',');
@@ -3316,7 +3141,6 @@ footer.hint {
   };
 
   const renderLedger = () => {
-    // Na aba "Passou, Anotou", mostra apenas despesas do Cartão Santander
     const monthList = state.activeTab === 'despesas' ? monthOccurrencesSantander() : monthOccurrences();
     const list = monthList.slice().sort((a, b) => {
       if (a.purchaseDate !== b.purchaseDate) return a.purchaseDate < b.purchaseDate ? 1 : -1;
@@ -3488,12 +3312,11 @@ footer.hint {
     ev.preventDefault();
     const cents = parseValueCents();
 
-    // Validações
     if (cents <= 0) {
       showToast('⚠️ Digite um valor maior que zero', 'warning');
       return;
     }
-    if (cents > 999999900) { // Limite de R$ 9.999.999,00
+    if (cents > 999999900) {
       showToast('⚠️ Valor muito alto! Máximo: R$ 9.999.999,00', 'warning');
       return;
     }
@@ -3508,7 +3331,6 @@ footer.hint {
       return;
     }
 
-    // Parse dataVencimento (optional, defaults to date if not provided)
     let dataVencimentoISO = dateISO;
     if (el.dataVencimentoInput && el.dataVencimentoInput.value.trim()) {
       dataVencimentoISO = formatDateToISO(el.dataVencimentoInput.value);
@@ -3538,49 +3360,37 @@ footer.hint {
   const addExpense = payload => {
     const localEntry = Object.assign({id: generateUUID()}, payload);
 
-    // Adiciona imediatamente ao estado (otimista)
     state.expenses.push(localEntry);
     saveToStorage();
     renderAll();
     renderCalendar();
-    // SINCRONIZAR IMEDIATAMENTE para Supabase (não agendar!)
+
     if (supabaseConfig.enabled) {
-      console.log('[SYNC] Sincronizando imediatamente após adicionar despesa...');
       syncToSupabase().catch(e => console.error('[SYNC] Erro ao sincronizar:', e));
     }
 
-    // Se tem Firestore, sincroniza
     if (db && expensesCol) {
       expensesCol.add(payload).then(ref => {
-        // Atualiza o ID quando Firestore responder
         localEntry.id = ref.id;
         saveToStorage();
         renderAll();
         renderCalendar();
-      }).catch(err => {
-        // Erro ao sincronizar com Firestore, mas os dados locais foram salvos
-      });
+      }).catch(err => {});
     }
   };
 
   const updateExpense = (id, payload) => {
-    // Atualiza imediatamente (otimista)
     const e = state.expenses.find(x => x.id === id);
     if (e) {
       Object.assign(e, payload);
       saveToStorage();
-      // SINCRONIZAR IMEDIATAMENTE (não agendar!)
       if (supabaseConfig.enabled) {
-        console.log('[SYNC] Sincronizando imediatamente após editar despesa...');
         syncToSupabase().catch(e => console.error('[SYNC] Erro ao sincronizar:', e));
       }
     }
 
-    // Sincroniza com Firestore se existir
     if (db && expensesCol && id.indexOf('local-') !== 0) {
-      expensesCol.doc(id).update(payload).catch(err => {
-        // Erro ao sincronizar com Firestore, mas os dados locais foram atualizados
-      });
+      expensesCol.doc(id).update(payload).catch(err => {});
     }
   };
 
@@ -3616,12 +3426,8 @@ footer.hint {
     renderCalendar();
     showToast('✓ Despesa deletada com sucesso', 'success');
 
-    // Sincronizar deleção com Supabase IMEDIATAMENTE
     if (supabaseConfig.enabled && id.indexOf('local-') !== 0) {
-      console.log('[SYNC] Sincronizando deleção imediatamente...');
       deletarDoSupabase(id).then(() => {
-        console.log('[SYNC] Deleção sincronizada com Supabase');
-        // Sincronizar estado completo para todos os devices
         syncToSupabase().catch(e => console.error('[SYNC] Erro:', e));
       });
     }
@@ -3653,12 +3459,9 @@ footer.hint {
     db = dbNs;
     expensesCol = db.collection('passou_anotou_expenses');
 
-    // Sempre limpa localStorage (para não usar dados antigos duplicados)
     localStorage.removeItem(STORAGE_KEY);
 
-    // Verifica Firestore e limpa se tiver mais que 100 docs (duplicação)
     expensesCol.get().then(qs => {
-      // Se tiver MUITOS docs (duplicação), deleta tudo
       if (qs.docs.length > 100) {
         const promises = qs.docs.map(doc => expensesCol.doc(doc.id).delete());
         return Promise.all(promises).then(() => 'deleted');
@@ -3705,9 +3508,7 @@ footer.hint {
           renderAll();
           renderCalendar();
         },
-        err => {
-          // Erro ao ouvir atualizações do Firestore
-        }
+        err => {}
       );
     };
   };
@@ -3742,7 +3543,6 @@ footer.hint {
     if (avisoDespesas) avisoDespesas.textContent = textoAviso;
   };
 
-  // Calcula o quinto dia útil de um mês (ignorando sábados e domingos)
   const calcularQuintoDiaUtil = (year, month) => {
     let diasUteis = 0;
     let dia = 1;
@@ -3750,7 +3550,6 @@ footer.hint {
     while (diasUteis < 5) {
       const data = new Date(year, month, dia);
       const diaSemana = data.getDay();
-      // 0 = domingo, 6 = sábado
       if (diaSemana !== 0 && diaSemana !== 6) {
         diasUteis++;
         if (diasUteis === 5) return dia;
@@ -3761,27 +3560,19 @@ footer.hint {
     return dia;
   };
 
-  // Calcula a parcela atual de uma conta para um determinado mês
-  // Referência: setembro 2026, parcelaAtual é a parcela em setembro
   const calcularParcelaParaMes = (conta, year, month) => {
     if (conta.parcelaTotal <= 0) return conta;
 
-    // Mês de referência: setembro 2026 (mês 8, porque começa em 0)
-    const mesRef = 8; // setembro (0-indexed)
+    const mesRef = 8;
     const anoRef = 2026;
 
-    // Calcular quantos meses se passaram desde setembro
     const mesesPassados = (year - anoRef) * 12 + (month - mesRef);
-
-    // Calcular parcela atual para este mês
     const parcelaAtualParaMes = conta.parcelaAtual + mesesPassados;
 
-    // Se passou do total de parcelas, retorna null (conta não aparece)
     if (parcelaAtualParaMes > conta.parcelaTotal) {
       return null;
     }
 
-    // Retorna cópia da conta com parcela atualizada para este mês
     return {
       ...conta,
       parcelaAtual: parcelaAtualParaMes
@@ -3792,20 +3583,16 @@ footer.hint {
     const contasAtivas = {};
     let contasFixas = loadContasFixas();
 
-    // Calcular quinto dia útil se houver contas com esse vencimento
     const quintoDiaUtil = calcularQuintoDiaUtil(year, month);
 
-    // Adiciona todas as contas que têm um dia definido
     Object.keys(contasFixas).forEach(id => {
       let conta = contasFixas[id];
 
-      // Calcular parcela para este mês específico
       if (conta.parcelaTotal > 0) {
         conta = calcularParcelaParaMes(conta, year, month);
-        if (!conta) return; // Conta não aparece neste mês (acabou)
+        if (!conta) return;
       }
 
-      // Extrair dia da dataVencimento se não tiver campo dia
       let diaDefinido = conta.dia;
 
       if ((diaDefinido === null || diaDefinido === undefined) && conta.dataVencimento) {
@@ -3821,15 +3608,11 @@ footer.hint {
         }
       }
 
-      // Adiciona a conta se tem um dia definido (número ou 'quinto_util')
       if (diaDefinido !== null && diaDefinido !== undefined && diaDefinido > 0) {
-        // Se a conta vence no quinto dia útil, usa o dia calculado
         const diaParaAdicionar = diaDefinido === 'quinto_util' ? quintoDiaUtil : diaDefinido;
 
         if (!contasAtivas[diaParaAdicionar]) contasAtivas[diaParaAdicionar] = [];
-        // Retorna objeto com nome completo incluindo parcelas
         const displayName = getContaDisplayName(conta);
-        // Para contas variáveis, obter valor do mês específico
         let valorPraExibir = conta.valor;
         if (contasVariaveis.includes(id)) {
           valorPraExibir = getValorContaMes(id, year, month);
@@ -3844,29 +3627,23 @@ footer.hint {
       }
     });
 
-    // Mapeamento de cartão para dia de vencimento
     const cartaoDiasVencimento = {
       'sicoob': 11,
       'mercado_pago_carla': 4,
       'mercado_pago_iasmim': 4,
     };
 
-    // Calcular totais de cada cartão por dia de vencimento
-    // Usar purchaseOccurrences para considerar parcelas individuais
     const cartaoTotaisPorDia = {};
 
     state.expenses.forEach(e => {
-      // Expandir em parcelas individuais
       const ocorrencias = purchaseOccurrences(e);
 
       ocorrencias.forEach(occ => {
-        // Verificar se esta ocorrência é deste mês
         const occDate = occ.dataVencimento || occ.date;
         const occParts = occDate.split('-');
         const occMonth = parseInt(occParts[1]);
         const occYear = parseInt(occParts[0]);
 
-        // Se a ocorrência é deste mês, adicionar ao total
         if (occMonth === (month + 1) && occYear === year) {
           const cartao = occ.cartao || 'cartao_santander';
           const diaVencimento = cartaoDiasVencimento[cartao] || 1;
@@ -3884,7 +3661,6 @@ footer.hint {
       });
     });
 
-    // Adicionar cartões aos seus dias de vencimento
     const cartaoLabelsSimples = {
       'sicoob': '🏦 Sicoob',
       'mercado_pago_carla': '🛒 Mercado Pago (Carla)',
@@ -3930,7 +3706,6 @@ footer.hint {
     const allOccs = allOccurrences();
     const occsByDay = {};
     allOccs.forEach(o => {
-      // Use dataVencimento if available (from new form), otherwise use date
       const displayDate = (o.dataVencimento || o.date || '');
       const dayStr = displayDate.slice(0, 10);
       if (!occsByDay[dayStr]) occsByDay[dayStr] = [];
@@ -3960,7 +3735,6 @@ footer.hint {
 
       dayEl.innerHTML = html;
 
-      // Adicionar tooltip ao passar o mouse
       if (hasExpenses || hasContas) {
         const tooltipItens = [];
         if (hasContas) {
@@ -3970,7 +3744,6 @@ footer.hint {
           tooltipItens.push(...occsByDay[dayStr].map(o => o.description || ''));
         }
         dayEl.title = tooltipItens.join('\n');
-        // Adicionar evento de clique para mostrar modal
         dayEl.style.cursor = 'pointer';
         dayEl.addEventListener('click', () => {
           showDayDetailsComplete(day, contasAtivas[day] || [], occsByDay[dayStr] || []);
@@ -4083,7 +3856,6 @@ footer.hint {
     }
   };
 
-  // Estado para parcelamento do formulário Nova Conta
   let novaContaParcelas = 1;
 
   const updateParcValue = () => {
@@ -4120,7 +3892,6 @@ footer.hint {
       return;
     }
 
-    // Remover pontos de milhar e converter vírgula para ponto
     const valorLimpo = valorStr.replace(/\./g, '').replace(',', '.');
     const valor = parseFloat(valorLimpo);
     if (isNaN(valor) || valor <= 0) {
@@ -4130,13 +3901,11 @@ footer.hint {
 
     const valueCents = Math.round(valor * 100);
 
-    // Função auxiliar para validar e converter data
     const parseDate = (dateStr, isRequired = false) => {
       if (!dateStr) {
         return isRequired ? null : todayISO();
       }
 
-      // Validar formato: deve ter exatamente 10 caracteres (DD/MM/YYYY)
       if (dateStr.length !== 10 || dateStr[2] !== '/' || dateStr[5] !== '/') {
         return null;
       }
@@ -4152,7 +3921,6 @@ footer.hint {
             mes >= 1 && mes <= 12 &&
             parts[2].length === 4 &&
             ano >= 2000 && ano <= 2099) {
-          // Validar se a data é válida no calendário
           const date = new Date(ano, mes - 1, dia);
           const isValidDate = date.getFullYear() === ano &&
                               date.getMonth() === mes - 1 &&
@@ -4164,14 +3932,12 @@ footer.hint {
       return null;
     };
 
-    // Data de compra (opcional, padrão hoje)
     let compraData = parseDate(dataCompraStr, false);
     if (!compraData && dataCompraStr) {
       showToast('⚠️ Data de Compra inválida. Use DD/MM/YYYY', 'warning');
       return;
     }
 
-    // Data de vencimento (obrigatória para contas fixas)
     let dataVencimento = null;
     if (categoria === 'contas_fixas') {
       if (!dataVencimentoStr) {
@@ -4184,11 +3950,9 @@ footer.hint {
         return;
       }
     } else {
-      // Para cartões, data de vencimento é opcional
       dataVencimento = parseDate(dataVencimentoStr, false) || compraData;
     }
 
-    // Se é um cartão (Sicoob, Mercado Pago, Digio), criar despesa parcelada
     if (categoria === 'sicoob' || categoria === 'mercado_pago_carla' || categoria === 'mercado_pago_iasmim' || categoria === 'digio') {
       const payload = {
         valueCents: valueCents,
@@ -4204,7 +3968,6 @@ footer.hint {
       addExpense(payload);
       showToast('✓ Despesa parcelada adicionada (' + novaContaParcelas + 'x)', 'success');
     } else if (categoria === 'contas_fixas') {
-      // Se é conta fixa, adicionar às contas fixas
       const novaContaId = 'conta_' + Date.now();
       const novaConta = {
         nome: nome,
@@ -4214,10 +3977,8 @@ footer.hint {
         dataVencimento: dataVencimento,
         dataCriacao: compraData
       };
-      console.log('Salvando conta fixa:', novaConta);
       contasFixas[novaContaId] = novaConta;
       saveContasFixas(contasFixas);
-      console.log('Contas fixas após salvar:', loadContasFixas());
       renderAll();
       renderCalendar();
       showToast('✓ Conta fixa adicionada com vencimento em ' + dataVencimento, 'success');
@@ -4231,17 +3992,15 @@ footer.hint {
 
   document.getElementById('novaContaForm')?.addEventListener('submit', handleNovaContaSubmit);
 
-  // Auto-format date inputs (DD/MM/YYYY) - both purchase and due date
   const formatDateInput = (inputElement) => {
     if (!inputElement) return;
     inputElement.addEventListener('input', (e) => {
-      let value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+      let value = e.target.value.replace(/\D/g, '');
 
       if (value.length > 8) {
-        value = value.slice(0, 8); // Limit to 8 digits
+        value = value.slice(0, 8);
       }
 
-      // Format as DD/MM/YYYY
       if (value.length >= 1) {
         if (value.length <= 2) {
           e.target.value = value.slice(0, 2);
@@ -4259,9 +4018,6 @@ footer.hint {
   formatDateInput(document.getElementById('novaContaDataCompra'));
   formatDateInput(document.getElementById('novaContaDataVencimento'));
 
-  // ==================== FORM: NOVA COMPRA CARTÃO ====================
-
-  // Estado para parcelamento do formulário Nova Compra Cartão
   let novaCompraParcelas = 1;
 
   const updateCompraParcValue = () => {
@@ -4288,14 +4044,12 @@ footer.hint {
   const handleNovaCompraCartaoSubmit = (ev) => {
     ev.preventDefault();
 
-    // Pegar valores do formulário
     const descricao = document.getElementById('compraDescricao').value.trim();
     const valorStr = document.getElementById('compraValor').value.trim();
     const dataCompraStr = document.getElementById('compraDataCompra').value.trim();
     const dataVencimentoStr = document.getElementById('compraDataVencimento').value.trim();
     const cartao = document.getElementById('compraCartao').value.trim();
 
-    // Validações básicas
     if (!descricao) {
       showToast('⚠️ Preencha a Descrição', 'warning');
       return;
@@ -4313,7 +4067,6 @@ footer.hint {
       return;
     }
 
-    // Converter valor (remover ponto de milhar, converter vírgula)
     const valorLimpo = valorStr.replace(/\./g, '').replace(',', '.');
     const valor = parseFloat(valorLimpo);
     if (isNaN(valor) || valor <= 0) {
@@ -4321,7 +4074,6 @@ footer.hint {
       return;
     }
 
-    // Converter datas (DD/MM/YYYY → YYYY-MM-DD)
     const convertDate = (dateStr) => {
       if (!dateStr || dateStr.length !== 10) return null;
       const parts = dateStr.split('/');
@@ -4342,7 +4094,6 @@ footer.hint {
       return;
     }
 
-    // Criar e adicionar despesa
     const valueCents = Math.round(valor * 100);
     const payload = {
       valueCents: valueCents,
@@ -4358,7 +4109,6 @@ footer.hint {
     addExpense(payload);
     showToast('✓ Compra parcelada adicionada (' + novaCompraParcelas + 'x)', 'success');
 
-    // Limpar formulário
     novaCompraParcelas = 1;
     updateCompraParcValue();
     closeModal('modalNovaCompraCartao');
@@ -4367,11 +4117,9 @@ footer.hint {
 
   document.getElementById('novaCompraCartaoForm')?.addEventListener('submit', handleNovaCompraCartaoSubmit);
 
-  // Auto-format date inputs for card form
   formatDateInput(document.getElementById('compraDataCompra'));
   formatDateInput(document.getElementById('compraDataVencimento'));
 
-  // REEMBOLSOS FORM
   const handleNovoReembolsoSubmit = (ev) => {
     ev.preventDefault();
     const valor = document.getElementById('reembolsoValor').value.trim();
@@ -4483,22 +4231,18 @@ footer.hint {
   const CONTAS_KEY = 'fluxo_contas_fixas';
   const CONTAS_VALORES_MES_KEY = 'fluxo_contas_valores_mes';
 
-  // Função para obter valor de conta no mês específico
   const getValorContaMes = (contaId, ano, mes) => {
     if (!contasVariaveis.includes(contaId)) {
-      // Para contas fixas, retorna valor padrão
       const contasFixas = loadContasFixas();
       return contasFixas[contaId]?.valor || 0;
     }
 
-    // Para contas variáveis, busca no localStorage
     try {
       const valores = JSON.parse(localStorage.getItem(CONTAS_VALORES_MES_KEY) || '{}');
       const chave = contaId + '_' + ano + '-' + pad2(mes + 1);
       if (valores[chave] !== undefined) {
         return valores[chave];
       }
-      // Se não encontrar, retorna valor padrão das contas fixas para esse mês
       const contasFixas = loadContasFixas();
       return contasFixas[contaId]?.valor || 0;
     } catch(e) {
@@ -4506,7 +4250,6 @@ footer.hint {
     }
   };
 
-  // Função para salvar valor de conta no mês específico
   const setValorContaMes = (contaId, ano, mes, valor) => {
     if (!contasVariaveis.includes(contaId)) return;
 
@@ -4516,9 +4259,7 @@ footer.hint {
       valores[chave] = valor;
       localStorage.setItem(CONTAS_VALORES_MES_KEY, JSON.stringify(valores));
       if (supabaseConfig.enabled) scheduleAutoSync();
-    } catch(e) {
-      // Erro ao salvar valor do mês no localStorage
-    }
+    } catch(e) {}
   };
 
   const contasFixasDefault = {
@@ -4543,17 +4284,12 @@ footer.hint {
       const stored = localStorage.getItem(CONTAS_KEY);
       const storedContasVersion = localStorage.getItem(CONTAS_VERSION_KEY);
 
-      // Se versão das contas está atualizada, usa os dados salvos
       if (stored && storedContasVersion === CURRENT_VERSION) {
         const parsed = JSON.parse(stored);
-        // Garante que é uma cópia profunda para não contaminar os dados
         return JSON.parse(JSON.stringify(parsed));
       }
-    } catch(e) {
-      // Erro ao carregar contas fixas do localStorage
-    }
+    } catch(e) {}
 
-    // Retorna cópia profunda do padrão e salva
     const defaultCopy = JSON.parse(JSON.stringify(contasFixasDefault));
     try {
       localStorage.setItem(CONTAS_KEY, JSON.stringify(defaultCopy));
@@ -4569,7 +4305,6 @@ footer.hint {
     } catch(e) {}
   };
 
-  // REEMBOLSOS
   const REEMBOLSOS_KEY = 'fluxo_reembolsos';
 
   const loadReembolsos = () => {
@@ -4606,14 +4341,11 @@ footer.hint {
     return reembolsos;
   };
 
-  // Helper function to get base name without parcel numbers
   const getBaseContaNome = (nome) => {
     if (!nome) return nome;
-    // Remove any parcel pattern like " 9/12" or " (9/12)" from the end
     return nome.replace(/\s+\(\d+\/\d+\)$/, '').replace(/\s+\d+\/\d+$/, '');
   };
 
-  // Helper function to get display name with current parcel numbers
   const getContaDisplayName = (conta) => {
     const baseNome = getBaseContaNome(conta.nome);
     if (conta.parcelaTotal > 0 && conta.parcelaAtual > 0) {
@@ -4683,16 +4415,13 @@ footer.hint {
 
     const conta = contasFixas[contaEmEdicao];
 
-    // Se é conta variável, salva para o mês específico
     if (contasVariaveis.includes(contaEmEdicao)) {
       setValorContaMes(contaEmEdicao, state.viewYear, state.viewMonth, valor);
     } else {
-      // Se é conta fixa, salva normalmente
       conta.valor = valor;
       saveContasFixas(contasFixas);
     }
 
-    // Atualiza no HTML pelo ID
     const idElement = document.getElementById('valor-' + contaEmEdicao);
     if (idElement) {
       idElement.textContent = 'R$ ' + valor.toFixed(2).replace('.', ',');
@@ -4714,7 +4443,6 @@ footer.hint {
     html += '</div>';
     let totalGeral = 0;
 
-    // Mapear contas e suas informações
     const contasInfo = [
       { id: 'aluguel', nome: 'Aluguel + IPTU', dia: 10 },
       { id: 'agua', nome: 'Água', dia: 8 },
@@ -4732,17 +4460,14 @@ footer.hint {
       { id: 'financiamento', nome: 'Financiamento Carro', dia: 25 }
     ];
 
-    // Agrupar contas por dia
     const contasPorDia = {};
-    // Primeiro, adicionar contas predefinidas
     contasInfo.forEach(info => {
       let conta = contasFixas[info.id];
       if (!conta) return;
 
-      // Calculate parcel for the current viewing month
       if (conta.parcelaTotal > 0) {
         conta = calcularParcelaParaMes(conta, state.viewYear, state.viewMonth);
-        if (!conta) return; // Skip if parcels have ended
+        if (!conta) return;
       }
 
       const dia = info.dia === null ? '00' : (info.dia === 'quinto_util' ? 'quinto_util' : ('0' + info.dia).slice(-2));
@@ -4751,13 +4476,11 @@ footer.hint {
       totalGeral += conta.valor;
     });
 
-    // Depois, adicionar contas criadas pelo usuário (que começam com 'conta_')
     Object.keys(contasFixas).forEach(id => {
       if (id.startsWith('conta_')) {
         const conta = contasFixas[id];
         totalGeral += conta.valor;
 
-        // Extrair dia da dataVencimento ou usar '00' se não existir
         let dia = '00';
         if (conta.dataVencimento) {
           const dateParts = conta.dataVencimento.split('-');
@@ -4772,7 +4495,6 @@ footer.hint {
       }
     });
 
-    // Renderizar agrupado por dia
     const diasOrdenados = Object.keys(contasPorDia).sort((a, b) => {
       if (a === 'quinto_util') return 1;
       if (b === 'quinto_util') return -1;
@@ -4785,35 +4507,27 @@ footer.hint {
       html += '<div style="font-weight: 600; color: var(--ink); margin-bottom: 8px; font-size: 12px; text-transform: uppercase;">' + diaDisplay + '</div>';
 
       contasPorDia[dia].forEach(({ id, info, conta }) => {
-        // Get display name with current parcel numbers
         const displayName = info ? getContaDisplayName(conta) : conta.nome;
-
-        // Get icon for this account
         const icon = getIconForConta(displayName);
 
         html += '<div style="display: flex; gap: 12px; padding: 14px 12px; margin: 8px 0; border-radius: 8px; background: var(--paper); border: 1px solid var(--line); align-items: flex-start;">';
 
-        // Ícone
         html += '<div style="font-size: 22px; flex-shrink: 0;">' + icon + '</div>';
 
-        // Info principal
         html += '<div style="flex: 1;">';
         html += '<div style="font-weight: 600; font-size: 14px; color: var(--ink); margin-bottom: 2px;">' + displayName + '</div>';
 
-        // Mostrar se é conta variável
         if (contasVariaveis.includes(id)) {
           html += '<div style="font-size: 12px; color: #8b5cf6;">Valor Variável ✏️</div>';
         }
 
         html += '</div>';
 
-        // Valor e botões à direita
         html += '<div style="text-align: right; flex-shrink: 0; display: flex; flex-direction: column; gap: 6px; align-items: flex-end;">';
         if (conta.valor > 0) {
           html += '<div style="font-weight: 700; font-size: 14px; color: var(--accent);">R$ ' + conta.valor.toFixed(2).replace('.', ',') + '</div>';
         }
 
-        // Botões de ação
         html += '<div style="display: flex; gap: 4px;">';
         html += '<button onclick="abrirEditarConta(\'' + id + '\')" style="background: none; border: none; cursor: pointer; font-size: 14px; opacity: 0.6; padding: 0; color: var(--ink);">✏️</button>';
 
@@ -4830,7 +4544,6 @@ footer.hint {
       html += '</div>';
     });
 
-    // Total
     html += '<div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; margin-top: 8px; border-top: 2px solid var(--line); font-weight: 700;">';
     html += '<span style="color: var(--ink);">TOTAL</span>';
     html += '<span style="color: var(--ink);">R$ ' + totalGeral.toFixed(2).replace('.', ',') + '</span>';
@@ -4846,21 +4559,17 @@ footer.hint {
     let contasFixas = loadContasFixas();
     let totalGeral = 0;
 
-    // Calcular total das contas fixas para o mês atual
     Object.keys(contasFixas).forEach(id => {
       let conta = contasFixas[id];
 
-      // Calcular parcela para este mês específico
       if (conta.parcelaTotal > 0) {
         conta = calcularParcelaParaMes(conta, state.viewYear, state.viewMonth);
-        if (!conta) return; // Conta não aparece neste mês (acabou)
+        if (!conta) return;
       }
 
-      // Adiciona o valor ao total
       totalGeral += conta.valor || 0;
     });
 
-    // Atualizar elemento
     totalElement.textContent = 'R$ ' + totalGeral.toFixed(2).replace('.', ',');
   };
 
@@ -4869,8 +4578,8 @@ footer.hint {
       salarioCarla: parseFloat(document.getElementById('salarioCarla').value.replace(',', '.')) || 1961.79,
       salarioIasmim: parseFloat(document.getElementById('salarioIasmim').value.replace(',', '.')) || 5213.57,
       emprestimoPersonal: parseFloat(document.getElementById('emprestimoPersonal').value.replace(',', '.')) || 597.23,
-      abono: parseFloat(document.getElementById('abono').value.replace(',', '.')) || 0,
-      meritocracia: parseFloat(document.getElementById('meritocracia').value.replace(',', '.')) || 0
+      abono: parseFloat(document.getElementById('novoValor').value.replace(',', '.')) || 0,
+      meritocracia: parseFloat(document.getElementById('novoValor').value.replace(',', '.')) || 0
     };
     try {
       localStorage.setItem(RENDA_KEY, JSON.stringify(config));
@@ -4889,21 +4598,14 @@ footer.hint {
     renderSummary();
   });
 
-  // ============================================================================
-  // SUPABASE REALTIME SYNC - Sincronização em Tempo Real a cada 3 segundos
-  // ============================================================================
   let pollInterval = null;
   let isLoadingFromCloud = false;
 
   async function startRealtimeSync() {
     if (!supabaseConfig.enabled) {
-      console.log('[REALTIME] Supabase não configurado');
       return;
     }
 
-    console.log('[REALTIME] ✓ Iniciando sincronização em tempo real (a cada 3 segundos)...');
-
-    // Polling a cada 3 segundos para detectar mudanças de outros dispositivos
     if (pollInterval) clearInterval(pollInterval);
 
     pollInterval = setInterval(async () => {
@@ -4941,7 +4643,6 @@ footer.hint {
         return;
       }
 
-      // Construir mapa dos dados da nuvem
       const cloudMap = new Map();
       cloudExpenses.forEach(e => {
         if (e.id) {
@@ -4958,18 +4659,15 @@ footer.hint {
         }
       });
 
-      // Construir mapa dos dados locais
       const localMap = new Map();
       state.expenses.forEach(e => {
         if (e.id) localMap.set(e.id, e);
       });
 
-      // Verificar se houve mudanças
       let hasChanges = false;
       cloudMap.forEach((cloudExp, id) => {
         if (!localMap.has(id)) {
           hasChanges = true;
-          console.log('[REALTIME] Novo dado detectado:', id);
         }
       });
 
@@ -4980,9 +4678,6 @@ footer.hint {
       });
 
       if (hasChanges) {
-        console.log('[REALTIME] ✓ Atualizando dados - ' + cloudMap.size + ' despesas sincronizadas');
-
-        // Merge: nuvem tem prioridade
         const merged = new Map();
         cloudMap.forEach((val, key) => merged.set(key, val));
         localMap.forEach((val, key) => {
@@ -4998,22 +4693,17 @@ footer.hint {
         updateSyncStatus('success');
       }
     } catch (e) {
-      // Silencioso - não spam no console
     } finally {
       isLoadingFromCloud = false;
     }
   }
 
   const boot = async () => {
-    // Carregar dados locais primeiro
     loadFromStorage();
 
-    // Carregar configuração do Supabase e tentar buscar dados da nuvem
     loadSupabaseConfig();
     if (supabaseConfig.enabled) {
-      console.log('[SYNC] Carregando dados do Supabase na inicialização...');
       await loadInitialDataFromSupabase();
-      // Iniciar sync em tempo real
       startRealtimeSync();
     }
 
@@ -5026,19 +4716,15 @@ footer.hint {
     updateContasFixasTotal();
     renderCalendar();
 
-    // Tenta inicializar o banco de dados para sincronização
     if (window.claude && typeof window.claude.use === 'function') {
       window.claude.use('db').then(dbNs => {
         if (dbNs) {
           initDb(dbNs);
         }
-      }).catch(err => {
-        // Banco de dados não disponível, usando localStorage
-      });
+      }).catch(err => {});
     }
   };
 
-  // Verificar vencimentos próximos (hoje e amanhã)
   const verificarVencimentosProximos = () => {
     const hoje = new Date();
     const amanha = new Date(hoje);
@@ -5055,7 +4741,6 @@ footer.hint {
       let venceHoje = false;
       let venceAmanha = false;
 
-      // Para contas com dataVencimento (novas contas), verificar data completa
       if (conta.dataVencimento) {
         const dateParts = conta.dataVencimento.split('-');
         if (dateParts.length === 3) {
@@ -5067,7 +4752,6 @@ footer.hint {
           venceAmanha = (dia === amanha.getDate() && mes === (amanha.getMonth() + 1) && ano === amanha.getFullYear());
         }
       } else if (conta.dia && typeof conta.dia === 'number') {
-        // Para contas predefinidas com apenas dia, verificar apenas o dia do mês
         venceHoje = (conta.dia === hoje.getDate());
         venceAmanha = (conta.dia === amanha.getDate());
       }
@@ -5124,28 +4808,14 @@ footer.hint {
     if (container) container.classList.remove('show');
   };
 
-  // Configuração Firebase
-  const firebaseConfig = {
-    apiKey: "AIzaSyABpWSJh2P_SASAdQxJz2XD5IStjrwx2SQ",
-    authDomain: "fluxo-financeiro-ee3a3.firebaseapp.com",
-    projectId: "fluxo-financeiro-ee3a3",
-    storageBucket: "fluxo-financeiro-ee3a3.firebasestorage.app",
-    messagingSenderId: "255340364435",
-    appId: "1:255340364435:web:10f8093626c3315021c366"
-  };
-
-  // Registrar Service Worker para PWA
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/service-worker.js').then(registration => {
-      // Após o service worker estar registrado, configurar Firebase Messaging
       if ('firebase' in window && firebase.messaging) {
         try {
           const messaging = firebase.messaging();
 
-          // Pedir permissão para notificações
           Notification.requestPermission().then(permission => {
             if (permission === 'granted') {
-              // Registrar para receber mensagens quando o app está em primeiro plano
               messaging.onMessage(payload => {
                 const notificationTitle = payload.notification.title;
                 const notificationOptions = {
@@ -5159,19 +4829,14 @@ footer.hint {
               });
             }
           });
-        } catch (error) {
-          // Erro ao configurar Firebase Messaging
-        }
+        } catch (error) {}
       }
-    }).catch(error => {
-      // Erro ao registrar Service Worker
-    });
+    }).catch(error => {});
   }
 
   boot();
   verificarVencimentosProximos();
 
-  // Toggle do menu de ferramentas
   window.toggleToolsMenu = function() {
     const panel = document.getElementById('toolsPanel');
     const toggle = document.getElementById('toolsToggle');
@@ -5184,7 +4849,6 @@ footer.hint {
     }
   };
 
-  // Fechar menu ao clicar fora
   document.addEventListener('click', function(e) {
     const menu = document.getElementById('toolsMenu');
     if (menu && !menu.contains(e.target)) {
@@ -5193,7 +4857,6 @@ footer.hint {
     }
   });
 
-  // Expor funções Supabase para o escopo global (para onclick HTML)
   window.showSupabaseSetup = showSupabaseSetup;
   window.openSupabaseModal = openSupabaseModal;
   window.closeSupabaseModal = closeSupabaseModal;
@@ -5209,7 +4872,6 @@ footer.hint {
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js"></script>
 
 <script>
-  // Inicializar Firebase
   if (typeof firebase !== 'undefined') {
     firebase.initializeApp({
       apiKey: "AIzaSyABpWSJh2P_SASAdQxJz2XD5IStjrwx2SQ",
