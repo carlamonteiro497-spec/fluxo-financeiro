@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Fluxo Financeiro</title>
+<title>Fluxo Financeiro - Live</title>
 <meta name="theme-color" content="#1e40af">
 <meta name="description" content="Aplicação de rastreamento financeiro com calendário, contas fixas e despesas variáveis">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1716,7 +1716,40 @@ footer.hint {
   </div>
 </div>
 
-<!-- MODAL SUPABASE - REMOVIDA (usar auth-supabase-complete.js) -->
+<!-- MODAL SUPABASE -->
+<div id="supabaseModal" class="modal">
+  <div class="modal-dialog">
+    <div class="modal-header">🔄 Configurar Sincronização em Nuvem</div>
+
+    <div style="background: #eff6ff; border-left: 4px solid #2563eb; padding: 12px; border-radius: 6px; margin-bottom: 16px; font-size: 13px; color: #1e40af; line-height: 1.5;">
+      ℹ️ Você já criou a tabela no Supabase? Se não, volte e siga os passos anteriores primeiro!
+    </div>
+
+    <div class="modal-form-group">
+      <label>URL do Projeto Supabase</label>
+      <input type="text" id="supabaseUrl" placeholder="https://seu-projeto.supabase.co">
+    </div>
+
+    <div class="modal-form-group">
+      <label>Chave Anon (Pública)</label>
+      <input type="password" id="supabaseKey" placeholder="sb_publishable_...">
+    </div>
+
+    <div class="modal-checkbox-group">
+      <input type="checkbox" id="showKeyCheckbox" onchange="toggleSupabaseKeyVisibility()">
+      <label for="showKeyCheckbox" style="cursor: pointer;">Mostrar chave</label>
+    </div>
+
+    <div id="supabaseStatus" class="modal-status"></div>
+
+    <div class="modal-buttons">
+      <button type="button" class="modal-btn modal-btn-secondary" onclick="closeSupabaseModal()">Cancelar</button>
+      <button type="button" class="modal-btn modal-btn-primary" onclick="saveSupabaseConfigViaModal()">Salvar e Conectar</button>
+    </div>
+  </div>
+
+  </div>
+</div>
 
 <script>
 (function(){
@@ -1782,24 +1815,19 @@ footer.hint {
       // O ID é necessário para UPSERT funcionar corretamente
       // Se uma despesa não tiver ID (migração de versão anterior), gerar um novo
       const dataToSync = state.expenses.map(e => {
-        // Garantir que cada expense tem um UUID válido
-        // Se o ID é local (exp_0, exp_1, etc), gerar novo UUID
-        let validId = e.id;
-        if (!validId || validId.toString().startsWith('exp_')) {
-          validId = generateUUID();
-          e.id = validId;  // Atualizar no state também
-          console.log('[SYNC] ID local convertido para UUID:', validId);
+        // Garantir que cada expense tem um ID válido
+        if (!e.id) {
+          e.id = generateUUID();  // Gerar UUID se não existir
         }
-
         return {
-          id: validId,
+          id: e.id,
           date: e.date || new Date().toISOString().split('T')[0],
           description: e.description || 'Sem descrição',
-          amount: parseInt(e.valueCents || 0),
-          parcelado: (e.installments || 1) > 1,
-          created_at: e.createdAt || now,
+          valuecents: parseInt(e.valueCents || 0),
+          installments: parseInt(e.installments || 1),
+          createdat: e.createdAt || now,  // Usar createdat (é a coluna correta para esta app)
           datavencimento: e.dataVencimento || e.date || new Date().toISOString().split('T')[0],
-          cartao: e.cartao || 'santander'
+          cartao: e.cartao || 'cartao_santander'
         };
       });
 
@@ -1935,11 +1963,11 @@ footer.hint {
           id: e.id,
           date: e.date || e.data || '',
           description: e.description || '',
-          valueCents: parseInt(e.amount || e.valuecents || e.valueCents || 0),  // Supabase usa "amount"
-          installments: (e.parcelado ? 2 : 1) || parseInt(e.installments || 1),  // Supabase usa "parcelado" (boolean)
-          createdAt: e.created_at || e.createdat || e.createdAt || new Date().toISOString(),  // Supabase usa "created_at"
-          cartao: e.cartao || e.card || 'santander',  // Supabase pode ter "card" ou "cartao"
-          dataVencimento: e.datavencimento || e.due_date || e.dataVencimento || e.date || ''  // Supabase usa "datavencimento"
+          valueCents: parseInt(e.valuecents || e.valueCents || 0),
+          installments: parseInt(e.installments || 1),
+          createdAt: e.createdat || e.createdAt || new Date().toISOString(),
+          cartao: e.cartao || 'cartao_santander',
+          dataVencimento: e.datavencimento || e.dataVencimento || e.date || ''
         });
       }
     });
@@ -2012,11 +2040,11 @@ footer.hint {
         id: e.id,
         date: e.date || e.data || '',
         description: e.description || '',
-        valueCents: parseInt(e.amount || e.valuecents || e.valueCents || 0),  // Supabase usa "amount"
-        installments: (e.parcelado ? 2 : 1) || parseInt(e.installments || 1),  // Supabase usa "parcelado" (boolean)
-        createdAt: e.created_at || e.createdat || e.createdAt || new Date().toISOString(),  // Supabase usa "created_at"
-        cartao: e.cartao || e.card || 'santander',  // Supabase pode ter "card" ou "cartao"
-        dataVencimento: e.datavencimento || e.due_date || e.dataVencimento || e.date || ''  // Supabase usa "datavencimento"
+        valueCents: parseInt(e.valuecents || e.valueCents || 0),
+        installments: parseInt(e.installments || 1),
+        createdAt: e.createdat || e.createdAt || new Date().toISOString(),
+        cartao: e.cartao || 'cartao_santander',
+        dataVencimento: e.datavencimento || e.dataVencimento || e.date || ''
       }));
 
       console.log('[SYNC] ✓ Inicializado com', state.expenses.length, 'registros do Supabase');
@@ -2065,12 +2093,85 @@ footer.hint {
     // Criar um hash dos dados para comparação rápida
     if (!expenses || !Array.isArray(expenses)) return '';
     const sorted = expenses.sort((a, b) => (a.id || '').localeCompare(b.id || ''));
-    const data = sorted.map(e => `${e.id}:${e.valueCents}:${e.date}`).join('|');  // Usa valueCents (local) não valuecents (Supabase)
+    const data = sorted.map(e => `${e.id}:${e.valuecents}:${e.date}`).join('|');
     return JSON.stringify(data);
   }
 
-  // REMOVIDAS: openSupabaseModal, closeSupabaseModal, toggleSupabaseKeyVisibility, saveSupabaseConfigViaModal, showSupabaseSetup
-  // Usar auth-supabase-complete.js para autenticação com Google
+  function openSupabaseModal() {
+    const modal = document.getElementById('supabaseModal');
+    const urlInput = document.getElementById('supabaseUrl');
+    const keyInput = document.getElementById('supabaseKey');
+    const statusDiv = document.getElementById('supabaseStatus');
+
+    // Se já tem config, carrega nos campos
+    if (supabaseConfig.enabled) {
+      urlInput.value = supabaseConfig.url;
+      keyInput.value = supabaseConfig.key;
+    } else {
+      urlInput.value = '';
+      keyInput.value = '';
+    }
+
+    // Limpa mensagem de status
+    statusDiv.textContent = '';
+    statusDiv.classList.remove('show', 'success', 'error');
+    document.getElementById('showKeyCheckbox').checked = false;
+    keyInput.type = 'password';
+
+    modal.classList.add('show');
+  }
+
+  function closeSupabaseModal() {
+    const modal = document.getElementById('supabaseModal');
+    modal.classList.remove('show');
+  }
+
+  function toggleSupabaseKeyVisibility() {
+    const keyInput = document.getElementById('supabaseKey');
+    const checkbox = document.getElementById('showKeyCheckbox');
+    keyInput.type = checkbox.checked ? 'text' : 'password';
+  }
+
+  function saveSupabaseConfigViaModal() {
+    const url = document.getElementById('supabaseUrl').value.trim();
+    const key = document.getElementById('supabaseKey').value.trim();
+    const statusDiv = document.getElementById('supabaseStatus');
+
+    if (!url || !key) {
+      statusDiv.textContent = '❌ Preencha URL e Chave!';
+      statusDiv.className = 'modal-status show error';
+      return;
+    }
+
+    if (!url.includes('supabase.co')) {
+      statusDiv.textContent = '❌ URL deve conter "supabase.co"';
+      statusDiv.className = 'modal-status show error';
+      return;
+    }
+
+    if (!key.startsWith('sb_')) {
+      statusDiv.textContent = '❌ Chave deve começar com "sb_"';
+      statusDiv.className = 'modal-status show error';
+      return;
+    }
+
+    // Salvar configuração
+    saveSupabaseConfig(url, key);
+
+    statusDiv.textContent = '✅ Configurado com sucesso!';
+    statusDiv.className = 'modal-status show success';
+
+    // Fechar modal após 1.5 segundos
+    setTimeout(() => {
+      closeSupabaseModal();
+      showToast('✓ Supabase configurado! Sincronizando...', 'success');
+      syncToSupabase().catch(e => {});
+    }, 1500);
+  }
+
+  function showSupabaseSetup() {
+    openSupabaseModal();
+  }
 
   function updateSyncStatus(status) {
     const statusEl = document.getElementById('syncStatus');
@@ -2139,12 +2240,6 @@ footer.hint {
   }
 
   function scheduleAutoSync() {
-    // 🔒 GUARD: Não fazer sync se não autenticado no Supabase
-    if (!window.isSupabaseAuthenticated) {
-      console.log('⏹️ [GUARD] Sync ignorado - não autenticado');
-      return;
-    }
-
     // Marcar que houve mudanças
     hasChanges = true;
 
@@ -2155,12 +2250,6 @@ footer.hint {
 
     // Agendar sincronização 5 segundos após a última mudança
     syncDebounceTimer = setTimeout(() => {
-      // 🔒 GUARD: Verificar novamente pois pode ter feito logout
-      if (!window.isSupabaseAuthenticated) {
-        console.log('⏹️ [GUARD] Sync cancelado - logout durante espera');
-        return;
-      }
-
       if (supabaseConfig.enabled && state.expenses.length > 0 && hasChanges) {
         const currentHash = getDataHash();
         // Só sincronizar se os dados realmente mudaram
@@ -4846,11 +4935,11 @@ footer.hint {
             id: e.id,
             date: e.date || e.data || '',
             description: e.description || '',
-            valueCents: parseInt(e.amount || e.valuecents || e.valueCents || 0),  // Supabase usa "amount"
-            installments: (e.parcelado ? 2 : 1) || parseInt(e.installments || 1),  // Supabase usa "parcelado" (boolean)
-            createdAt: e.created_at || e.createdat || e.createdAt || new Date().toISOString(),  // Supabase usa "created_at"
-            cartao: e.cartao || e.card || 'santander',  // Supabase pode ter "card" ou "cartao"
-            dataVencimento: e.datavencimento || e.due_date || e.dataVencimento || e.date || ''  // Supabase usa "datavencimento"
+            valueCents: parseInt(e.valuecents || e.valueCents || 0),
+            installments: parseInt(e.installments || 1),
+            createdAt: e.createdat || e.createdAt || new Date().toISOString(),
+            cartao: e.cartao || 'cartao_santander',
+            dataVencimento: e.datavencimento || e.dataVencimento || e.date || ''
           });
         }
       });
@@ -5021,10 +5110,47 @@ footer.hint {
     if (container) container.classList.remove('show');
   };
 
+  // Configuração Firebase
+  const firebaseConfig = {
+    apiKey: "AIzaSyABpWSJh2P_SASAdQxJz2XD5IStjrwx2SQ",
+    authDomain: "fluxo-financeiro-ee3a3.firebaseapp.com",
+    projectId: "fluxo-financeiro-ee3a3",
+    storageBucket: "fluxo-financeiro-ee3a3.firebasestorage.app",
+    messagingSenderId: "255340364435",
+    appId: "1:255340364435:web:10f8093626c3315021c366"
+  };
+
   // Registrar Service Worker para PWA
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/service-worker.js').catch(error => {
-      console.log('Service Worker registration error:', error);
+    navigator.serviceWorker.register('/service-worker.js').then(registration => {
+      // Após o service worker estar registrado, configurar Firebase Messaging
+      if ('firebase' in window && firebase.messaging) {
+        try {
+          const messaging = firebase.messaging();
+
+          // Pedir permissão para notificações
+          Notification.requestPermission().then(permission => {
+            if (permission === 'granted') {
+              // Registrar para receber mensagens quando o app está em primeiro plano
+              messaging.onMessage(payload => {
+                const notificationTitle = payload.notification.title;
+                const notificationOptions = {
+                  body: payload.notification.body,
+                  icon: '💰',
+                  badge: '💰',
+                  tag: 'fluxo-notificacao'
+                };
+
+                registration.showNotification(notificationTitle, notificationOptions);
+              });
+            }
+          });
+        } catch (error) {
+          // Erro ao configurar Firebase Messaging
+        }
+      }
+    }).catch(error => {
+      // Erro ao registrar Service Worker
     });
   }
 
@@ -5053,7 +5179,12 @@ footer.hint {
     }
   });
 
-  // Expor funções para o escopo global
+  // Expor funções Supabase para o escopo global (para onclick HTML)
+  window.showSupabaseSetup = showSupabaseSetup;
+  window.openSupabaseModal = openSupabaseModal;
+  window.closeSupabaseModal = closeSupabaseModal;
+  window.toggleSupabaseKeyVisibility = toggleSupabaseKeyVisibility;
+  window.saveSupabaseConfigViaModal = saveSupabaseConfigViaModal;
   window.manualSyncSupabase = manualSyncSupabase;
   window.updateSyncStatus = updateSyncStatus;
 })();
