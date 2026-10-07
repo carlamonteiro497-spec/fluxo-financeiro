@@ -1,8 +1,8 @@
 // ============================================================================
-// FLUXO FINANCEIRO - Autenticação Supabase + Google OAuth
+// FLUXO FINANCEIRO - Autenticação Supabase + Email/Senha
 // ============================================================================
 // Este script gerencia:
-// - Google OAuth login
+// - Login com Email/Senha
 // - Verificação de autenticação
 // - Carregamento de dados do Supabase
 // - Sincronização em tempo real
@@ -28,7 +28,7 @@
   let supabaseSession = null;
   let supabaseReady = false;
 
-  console.log('✅ auth-supabase-complete.js carregado');
+  console.log('✅ auth-supabase-complete.js carregado (Email/Senha)');
 
   // ========================================================================
   // INICIALIZAR SUPABASE
@@ -39,8 +39,6 @@
     try {
       if (typeof supabase === 'undefined') {
         console.error('❌ Supabase SDK não carregado! Aguardando...');
-
-        // Tentar novamente em 500ms
         await new Promise(r => setTimeout(r, 500));
 
         if (typeof supabase === 'undefined') {
@@ -49,7 +47,6 @@
         }
       }
 
-      // Criar instância do Supabase
       window.supabaseSync = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
       supabaseReady = true;
       console.log('✓ Supabase inicializado com sucesso');
@@ -68,7 +65,6 @@
     console.log('🔐 Verificando autenticação...');
 
     try {
-      // Garantir que Supabase está inicializado
       if (!supabaseReady) {
         const ready = await initSupabase();
         if (!ready) {
@@ -77,7 +73,6 @@
         }
       }
 
-      // Verificar se há sessão ativa
       const { data: { session } } = await window.supabaseSync.auth.getSession();
 
       if (!session) {
@@ -86,7 +81,6 @@
         return;
       }
 
-      // Sessão existe! Validar email
       const userEmail = session.user?.email;
       console.log('✓ Sessão encontrada:', userEmail);
 
@@ -155,7 +149,6 @@
   }
 
   function createLoginModal() {
-    // Remover modal anterior se existir
     const existing = document.getElementById('supabaseModal');
     if (existing) existing.remove();
 
@@ -180,10 +173,25 @@
     modal.innerHTML = `
       <div class="modal-dialog" style="max-width: 400px; background: var(--paper-raised); border-radius: 14px; box-shadow: var(--shadow); padding: 0;">
         <div class="modal-header" style="padding: 20px; border-bottom: 1px solid var(--line); font-size: 18px; font-weight: 600;">🔐 Faça Login</div>
-        <div style="padding: 24px; text-align: center;">
-          <p style="margin-bottom: 24px; color: var(--ink-soft); font-size: 14px;">Você precisa estar autenticado para acessar o Fluxo Financeiro</p>
-          <button id="googleLoginBtn" style="width: 100%; padding: 14px 16px; background: #35467A; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 15px; transition: background 0.2s;">
-            🔐 Entrar com Google
+        <div style="padding: 24px;">
+          <p style="margin-bottom: 20px; color: var(--ink-soft); font-size: 14px; text-align: center;">Você precisa estar autenticado para acessar o Fluxo Financeiro</p>
+
+          <div style="margin-bottom: 12px;">
+            <input type="email" id="emailInput" placeholder="seu@email.com" style="width: 100%; padding: 12px; border: 1px solid var(--line); border-radius: 6px; font-size: 14px; box-sizing: border-box; font-family: inherit;">
+          </div>
+
+          <div style="margin-bottom: 20px;">
+            <input type="password" id="passwordInput" placeholder="Sua senha" style="width: 100%; padding: 12px; border: 1px solid var(--line); border-radius: 6px; font-size: 14px; box-sizing: border-box; font-family: inherit;">
+          </div>
+
+          <div id="authMessage" style="margin-bottom: 16px; padding: 12px; border-radius: 6px; display: none; font-size: 13px; text-align: center;"></div>
+
+          <button id="loginBtn" style="width: 100%; padding: 12px; background: #35467A; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 15px; margin-bottom: 8px;">
+            ✓ Entrar
+          </button>
+
+          <button id="signupBtn" style="width: 100%; padding: 12px; background: #10b981; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 15px;">
+            ➕ Criar Conta
           </button>
         </div>
       </div>
@@ -191,12 +199,15 @@
 
     document.body.appendChild(modal);
 
-    // Adicionar event listener
-    const btn = modal.querySelector('#googleLoginBtn');
-    if (btn) {
-      btn.addEventListener('click', loginWithGoogle);
-      btn.addEventListener('mouseover', () => btn.style.background = '#2a3866');
-      btn.addEventListener('mouseout', () => btn.style.background = '#35467A');
+    const loginBtn = modal.querySelector('#loginBtn');
+    const signupBtn = modal.querySelector('#signupBtn');
+
+    if (loginBtn) {
+      loginBtn.addEventListener('click', () => handleLogin(false));
+    }
+
+    if (signupBtn) {
+      signupBtn.addEventListener('click', () => handleLogin(true));
     }
 
     console.log('✓ Modal de login criado dinamicamente');
@@ -223,45 +234,82 @@
 
       const btn = dialog.querySelector('#tryAnotherBtn');
       if (btn) {
-        btn.addEventListener('click', loginWithGoogle);
+        btn.addEventListener('click', () => {
+          createLoginModal();
+          showLoginModal();
+        });
       }
     }
   }
 
   // ========================================================================
-  // GOOGLE LOGIN
+  // LOGIN COM EMAIL/SENHA
   // ========================================================================
-  async function loginWithGoogle() {
-    console.log('🔐 Iniciando Google OAuth...');
+  async function handleLogin(isSignUp) {
+    const email = document.getElementById('emailInput').value.trim();
+    const password = document.getElementById('passwordInput').value;
+    const messageEl = document.getElementById('authMessage');
+
+    if (!email || !password) {
+      showMessage(messageEl, '⚠️ Preencha email e senha', 'warning');
+      return;
+    }
+
+    console.log(isSignUp ? '📝 Criando conta...' : '🔐 Fazendo login...');
 
     try {
       if (!supabaseReady) {
         const ready = await initSupabase();
         if (!ready) {
-          console.error('❌ Supabase não inicializado');
+          showMessage(messageEl, '❌ Erro ao conectar Supabase', 'error');
           return;
         }
       }
 
-      const { data, error } = await window.supabaseSync.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: window.location.origin + window.location.pathname
-        }
-      });
+      let result;
 
-      if (error) {
-        console.error('❌ Erro no login Google:', error);
-        alert('Erro ao fazer login com Google: ' + (error.message || error));
+      if (isSignUp) {
+        result = await window.supabaseSync.auth.signUp({
+          email: email,
+          password: password,
+          options: {
+            emailRedirectTo: window.location.origin + window.location.pathname
+          }
+        });
+
+        if (result.error) {
+          showMessage(messageEl, '❌ ' + result.error.message, 'error');
+          return;
+        }
+
+        showMessage(messageEl, '✅ Conta criada! Já pode fazer login', 'success');
         return;
+      } else {
+        result = await window.supabaseSync.auth.signInWithPassword({
+          email: email,
+          password: password
+        });
+
+        if (result.error) {
+          showMessage(messageEl, '❌ Email ou senha incorretos', 'error');
+          return;
+        }
       }
 
-      console.log('✓ Redirecionado para Google');
+      console.log('✓ Login bem-sucedido!');
+      await checkAuth();
 
     } catch (error) {
-      console.error('❌ Erro ao iniciar Google OAuth:', error);
-      alert('Erro ao iniciar Google OAuth: ' + error.message);
+      console.error('❌ Erro:', error);
+      showMessage(messageEl, '❌ Erro: ' + error.message, 'error');
     }
+  }
+
+  function showMessage(el, msg, type) {
+    el.textContent = msg;
+    el.style.display = 'block';
+    el.style.background = type === 'error' ? '#fee2e2' : type === 'success' ? '#dcfce7' : '#fef3c7';
+    el.style.color = type === 'error' ? '#dc2626' : type === 'success' ? '#15803d' : '#92400e';
   }
 
   // ========================================================================
@@ -271,48 +319,34 @@
     console.log('🚪 Fazendo logout...');
 
     try {
-      if (!supabaseReady) {
-        console.log('Supabase não está pronto para logout');
-        return;
-      }
+      if (!supabaseReady) return;
 
       await window.supabaseSync.auth.signOut();
 
-      // Limpar estado
       currentUser = null;
       authToken = null;
       supabaseSession = null;
-
-      // Desabilitar sincronização
       window.isSupabaseAuthenticated = false;
-      console.log('🔒 Sincronização com Supabase DESABILITADA');
 
-      // Limpar dados da aplicação
       if (window.state) {
         window.state.expenses = [];
         window.state.contasFixas = [];
-        window.state.renda = {};
       }
 
-      // Limpar localStorage de app (manter apenas config do Supabase)
       localStorage.removeItem('passoa_omorfau_expenses');
       localStorage.removeItem('fluxo_contas_fixas');
       localStorage.removeItem('fluxo_expenses');
       localStorage.removeItem('fluxo_renda_config');
 
-      // Re-renderizar interface
       if (typeof renderAll === 'function') {
         renderAll();
       }
 
-      // Mostrar modal de login novamente
       showLoginModal();
-
-      console.log('✓ Logout realizado com sucesso');
+      console.log('✓ Logout realizado');
 
     } catch (error) {
       console.error('❌ Erro ao fazer logout:', error);
-      alert('Erro ao fazer logout: ' + error.message);
     }
   }
 
@@ -328,7 +362,6 @@
     console.log('📦 Carregando dados do Supabase...');
 
     try {
-      // Buscar despesas
       const { data: expenses, error: expError } = await window.supabaseSync
         .from('expenses')
         .select('*')
@@ -340,22 +373,20 @@
       } else {
         console.log('✓ Carregadas', expenses?.length || 0, 'despesas');
 
-        // Preencher state (mapear colunas do banco para o estado)
         if (window.state && expenses) {
           window.state.expenses = expenses.map(e => ({
             id: e.id,
             date: e.date,
             description: e.description,
-            valueCents: e.amount || 0,  // Coluna do banco: "amount"
-            installments: e.parcelado ? 2 : 1,  // Coluna do banco: "parcelado" (boolean)
-            cartao: e.cartao || e.card || 'santander',  // Coluna do banco: "cartao"
-            dataVencimento: e.datavencimento || e.date,  // Coluna do banco: "datavencimento"
+            valueCents: e.amount || 0,
+            installments: e.parcelado ? 2 : 1,
+            cartao: e.cartao || 'santander',
+            dataVencimento: e.datavencimento || e.date,
             createdAt: e.created_at
           }));
         }
       }
 
-      // Buscar contas fixas
       const { data: contas, error: contasError } = await window.supabaseSync
         .from('contas_fixas')
         .select('*')
@@ -370,13 +401,12 @@
         }
       }
 
-      // Re-renderizar interface
       if (typeof renderAll === 'function') {
         console.log('Chamando renderAll()...');
         renderAll();
-      } else {
-        console.warn('⚠️ renderAll() não está disponível');
       }
+
+      console.log('✓ Dados carregados com sucesso');
 
     } catch (error) {
       console.error('❌ Erro ao carregar dados:', error);
@@ -384,134 +414,57 @@
   }
 
   // ========================================================================
-  // SINCRONIZAÇÃO REALTIME
+  // SINCRONIZAÇÃO EM TEMPO REAL
   // ========================================================================
   function setupRealtimeSync() {
-    console.log('🔄 Configurando sincronização realtime...');
-
-    if (!currentUser || !supabaseReady) return;
-
-    try {
-      // Subscribe para mudanças em expenses
-      const subscription = window.supabaseSync
-        .channel(`expenses:user_id=eq.${currentUser.id}`)
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'expenses',
-            filter: `user_id=eq.${currentUser.id}`
-          },
-          (payload) => {
-            console.log('📡 Mudança detectada em expenses:', payload.eventType);
-            loadDataFromSupabase();
-          }
-        )
-        .subscribe((status) => {
-          if (status === 'SUBSCRIBED') {
-            console.log('✓ Sincronização realtime ativa para expenses');
-          } else if (status === 'CHANNEL_ERROR') {
-            console.warn('⚠️ Erro no canal realtime, tentando novamente...');
-          }
-        });
-
-      console.log('✓ Subscriptions realtime configuradas');
-    } catch (error) {
-      console.error('❌ Erro ao configurar realtime:', error);
+    if (!currentUser || !window.supabaseSync) {
+      console.log('⏹️ Não pronto para sync em tempo real');
+      return;
     }
 
-    // Fallback: sincronizar a cada 30 segundos
-    const syncInterval = setInterval(() => {
-      if (currentUser && supabaseReady) {
-        console.log('[SYNC] Sincronização em background (30s)...');
-        loadDataFromSupabase();
-      } else if (!currentUser) {
-        clearInterval(syncInterval);
-      }
-    }, 30000);
+    console.log('[REALTIME] Inicializando sincronização em tempo real...');
+
+    const subscription = window.supabaseSync
+      .channel(`realtime:expenses:${currentUser.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'expenses',
+          filter: `user_id=eq.${currentUser.id}`
+        },
+        async (payload) => {
+          console.log('[REALTIME] Mudança detectada:', payload.eventType);
+          await loadDataFromSupabase();
+        }
+      )
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          console.log('✓ Subscrito a mudanças em tempo real');
+        }
+      });
+
+    window.supabaseSync = { ...window.supabaseSync, realtimeSubscription: subscription };
   }
 
-  // ========================================================================
-  // UI HELPERS
-  // ========================================================================
   function updateUserInfo(email) {
-    console.log('👤 Atualizando info do usuário:', email);
-
-    // Procurar por elemento para mostrar email/logout
-    const headerReset = document.querySelector('.header-reset');
-    if (headerReset) {
-      headerReset.textContent = '🚪 Sair';
-      headerReset.onclick = logout;
-      console.log('✓ Botão logout atualizado no header');
-      return;
+    const userInfoEl = document.getElementById('userInfo');
+    if (userInfoEl) {
+      userInfoEl.innerHTML = `<span style="font-size: 12px; color: var(--ink-soft);">${email}</span> <button onclick="window.logout()" style="background: #dc2626; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px;">Logout</button>`;
     }
-
-    // Ou criar um botão se não existir
-    const header = document.querySelector('.header');
-    if (header && !document.getElementById('logoutBtn')) {
-      const logoutBtn = document.createElement('button');
-      logoutBtn.id = 'logoutBtn';
-      logoutBtn.className = 'header-reset';
-      logoutBtn.textContent = '🚪 Sair';
-      logoutBtn.onclick = logout;
-      logoutBtn.style.cssText = `
-        position: absolute;
-        top: 24px;
-        right: 24px;
-        padding: 8px 12px;
-        background: var(--accent);
-        color: var(--accent-ink);
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-        font-weight: 600;
-        z-index: 100;
-      `;
-      header.appendChild(logoutBtn);
-      console.log('✓ Botão logout criado no header');
-    }
-  }
-
-  // ========================================================================
-  // INICIALIZAÇÃO
-  // ========================================================================
-  async function init() {
-    console.log('🚀 Iniciando Fluxo Financeiro com Supabase...');
-
-    // Aguardar DOM estar pronto
-    if (document.readyState === 'loading') {
-      console.log('⏳ Aguardando DOMContentLoaded...');
-      document.addEventListener('DOMContentLoaded', init);
-      return;
-    }
-
-    console.log('✓ DOM está pronto, iniciando autenticação...');
-
-    // Inicializar Supabase
-    const ready = await initSupabase();
-    if (!ready) {
-      console.error('❌ Falha ao inicializar Supabase');
-      showLoginModal();
-      return;
-    }
-
-    // Verificar autenticação
-    await checkAuth();
   }
 
   // ========================================================================
   // DESABILITAR SYNC ATÉ AUTENTICAÇÃO
   // ========================================================================
-  // Marcar globalmente se está autenticado
   window.isSupabaseAuthenticated = false;
 
-  // Interceptar o sync automático para não fazer nada se não autenticado
   const originalSyncToSupabase = window.syncToSupabase;
   if (typeof window.syncToSupabase === 'function') {
     window.syncToSupabase = async function() {
       if (!window.isSupabaseAuthenticated) {
-        console.log('⏹️ [AUTH] Sincronização desabilitada - não autenticado no Google');
+        console.log('⏹️ [AUTH] Sincronização desabilitada - não autenticado');
         return false;
       }
       return originalSyncToSupabase.apply(this, arguments);
@@ -521,7 +474,7 @@
   // ========================================================================
   // EXPOR FUNÇÕES GLOBAIS
   // ========================================================================
-  window.loginWithGoogle = loginWithGoogle;
+  window.loginWithGoogle = handleLogin; // Compatibilidade
   window.logout = logout;
   window.checkAuth = checkAuth;
   window.loadDataFromSupabase = loadDataFromSupabase;
@@ -533,6 +486,18 @@
   // ========================================================================
   // INICIAR QUANDO PÁGINA CARREGAR
   // ========================================================================
-  init();
+  async function init() {
+    console.log('🚀 Iniciando Fluxo Financeiro com Supabase...');
+    const ready = await initSupabase();
+    if (ready) {
+      await checkAuth();
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
 
 })();
