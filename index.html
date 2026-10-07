@@ -1823,11 +1823,11 @@ footer.hint {
           id: e.id,
           date: e.date || new Date().toISOString().split('T')[0],
           description: e.description || 'Sem descrição',
-          amount: parseInt(e.valueCents || 0),  // CORRIGIDO: era "valuecents"
-          parcels: (e.installments || 1) > 1,  // CORRIGIDO: era "installments", agora é boolean
-          created_at: e.createdAt || now,  // CORRIGIDO: era "createdat"
-          due_date: e.dataVencimento || e.date || new Date().toISOString().split('T')[0],  // CORRIGIDO: era "datavencimento"
-          cartao: e.cartao || 'santander'  // CORRIGIDO: usar apenas 'santander'
+          amount: parseInt(e.valueCents || 0),
+          parcelado: (e.installments || 1) > 1,  // Coluna correta: "parcelado" (boolean)
+          created_at: e.createdAt || now,
+          datavencimento: e.dataVencimento || e.date || new Date().toISOString().split('T')[0],  // Coluna correta: "datavencimento"
+          cartao: e.cartao || 'santander'
         };
       });
 
@@ -1964,10 +1964,10 @@ footer.hint {
           date: e.date || e.data || '',
           description: e.description || '',
           valueCents: parseInt(e.amount || e.valuecents || e.valueCents || 0),  // Supabase usa "amount"
-          installments: (e.parcels ? 2 : 1) || parseInt(e.installments || 1),  // Supabase usa "parcels" (boolean)
+          installments: (e.parcelado ? 2 : 1) || parseInt(e.installments || 1),  // Supabase usa "parcelado" (boolean)
           createdAt: e.created_at || e.createdat || e.createdAt || new Date().toISOString(),  // Supabase usa "created_at"
           cartao: e.cartao || e.card || 'santander',  // Supabase pode ter "card" ou "cartao"
-          dataVencimento: e.due_date || e.datavencimento || e.dataVencimento || e.date || ''  // Supabase usa "due_date"
+          dataVencimento: e.datavencimento || e.due_date || e.dataVencimento || e.date || ''  // Supabase usa "datavencimento"
         });
       }
     });
@@ -2240,6 +2240,12 @@ footer.hint {
   }
 
   function scheduleAutoSync() {
+    // 🔒 GUARD: Não fazer sync se não autenticado no Supabase
+    if (!window.isSupabaseAuthenticated) {
+      console.log('⏹️ [GUARD] Sync ignorado - não autenticado');
+      return;
+    }
+
     // Marcar que houve mudanças
     hasChanges = true;
 
@@ -2250,6 +2256,12 @@ footer.hint {
 
     // Agendar sincronização 5 segundos após a última mudança
     syncDebounceTimer = setTimeout(() => {
+      // 🔒 GUARD: Verificar novamente pois pode ter feito logout
+      if (!window.isSupabaseAuthenticated) {
+        console.log('⏹️ [GUARD] Sync cancelado - logout durante espera');
+        return;
+      }
+
       if (supabaseConfig.enabled && state.expenses.length > 0 && hasChanges) {
         const currentHash = getDataHash();
         // Só sincronizar se os dados realmente mudaram

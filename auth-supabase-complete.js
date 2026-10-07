@@ -104,6 +104,10 @@
       authToken = session.access_token;
       supabaseSession = session;
 
+      // Marcar globalmente como autenticado
+      window.isSupabaseAuthenticated = true;
+      console.log('🔓 Sincronização com Supabase HABILITADA');
+
       // Esconder modal
       hideLoginModal();
 
@@ -279,6 +283,10 @@
       authToken = null;
       supabaseSession = null;
 
+      // Desabilitar sincronização
+      window.isSupabaseAuthenticated = false;
+      console.log('🔒 Sincronização com Supabase DESABILITADA');
+
       // Limpar dados da aplicação
       if (window.state) {
         window.state.expenses = [];
@@ -339,9 +347,9 @@
             date: e.date,
             description: e.description,
             valueCents: e.amount || 0,  // Coluna do banco: "amount"
-            installments: e.parcels ? 2 : 1,  // Coluna do banco: "parcels" (boolean)
-            cartao: e.cartao || e.card || 'santander',  // Coluna do banco: "cartao" ou "card"
-            dataVencimento: e.due_date || e.date,  // Coluna do banco: "due_date"
+            installments: e.parcelado ? 2 : 1,  // Coluna do banco: "parcelado" (boolean)
+            cartao: e.cartao || e.card || 'santander',  // Coluna do banco: "cartao"
+            dataVencimento: e.datavencimento || e.date,  // Coluna do banco: "datavencimento"
             createdAt: e.created_at
           }));
         }
@@ -490,6 +498,24 @@
 
     // Verificar autenticação
     await checkAuth();
+  }
+
+  // ========================================================================
+  // DESABILITAR SYNC ATÉ AUTENTICAÇÃO
+  // ========================================================================
+  // Marcar globalmente se está autenticado
+  window.isSupabaseAuthenticated = false;
+
+  // Interceptar o sync automático para não fazer nada se não autenticado
+  const originalSyncToSupabase = window.syncToSupabase;
+  if (typeof window.syncToSupabase === 'function') {
+    window.syncToSupabase = async function() {
+      if (!window.isSupabaseAuthenticated) {
+        console.log('⏹️ [AUTH] Sincronização desabilitada - não autenticado no Google');
+        return false;
+      }
+      return originalSyncToSupabase.apply(this, arguments);
+    };
   }
 
   // ========================================================================
