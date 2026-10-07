@@ -4227,13 +4227,11 @@ window.deletarContaFixa = deletarContaFixa;
 const saveRendaConfig = async (configData) => {
     const renda = configData || (typeof loadRendaConfig === 'function' ? loadRendaConfig() : {});
 
-    // 1. Guarda localmente
     localStorage.setItem('rendaConfig', JSON.stringify(renda));
     if (typeof state !== 'undefined') {
         state.rendaConfig = renda;
     }
 
-    // 2. Envia para o Supabase (Nuvem)
     try {
         const config = JSON.parse(localStorage.getItem('supabase_config') || '{}');
         const url = config.url || (typeof supabaseConfig !== 'undefined' ? supabaseConfig.url : null);
@@ -4262,48 +4260,6 @@ const saveRendaConfig = async (configData) => {
 };
 
 window.saveRendaConfig = saveRendaConfig;
-
-  const saveSummaryConfig = async () => {
-    const configData = {
-        valeAlimentacaoCarla: parseFloat(document.getElementById('valeAlimentacaoCarla').value.replace(',', '.')) || 191.92,
-        valeAlimentacaoIasmim: parseFloat(document.getElementById('valeAlimentacaoIasmim').value.replace(',', '.')) || 374.00
-    };
-
-    // 1. Salva localmente
-    localStorage.setItem(SUMMARY_KEY, JSON.stringify(configData));
-    if (typeof state !== 'undefined') {
-        state.summaryConfig = configData;
-    }
-
-    // 2. Envia para o Supabase (Nuvem)
-    try {
-        const config = JSON.parse(localStorage.getItem('supabase_config') || '{}');
-        const url = config.url || (typeof supabaseConfig !== 'undefined' ? supabaseConfig.url : null);
-        const key = config.key || (typeof supabaseConfig !== 'undefined' ? supabaseConfig.key : null);
-
-        if (url && key) {
-            await fetch(`${url}/rest/v1/app_config`, {
-                method: 'POST',
-                headers: {
-                    'apikey': key,
-                    'Authorization': `Bearer ${key}`,
-                    'Content-Type': 'application/json',
-                    'Prefer': 'resolution=merge-duplicates'
-                },
-                body: JSON.stringify({
-                    id: 'summaryConfig',
-                    data: configData,
-                    updated_at: new Date().toISOString()
-                })
-            });
-            console.log('[SYNC] Configurações do Resumo salvas no Supabase!');
-        }
-    } catch (err) {
-        console.error('[SYNC] Erro ao sincronizar resumo no Supabase:', err);
-    }
-
-    return configData;
-};
 
   window.resetDatabase = () => {
     localStorage.removeItem('passou_anotou_loaded_defaults');
