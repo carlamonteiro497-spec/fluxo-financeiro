@@ -3411,28 +3411,43 @@ const dataToSync = expensesSource.map(e => {
     }
   }
 
-  const deleteExpense = id => {
+const deleteExpense = async id => {
     if (!confirm('⚠️ Tem certeza que deseja deletar esta despesa?\n\nEsta ação não pode ser desfeita.')) {
-      return;
+        return;
     }
+
+    // 1. Remove da memória e do armazenamento local
     state.expenses = state.expenses.filter(x => x.id !== id);
     saveToStorage();
     renderAll();
-    renderCalendar();
-    showToast('✓ Despesa deletada com sucesso', 'success');
 
-    if (supabaseConfig.enabled && id.indexOf('local-') !== 0) {
-      deletarDoSupabase(id).then(() => {
-        syncToSupabase().catch(e => console.error('[SYNC] Erro:', e));
-      });
-    }
+    // 2. Propaga a exclusão para o Supabase (Nuvem)
+    try {
+        const config = JSON.parse(localStorage.getItem('supabase_config') || '{}');
+        const url = config.url || (typeof supabaseConfig !== 'undefined' ? supabaseConfig.url : null);
+        const key = config.key || (typeof supabaseConfig !== 'undefined' ? supabaseConfig.key : null);
 
-    if (db && expensesCol && id.indexOf('local-') !== 0) {
-      expensesCol.doc(id).delete().catch(err => {
-        showToast('Erro ao sincronizar com servidor', 'error');
-      });
+        if (url && key) {
+            const response = await fetch(`${url}/rest/v1/expenses?id=eq.${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'apikey': key,
+                    'Authorization': `Bearer ${key}`
+                }
+            });
+
+            if (response.ok) {
+                console.log('[SYNC] Registado e apagado com sucesso na nuvem:', id);
+            } else {
+                console.error('[SYNC] Erro ao apagar no Supabase:', response.statusText);
+            }
+        }
+        
+        showToast('🗑️ Despesa deletada com sucesso', 'success');
+    } catch (err) {
+        console.error('[SYNC] Erro na comunicação com o Supabase ao deletar:', err);
     }
-  };
+};
 
   window.deleteExpense = deleteExpense;
 
