@@ -1823,11 +1823,11 @@ footer.hint {
           id: e.id,
           date: e.date || new Date().toISOString().split('T')[0],
           description: e.description || 'Sem descrição',
-          valuecents: parseInt(e.valueCents || 0),
-          installments: parseInt(e.installments || 1),
-          createdat: e.createdAt || now,  // Usar createdat (é a coluna correta para esta app)
-          datavencimento: e.dataVencimento || e.date || new Date().toISOString().split('T')[0],
-          cartao: e.cartao || 'cartao_santander'
+          amount: parseInt(e.valueCents || 0),  // CORRIGIDO: era "valuecents"
+          parcels: (e.installments || 1) > 1,  // CORRIGIDO: era "installments", agora é boolean
+          created_at: e.createdAt || now,  // CORRIGIDO: era "createdat"
+          due_date: e.dataVencimento || e.date || new Date().toISOString().split('T')[0],  // CORRIGIDO: era "datavencimento"
+          cartao: e.cartao || 'santander'  // CORRIGIDO: usar apenas 'santander'
         };
       });
 
@@ -1963,11 +1963,11 @@ footer.hint {
           id: e.id,
           date: e.date || e.data || '',
           description: e.description || '',
-          valueCents: parseInt(e.valuecents || e.valueCents || 0),
-          installments: parseInt(e.installments || 1),
-          createdAt: e.createdat || e.createdAt || new Date().toISOString(),
-          cartao: e.cartao || 'cartao_santander',
-          dataVencimento: e.datavencimento || e.dataVencimento || e.date || ''
+          valueCents: parseInt(e.amount || e.valuecents || e.valueCents || 0),  // Supabase usa "amount"
+          installments: (e.parcels ? 2 : 1) || parseInt(e.installments || 1),  // Supabase usa "parcels" (boolean)
+          createdAt: e.created_at || e.createdat || e.createdAt || new Date().toISOString(),  // Supabase usa "created_at"
+          cartao: e.cartao || e.card || 'santander',  // Supabase pode ter "card" ou "cartao"
+          dataVencimento: e.due_date || e.datavencimento || e.dataVencimento || e.date || ''  // Supabase usa "due_date"
         });
       }
     });
@@ -2040,11 +2040,11 @@ footer.hint {
         id: e.id,
         date: e.date || e.data || '',
         description: e.description || '',
-        valueCents: parseInt(e.valuecents || e.valueCents || 0),
-        installments: parseInt(e.installments || 1),
-        createdAt: e.createdat || e.createdAt || new Date().toISOString(),
-        cartao: e.cartao || 'cartao_santander',
-        dataVencimento: e.datavencimento || e.dataVencimento || e.date || ''
+        valueCents: parseInt(e.amount || e.valuecents || e.valueCents || 0),  // Supabase usa "amount"
+        installments: (e.parcels ? 2 : 1) || parseInt(e.installments || 1),  // Supabase usa "parcels" (boolean)
+        createdAt: e.created_at || e.createdat || e.createdAt || new Date().toISOString(),  // Supabase usa "created_at"
+        cartao: e.cartao || e.card || 'santander',  // Supabase pode ter "card" ou "cartao"
+        dataVencimento: e.due_date || e.datavencimento || e.dataVencimento || e.date || ''  // Supabase usa "due_date"
       }));
 
       console.log('[SYNC] ✓ Inicializado com', state.expenses.length, 'registros do Supabase');
@@ -2093,7 +2093,7 @@ footer.hint {
     // Criar um hash dos dados para comparação rápida
     if (!expenses || !Array.isArray(expenses)) return '';
     const sorted = expenses.sort((a, b) => (a.id || '').localeCompare(b.id || ''));
-    const data = sorted.map(e => `${e.id}:${e.valuecents}:${e.date}`).join('|');
+    const data = sorted.map(e => `${e.id}:${e.valueCents}:${e.date}`).join('|');  // Usa valueCents (local) não valuecents (Supabase)
     return JSON.stringify(data);
   }
 
@@ -4935,11 +4935,11 @@ footer.hint {
             id: e.id,
             date: e.date || e.data || '',
             description: e.description || '',
-            valueCents: parseInt(e.valuecents || e.valueCents || 0),
-            installments: parseInt(e.installments || 1),
-            createdAt: e.createdat || e.createdAt || new Date().toISOString(),
-            cartao: e.cartao || 'cartao_santander',
-            dataVencimento: e.datavencimento || e.dataVencimento || e.date || ''
+            valueCents: parseInt(e.amount || e.valuecents || e.valueCents || 0),  // Supabase usa "amount"
+            installments: (e.parcels ? 2 : 1) || parseInt(e.installments || 1),  // Supabase usa "parcels" (boolean)
+            createdAt: e.created_at || e.createdat || e.createdAt || new Date().toISOString(),  // Supabase usa "created_at"
+            cartao: e.cartao || e.card || 'santander',  // Supabase pode ter "card" ou "cartao"
+            dataVencimento: e.due_date || e.datavencimento || e.dataVencimento || e.date || ''  // Supabase usa "due_date"
           });
         }
       });
