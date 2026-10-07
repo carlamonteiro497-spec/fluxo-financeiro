@@ -1716,40 +1716,7 @@ footer.hint {
   </div>
 </div>
 
-<!-- MODAL SUPABASE -->
-<div id="supabaseModal" class="modal">
-  <div class="modal-dialog">
-    <div class="modal-header">🔄 Configurar Sincronização em Nuvem</div>
-
-    <div style="background: #eff6ff; border-left: 4px solid #2563eb; padding: 12px; border-radius: 6px; margin-bottom: 16px; font-size: 13px; color: #1e40af; line-height: 1.5;">
-      ℹ️ Você já criou a tabela no Supabase? Se não, volte e siga os passos anteriores primeiro!
-    </div>
-
-    <div class="modal-form-group">
-      <label>URL do Projeto Supabase</label>
-      <input type="text" id="supabaseUrl" placeholder="https://seu-projeto.supabase.co">
-    </div>
-
-    <div class="modal-form-group">
-      <label>Chave Anon (Pública)</label>
-      <input type="password" id="supabaseKey" placeholder="sb_publishable_...">
-    </div>
-
-    <div class="modal-checkbox-group">
-      <input type="checkbox" id="showKeyCheckbox" onchange="toggleSupabaseKeyVisibility()">
-      <label for="showKeyCheckbox" style="cursor: pointer;">Mostrar chave</label>
-    </div>
-
-    <div id="supabaseStatus" class="modal-status"></div>
-
-    <div class="modal-buttons">
-      <button type="button" class="modal-btn modal-btn-secondary" onclick="closeSupabaseModal()">Cancelar</button>
-      <button type="button" class="modal-btn modal-btn-primary" onclick="saveSupabaseConfigViaModal()">Salvar e Conectar</button>
-    </div>
-  </div>
-
-  </div>
-</div>
+<!-- MODAL SUPABASE - REMOVIDA, USADA AUTENTICACAO VIA auth-supabase-complete.js -->
 
 <script>
 (function(){
@@ -4422,7 +4389,7 @@ footer.hint {
     };
     try {
       localStorage.setItem(SUMMARY_KEY, JSON.stringify(config));
-      if (supabaseConfig.enabled) scheduleAutoSync();
+      // ⭐ Sincronização desabilitada - será acionada apenas APÓS autenticação via auth-supabase-complete.js
     } catch(e) {}
     return config;
   };
@@ -4501,7 +4468,7 @@ footer.hint {
       const chave = contaId + '_' + ano + '-' + pad2(mes + 1);
       valores[chave] = valor;
       localStorage.setItem(CONTAS_VALORES_MES_KEY, JSON.stringify(valores));
-      if (supabaseConfig.enabled) scheduleAutoSync();
+      // ⭐ Sincronização desabilitada - será acionada apenas APÓS autenticação via auth-supabase-complete.js
     } catch(e) {
       // Erro ao salvar valor do mês no localStorage
     }
@@ -4551,7 +4518,7 @@ footer.hint {
   const saveContasFixas = (contas) => {
     try {
       localStorage.setItem(CONTAS_KEY, JSON.stringify(contas));
-      if (supabaseConfig.enabled) scheduleAutoSync();
+      // ⭐ Sincronização desabilitada - será acionada apenas APÓS autenticação via auth-supabase-complete.js
     } catch(e) {}
   };
 
@@ -4569,7 +4536,7 @@ footer.hint {
   const saveReembolsos = (reembolsos) => {
     try {
       localStorage.setItem(REEMBOLSOS_KEY, JSON.stringify(reembolsos));
-      if (supabaseConfig.enabled) scheduleAutoSync();
+      // ⭐ Sincronização desabilitada - será acionada apenas APÓS autenticação via auth-supabase-complete.js
     } catch(e) {}
   };
 
@@ -4860,7 +4827,7 @@ footer.hint {
     };
     try {
       localStorage.setItem(RENDA_KEY, JSON.stringify(config));
-      if (supabaseConfig.enabled) scheduleAutoSync();
+      // ⭐ Sincronização desabilitada - será acionada apenas APÓS autenticação via auth-supabase-complete.js
     } catch(e) {}
     return config;
   };
@@ -4994,13 +4961,17 @@ footer.hint {
     // Carregar dados locais primeiro
     loadFromStorage();
 
-    // Carregar configuração do Supabase e tentar buscar dados da nuvem
+    // Carregar configuração do Supabase
     loadSupabaseConfig();
-    if (supabaseConfig.enabled) {
-      console.log('[SYNC] Carregando dados do Supabase na inicialização...');
-      await loadInitialDataFromSupabase();
-      // Iniciar sync em tempo real
-      startRealtimeSync();
+
+    // ⭐ IMPORTANTE: Verificar autenticação ANTES de sincronizar
+    // A função checkAuth() cuidará de mostrar a modal de login se necessário
+    // A sincronização só ocorrerá APÓS login bem-sucedido
+    if (supabaseConfig.enabled && typeof window.checkAuth === 'function') {
+      console.log('[SYNC] Verificando autenticação Supabase...');
+      // checkAuth vai verificar se há sessão, mostrar modal se não houver
+      // e iniciar sync apenas se autenticado
+      window.checkAuth();
     }
 
     el.dateInput.value = formatDateToDMY(todayISO());
