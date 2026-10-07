@@ -1815,18 +1815,23 @@ footer.hint {
       // O ID é necessário para UPSERT funcionar corretamente
       // Se uma despesa não tiver ID (migração de versão anterior), gerar um novo
       const dataToSync = state.expenses.map(e => {
-        // Garantir que cada expense tem um ID válido
-        if (!e.id) {
-          e.id = generateUUID();  // Gerar UUID se não existir
+        // Garantir que cada expense tem um UUID válido
+        // Se o ID é local (exp_0, exp_1, etc), gerar novo UUID
+        let validId = e.id;
+        if (!validId || validId.toString().startsWith('exp_')) {
+          validId = generateUUID();
+          e.id = validId;  // Atualizar no state também
+          console.log('[SYNC] ID local convertido para UUID:', validId);
         }
+
         return {
-          id: e.id,
+          id: validId,
           date: e.date || new Date().toISOString().split('T')[0],
           description: e.description || 'Sem descrição',
           amount: parseInt(e.valueCents || 0),
-          parcelado: (e.installments || 1) > 1,  // Coluna correta: "parcelado" (boolean)
+          parcelado: (e.installments || 1) > 1,
           created_at: e.createdAt || now,
-          datavencimento: e.dataVencimento || e.date || new Date().toISOString().split('T')[0],  // Coluna correta: "datavencimento"
+          datavencimento: e.dataVencimento || e.date || new Date().toISOString().split('T')[0],
           cartao: e.cartao || 'santander'
         };
       });
