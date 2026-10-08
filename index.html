@@ -4262,28 +4262,32 @@ window.deletarContaFixa = deletarContaFixa;
     }
   };
 
-  window.adicionarBonus = async () => {
-    const valor = parseFloat(document.getElementById('novoValor').value.replace(',', '.')) || 0;
+window.adicionarBonus = async () => {
+    // Trata pontos de milhar e vírgula decimal corretamente
+    const rawValue = document.getElementById('novoValor').value.replace(/\./g, '').replace(',', '.');
+    const valor = parseFloat(rawValue) || 0;
     const tipo = document.getElementById('novoTipo').value;
 
     if (valor <= 0) {
-      alert('Digite um valor válido');
-      return;
+        alert('Digite um valor válido');
+        return;
     }
 
     const config = loadRendaConfig();
     if (tipo === 'abono') {
-      config.abono += valor;
+        config.abono += valor;
     } else {
-      config.meritocracia += valor;
+        config.meritocracia += valor;
     }
+
     await saveRendaConfig(config);
 
     const lista = document.getElementById('bonusLista');
     const items = lista.querySelectorAll('.bonus-item');
     if (items.length === 1 && items[0].textContent.includes('Nenhum')) {
-      lista.innerHTML = '';
+        lista.innerHTML = '';
     }
+};
 
     const item = document.createElement('div');
     item.className = 'bonus-item';
