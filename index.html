@@ -2636,7 +2636,6 @@ const openModal = (modalID) => {
 
                         despesasPorData[data].forEach(o => {
                             const instText = o.installments > 1 ? ' (' + o.index + '/' + o.installments + ')' : '';
-
                             const expense = state.expenses.find(e => e.id === o.expenseId || e.id === o.id) || o.expense || {};
 
                             let rawCents = 0;
@@ -2668,10 +2667,7 @@ const openModal = (modalID) => {
                 }
             }
         } else if (modalID === 'modalRendaLiquida') {
-            container.innerHTML = html;
-        }
-    }
-} else if (modalID === 'modalRendaLiquida') {
+
         const rendaConfig = loadRendaConfig();
         const rendaLiquida = rendaConfig.salarioCarla + rendaConfig.salarioIasmim + rendaConfig.abono + rendaConfig.meritocracia - rendaConfig.emprestimoPersonal;
         const rows = modal.querySelectorAll('.modal-row');
