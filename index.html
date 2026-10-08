@@ -2527,7 +2527,8 @@ const dataToSync = expensesSource.map(e => {
               const compParts = (occ.purchaseDate || '').split('-');
               const compDisplay = compParts.length === 3 ? compParts[2] + '/' + compParts[1] + '/' + compParts[0] : '';
 
-              totalCartao += occ.valueCents;
+             const valCents = parseInt(occ.valueCents, 10) || Math.round(parseFloat(occ.valor || 0) * 100) || 0;
+totalCartao += valCents;
 
               const typeIcon = occ.installments > 1 ? '🎁' : '💳';
               const typeLabel = occ.installments > 1 ? 'Parcelado' : 'Crédito';
@@ -2547,8 +2548,9 @@ const dataToSync = expensesSource.map(e => {
 
               html += '</div>';
 
-              html += '<div style="text-align: right; flex-shrink: 0;">';
-              html += '<div style="font-weight: 700; font-size: 15px; color: var(--accent); margin-bottom: 6px;">R$ ' + (occ.valueCents / 100).toFixed(2).replace('.', ',') + '</div>';
+             html += '<div style="font-weight: 700; font-size: 15px; color: var(--accent); margin-bottom: 6px;">R$ ' + (valCents / 100).toFixed(2).replace('.', ',') + '</div>';
+const valCents = parseInt(occ.valueCents, 10) || Math.round(parseFloat(occ.valor || 0) * 100) || 0;
+html += '<div style="font-weight: 700; font-size: 15px; color: var(--accent); margin-bottom: 6px;">R$ ' + (valCents / 100).toFixed(2).replace('.', ',') + '</div>';
               html += '<button onclick="deleteExpense(\'' + e.id + '\')" style="background: none; border: none; cursor: pointer; font-size: 16px; opacity: 0.5; padding: 0; color: var(--danger);">🗑️</button>';
               html += '</div>';
 
@@ -2567,14 +2569,15 @@ const dataToSync = expensesSource.map(e => {
       }
     });
 
-    let totalGeral = 0;
-    const occurrencesThisMonth = monthOccurrences();
-    occurrencesThisMonth.forEach(occ => {
-      const cartao = occ.cartao || 'cartao_santander';
-      if (cartao !== 'cartao_santander' && cartao !== 'contas_fixas') {
-        totalGeral += occ.valueCents;
-      }
-    });
+let totalGeral = 0;
+const occurrencesThisMonth = monthOccurrences();
+occurrencesThisMonth.forEach(occ => {
+    const cartao = occ.cartao || 'cartao_santander';
+    if (cartao !== 'cartao_santander' && cartao !== 'contas_fixas') {
+        const valorCents = parseInt(occ.valueCents, 10) || Math.round(parseFloat(occ.valor || 0) * 100) || 0;
+        totalGeral += valorCents;
+    }
+});
 
     html += '<div class="modal-row" style="border-top: 2px solid var(--line); padding-top: 12px; margin-top: 8px; font-weight: 700;">';
     html += '<span class="modal-label">Total</span>';
@@ -2633,13 +2636,15 @@ const dataToSync = expensesSource.map(e => {
               html += '<div style="margin-bottom: 16px;">';
               html += '<div style="font-weight: 600; color: var(--ink); margin-bottom: 8px; font-size: 13px; padding: 8px 0; border-bottom: 2px solid var(--line);">📅 ' + dateDisplay + '</div>';
 
-              despesasPorData[data].forEach(o => {
-                const instText = o.installments > 1 ? ' (' + o.index + '/' + o.installments + ')' : '';
-                html += '<div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; margin-left: 0;">';
-                html += '<span class="modal-label" style="flex: 1; font-size: 13px;">' + (o.description || 'Sem descrição') + instText + '</span>';
-                html += '<span class="modal-value" style="font-size: 13px;">R$ ' + (o.valueCents / 100).toFixed(2).replace('.', ',') + '</span>';
-                html += '</div>';
-              });
+despesasPorData[data].forEach(o => {
+    const instText = o.installments > 1 ? ' (' + o.index + '/' + o.installments + ')' : '';
+    const valCents = parseInt(o.valueCents, 10) || Math.round(parseFloat(o.valor || 0) * 100) || 0;
+    
+    html += '<div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; margin-left: 0;">';
+    html += '  <span class="modal-label" style="flex: 1; font-size: 13px;">' + (o.description || 'Sem descrição') + instText + '</span>';
+    html += '  <span class="modal-value" style="font-size: 13px;">R$ ' + (valCents / 100).toFixed(2).replace('.', ',') + '</span>';
+    html += '</div>';
+});
 
               html += '</div>';
             });
@@ -3019,14 +3024,16 @@ const dataToSync = expensesSource.map(e => {
     el.cartaoTotal.textContent = formatCentsBRL(total);
     el.summaryCartao.textContent = '-' + formatCentsBRL(total);
 
-    let totalDemaisCartoes = 0;
-    const occurrencesThisMonth = monthOccurrences();
-    occurrencesThisMonth.forEach(occ => {
-      const cartao = occ.cartao || 'cartao_santander';
-      if (cartao !== 'cartao_santander' && cartao !== 'contas_fixas') {
-        totalDemaisCartoes += occ.valueCents;
-      }
-    });
+   let totalDemaisCartoes = 0;
+const occurrencesThisMonth = monthOccurrences();
+occurrencesThisMonth.forEach(occ => {
+    const cartao = occ.cartao || 'cartao_santander';
+    if (cartao !== 'cartao_santander' && cartao !== 'contas_fixas') {
+        // Garante conversão numérica segura para os cêntimos
+        const valorCents = parseInt(occ.valueCents, 10) || parseInt(occ.valor * 100, 10) || 0;
+        totalDemaisCartoes += valorCents;
+    }
+});
     const demaisCartoesEl = document.getElementById('demaisCartoesTotal');
     if (demaisCartoesEl) {
       demaisCartoesEl.textContent = formatCentsBRL(totalDemaisCartoes);
