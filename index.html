@@ -2638,22 +2638,29 @@ const openModal = (modalID) => {
                     html += '  <div style="font-weight: 600; color: var(--ink); margin-bottom: 8px; font-size: 13px; padding: 8px 0; border-bottom: 2px solid var(--line);">📅 ' + dateDisplay + '</div>';
 
                         despesasPorData[data].forEach(o => {
-                       // Busca a despesa original no state se o valueCents for null na ocorrência
-                    const expenseId = o.expenseId || o.expense_id || o.id;
-                    const expense = (typeof state !== 'undefined' && Array.isArray(state.expenses)) 
-                        ? (state.expenses.find(e => e.id === expenseId) || {}) 
-                        : {};
+                        // Diagnóstico no Console
+                        console.log("Objeto ocorrência:", o);
 
-                    // Extrai o valor em centavos (checa primeiro na ocorrência, depois na despesa pai)
-                    let cents = (o.valueCents !== null && o.valueCents !== undefined) ? o.valueCents : expense.valueCents;
-                    if (cents === null || cents === undefined) cents = o.valuecents || expense.valuecents;
+                        // Busca a despesa original no state se disponível
+                        const expenseId = o.expenseId || o.expense_id || o.id;
+                        let expense = {};
+                        if (typeof state !== 'undefined' && Array.isArray(state.expenses)) {
+                            expense = state.expenses.find(e => e.id === expenseId) || {};
+                            console.log("Despesa Pai correspondente:", expense);
+                        }
+
+                        // Varre todas as possíveis propriedades de valor (tanto em centavos quanto em reais)
+                        let rawValue = o.valueCents ?? o.valuecents ?? o.amountCents ?? o.rawCents ?? 
+                                       expense.valueCents ?? expense.valuecents ?? expense.amountCents ?? expense.rawCents;
+
                         let valInReais = 0;
 
-                        if (cents !== null && cents !== undefined && Number(cents) > 0) {
-                            valInReais = Number(cents) / 100;
+                        if (rawValue !== null && rawValue !== undefined && Number(rawValue) > 0) {
+                            valInReais = Number(rawValue) / 100;
                         } else {
-                            // Busca alternativas em reais caso não encontre centavos
-                            const directVal = o.installmentValue || o.valor || o.value || expense.installmentValue || expense.valor || expense.value;
+                            // Se não houver centavos, busca por propriedades diretas em reais
+                            const directVal = o.installmentValue ?? o.valor ?? o.value ?? 
+                                               expense.installmentValue ?? expense.valor ?? expense.value;
                             valInReais = Number(directVal) || 0;
                         }
 
@@ -2666,8 +2673,6 @@ const openModal = (modalID) => {
                         html += '  <strong style="color: var(--text);">R$ ' + valFormatado + '</strong>';
                         html += '</div>';
                     });
-                    html += '</div>';
-                });
                 container.innerHTML = html;
             }
         }
