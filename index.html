@@ -2609,7 +2609,7 @@ occurrencesThisMonth.forEach(occ => {
   };
 
 const openModal = (modalID) => {
-    // 1. Resolve o erro ReferenceError para todos os modais e cartões
+    // 1. Cria a variável modalId igual a modalID para compatibilidade total em todo o bloco
     const modalId = modalID;
     const modal = document.getElementById(modalID) || document.getElementById(modalId);
     if (!modal) return;
@@ -2643,7 +2643,7 @@ const openModal = (modalID) => {
                             ? (state.expenses.find(e => e.id === expenseId) || o.expense || {}) 
                             : (o.expense || {});
 
-                        // 1. Busca valor em centavos
+                        // Procura valor em centavos
                         const centsCandidate = [
                             o.valuecents, o.valueCents, o.amountCents, o.amount_cents, o.rawCents,
                             expense.valuecents, expense.valueCents
@@ -2654,7 +2654,7 @@ const openModal = (modalID) => {
                         if (centsCandidate !== undefined) {
                             valInReais = Number(centsCandidate) / 100;
                         } else {
-                            // 2. Busca valor direto em reais
+                            // Procura valor direto em reais
                             const directCandidate = [
                                 o.installmentValue, o.installmentAmount, o.installment_value, o.valorParcela, o.valor_parcela,
                                 o.value, o.amount, o.valor, o.preco, o.val,
@@ -2664,7 +2664,7 @@ const openModal = (modalID) => {
                             if (directCandidate !== undefined) {
                                 valInReais = Number(directCandidate);
                             } else {
-                                // 3. Varredura ignorando id, date, e INDEX (evita converter parcela 2/2 em R$ 2,00)
+                                // Ignora chaves id, date, index e installment para não pegar número de parcela como dinheiro
                                 const anyNumericKey = Object.keys(o).find(k => {
                                     const key = k.toLowerCase();
                                     return !key.includes('id') && !key.includes('date') && !key.includes('index') && !key.includes('installment') && Number(o[k]) > 0;
@@ -2689,49 +2689,41 @@ const openModal = (modalID) => {
             }
         }
     } else if (modalId === 'modalRendaLiquida') {
-
         const rendaConfig = loadRendaConfig();
         const rendaLiquida = rendaConfig.salarioCarla + rendaConfig.salarioIasmim + rendaConfig.abono + rendaConfig.meritocracia - rendaConfig.emprestimoPersonal;
         const rows = modal.querySelectorAll('.modal-row');
         if (rows[0]) rows[0].innerHTML = '<span class="modal-label">Salário Carla</span><span class="modal-value">R$ ' + rendaConfig.salarioCarla.toFixed(2).replace('.', ',') + '</span>';
         if (rows[1]) rows[1].innerHTML = '<span class="modal-label">Salário Iasmim</span><span class="modal-value">R$ ' + rendaConfig.salarioIasmim.toFixed(2).replace('.', ',') + '</span>';
         if (rows[2]) rows[2].innerHTML = '<span class="modal-label">Empréstimo Pessoal</span><span class="modal-value" style="color: #dc2626;">-R$ ' + rendaConfig.emprestimoPersonal.toFixed(2).replace('.', ',') + '</span>';
-        if (rows[3]) rows[3].innerHTML = '<span class="modal-label">Total</span><span class="modal-value">R$ ' + rendaLiquida.toFixed(2).replace('.', ',') + '</span>';
-      } else if (modalId === 'modalValeAlimentacao') {
+    } else if (modalId === 'modalValeAlimentacao') {
         const summaryConfig = loadSummaryConfig();
         const valeCarla = summaryConfig.valeAlimentacaoCarla;
         const valeIasmim = summaryConfig.valeAlimentacaoIasmim;
         const valeTotal = valeCarla + valeIasmim;
 
         const valeCarlaEl = document.getElementById('valeCarlaDisplay');
-        if (valeCarlaEl) {
-          valeCarlaEl.textContent = 'R$ ' + valeCarla.toFixed(2).replace('.', ',');
-        }
+        if (valeCarlaEl) valeCarlaEl.textContent = 'R$ ' + valeCarla.toFixed(2).replace('.', ',');
 
         const valeIasmimEl = document.getElementById('valeIasmimDisplay');
-        if (valeIasmimEl) {
-          valeIasmimEl.textContent = 'R$ ' + valeIasmim.toFixed(2).replace('.', ',');
-        }
+        if (valeIasmimEl) valeIasmimEl.textContent = 'R$ ' + valeIasmim.toFixed(2).replace('.', ',');
 
         const valeTotalEl = document.getElementById('valeTotalDisplay');
-        if (valeTotalEl) {
-          valeTotalEl.textContent = 'R$ ' + valeTotal.toFixed(2).replace('.', ',');
-        }
-      } else if (modalId === 'modalReembolsos') {
+        if (valeTotalEl) valeTotalEl.textContent = 'R$ ' + valeTotal.toFixed(2).replace('.', ',');
+    } else if (modalId === 'modalReembolsos') {
         updateReembolsosModal();
-      } else if (modalId === 'modalContasFixas') {
+    } else if (modalId === 'modalContasFixas') {
         renderContasFixasModal();
-      } else if (modalId === 'modalDemaisCartoes') {
+    } else if (modalId === 'modalDemaisCartoes') {
         renderDemaisCartoesModal();
-      }
-      modal.classList.add('active');
-      modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-          closeModal(modalId);
-        }
-      });
     }
-  };
+
+    modal.classList.add('active');
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            closeModal(modalId);
+        }
+    });
+};
 
   const closeModal = (modalId) => {
     const modal = document.getElementById(modalId);
