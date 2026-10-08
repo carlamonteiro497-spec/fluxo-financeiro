@@ -5018,7 +5018,18 @@ verificarVencimentosProximos();
   window.updateSyncStatus = updateSyncStatus;
   // ==========================================
 // CARREGAMENTO CENTRALIZADO DO SUPABASE
-// ==========================================
+// Função normalizadora para garantir propriedades em camelCase
+const normalizeExpense = e => ({
+    id: e.id,
+    date: e.date || '',
+    description: e.description || '',
+    valueCents: parseInt(e.valuecents ?? e.valueCents ?? 0, 10),
+    installments: parseInt(e.installments ?? 1, 10),
+    createdAt: e.createdat || e.createdAt || new Date().toISOString(),
+    cartao: e.cartao || 'cartao_santander',
+    dataVencimento: e.datavencimento || e.dataVencimento || e.date || ''
+});
+
 async function loadAllFromSupabase() {
     const config = JSON.parse(localStorage.getItem('supabase_config') || '{}');
     const url = config.url || (typeof supabaseConfig !== 'undefined' ? supabaseConfig.url : null);
@@ -5036,11 +5047,23 @@ async function loadAllFromSupabase() {
         const resExp = await fetch(`${url}/rest/v1/expenses?select=*`, {
             headers: { 'apikey': key, 'Authorization': `Bearer ${key}` }
         });
+
         if (resExp.ok) {
             const expensesData = await resExp.json();
             if (expensesData && Array.isArray(expensesData)) {
-                localStorage.setItem('expenses', JSON.stringify(expensesData));
-                if (typeof state !== 'undefined') state.expenses = expensesData;
+                const normalized = expensesData.map(normalizeExpense);
+                
+                // Grava no localStorage com as duas chaves para manter retrocompatibilidade
+                localStorage.setItem('expenses', JSON.stringify(normalized));
+                if (typeof STORAGE_KEY !== 'undefined') {
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized));
+                } else {
+                    localStorage.setItem('passou_anotou_expenses', JSON.stringify(normalized));
+                }
+
+                if (typeof state !== 'undefined') {
+                    state.expenses = normalized;
+                }
             }
         }
 
@@ -5048,6 +5071,7 @@ async function loadAllFromSupabase() {
         const resCfg = await fetch(`${url}/rest/v1/app_config?select=*`, {
             headers: { 'apikey': key, 'Authorization': `Bearer ${key}` }
         });
+
         if (resCfg.ok) {
             const configs = await resCfg.json();
             configs.forEach(item => {
@@ -5057,6 +5081,11 @@ async function loadAllFromSupabase() {
                 }
             });
         }
+
+        // Atualiza a interface assim que o download terminar
+        if (typeof renderSummary === 'function') renderSummary();
+        if (typeof renderAll === 'function') renderAll();
+
         console.log('[SYNC] Sincronização de inicialização concluída com sucesso!');
     } catch (err) {
         console.error('[SYNC] Erro ao carregar dados do Supabase na inicialização:', err);
