@@ -2608,75 +2608,66 @@ occurrencesThisMonth.forEach(occ => {
     });
   };
 
-  const openModal = (modalId) => {
-    const modal = document.getElementById(modalId);
+const openModal = (modalID) => {
+    const modal = document.getElementById(modalID);
     if (modal) {
-      if (modalId === 'modalCartaoDetalhes') {
-        const list = monthOccurrencesSantander().sort((a, b) => b.purchaseDate.localeCompare(a.purchaseDate));
-        const container = document.getElementById('cartaoDetalhesContainer');
-        if (container) {
-          if (list.length === 0) {
-            container.innerHTML = '<p style="text-align: center; color: var(--ink-soft); padding: 20px;">Nenhum gasto neste mês</p>';
-          } else {
-            const despesasPorData = {};
-            list.forEach(o => {
-              const data = o.purchaseDate || '';
-              if (!despesasPorData[data]) {
-                despesasPorData[data] = [];
-              }
-              despesasPorData[data].push(o);
-            });
+        if (modalID === 'modalCartaoDetalhes') {
+            const list = monthOccurrencesSantander().sort((a, b) => b.purchaseDate.localeCompare(a.purchaseDate));
+            const container = document.getElementById('cartaoDetalhesContainer');
+            if (container) {
+                if (list.length === 0) {
+                    container.innerHTML = '<p style="text-align: center; color: var(--ink-soft); padding: 20px;">Nenhum gasto neste mês</p>';
+                } else {
+                    const despesasPorData = {};
+                    list.forEach(o => {
+                        const data = o.purchaseDate || '';
+                        if (!despesasPorData[data]) {
+                            despesasPorData[data] = [];
+                        }
+                        despesasPorData[data].push(o);
+                    });
 
-let html = '';
-            Object.keys(despesasPorData).sort((a, b) => b.localeCompare(a)).forEach(data => {
-                const dateParts = data.split('-');
-                const dateDisplay = dateParts.length === 3 ? dateParts[2] + '/' + dateParts[1] + '/' + dateParts[0] : '';
-                html += '<div style="margin-bottom: 16px;">';
-                html += '  <div style="font-weight: 600; color: var(--ink); margin-bottom: 8px; font-size: 13px; padding: 8px 0; border-bottom: 2px solid var(--line);">📅 ' + dateDisplay + '</div>';
+                    let html = '';
+                    Object.keys(despesasPorData).sort((a, b) => b.localeCompare(a)).forEach(data => {
+                        const dateParts = data.split('-');
+                        const dateDisplay = dateParts.length === 3 ? dateParts[2] + '/' + dateParts[1] + '/' + dateParts[0] : '';
+                        html += '<div style="margin-bottom: 16px;">';
+                        html += '  <div style="font-weight: 600; color: var(--ink); margin-bottom: 8px; font-size: 13px; padding: 8px 0; border-bottom: 2px solid var(--line);">📅 ' + dateDisplay + '</div>';
 
-despesasPorData[data].forEach(o => {
-    const instText = o.installments > 1 ? ' (' + o.index + '/' + o.installments + ')' : '';
+                        despesasPorData[data].forEach(o => {
+                            const instText = o.installments > 1 ? ' (' + o.index + '/' + o.installments + ')' : '';
 
-    const expense = state.expenses.find(e => e.id === o.expenseId || e.id === o.id) || o.expense || {};
+                            const expense = state.expenses.find(e => e.id === o.expenseId || e.id === o.id) || o.expense || {};
 
-    console.log('Ocorrência Santander:', o);
-    console.log('Despesa encontrada:', expense);
+                            let rawCents = 0;
+                            if (expense.valuecents !== undefined && expense.valuecents !== null) {
+                                rawCents = expense.valuecents;
+                            } else if (expense.valueCents !== undefined && expense.valueCents !== null) {
+                                rawCents = expense.valueCents;
+                            } else if (expense.valorCents !== undefined && expense.valorCents !== null) {
+                                rawCents = expense.valorCents;
+                            } else if (expense.valor) {
+                                rawCents = Math.round(parseFloat(expense.valor) * 100);
+                            } else if (expense.value) {
+                                rawCents = Math.round(parseFloat(expense.value) * 100);
+                            }
 
-    // Extração do valor bruto considerando 'valuecents' em minúsculas
-    let rawCents = 0;
-    if (expense.valuecents !== undefined && expense.valuecents !== null) {
-        rawCents = expense.valuecents;
-    } else if (expense.valueCents !== undefined && expense.valueCents !== null) {
-        rawCents = expense.valueCents;
-    } else if (expense.valorCents !== undefined && expense.valorCents !== null) {
-        rawCents = expense.valorCents;
-    } else if (expense.valor) {
-        rawCents = Math.round(parseFloat(expense.valor) * 100);
-    } else if (expense.value) {
-        rawCents = Math.round(parseFloat(expense.value) * 100);
-    }
+                            const totalInstallments = o.installments || expense.installments || 1;
+                            const valCents = totalInstallments > 1 ? Math.round(rawCents / totalInstallments) : Math.round(rawCents);
 
-    const totalInstallments = o.installments || expense.installments || 1;
-    const valCents = totalInstallments > 1 ? Math.round(rawCents / totalInstallments) : Math.round(rawCents);
+                            html += '<div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; margin-left: 0;">';
+                            html += '  <span class="modal-label" style="flex: 1; font-size: 13px;">' + (expense.description || o.description || 'Sem descrição') + instText + '</span>';
+                            html += '  <span class="modal-value" style="font-size: 13px;">R$ ' + (valCents / 100).toFixed(2).replace('.', ',') + '</span>';
+                            html += '</div>';
+                        });
 
-    html += '<div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; margin-left: 0;">';
-    html += '  <span class="modal-label" style="flex: 1; font-size: 13px;">' + (expense.description || o.description || 'Sem descrição') + instText + '</span>';
-    html += '  <span class="modal-value" style="font-size: 13px;">R$ ' + (valCents / 100).toFixed(2).replace('.', ',') + '</span>';
-    html += '</div>';
-});
+                        html += '</div>';
+                    });
 
-                    const totalInstallments = o.installments || expense.installments || 1;
-                    const valCents = totalInstallments > 1 ? Math.round(rawCents / totalInstallments) : Math.round(rawCents);
-
-                    html += '<div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; margin-left: 0;">';
-                    html += '  <span class="modal-label" style="flex: 1; font-size: 13px;">' + (expense.description || o.description || 'Sem descrição') + instText + '</span>';
-                    html += '  <span class="modal-value" style="font-size: 13px;">R$ ' + (valCents / 100).toFixed(2).replace('.', ',') + '</span>';
-                    html += '</div>';
-});
-
-                html += '</div>';
-            });
-
+                    container.innerHTML = html;
+                }
+            }
+        } else if (modalID === 'modalRendaLiquida') {
             container.innerHTML = html;
         }
     }
