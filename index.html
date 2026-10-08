@@ -2651,7 +2651,7 @@ const openModal = (modalID) => {
                             expense = state.expenses.find(e => e.id === expenseId) || {};
                         }
 
-                        // 2. Tenta obter o valor em centavos (na ocorrência primeiro, depois no pai)
+// 2. Tenta obter os centavos na ocorrência ou na despesa pai
                         let rawCents = (o.valueCents !== null && o.valueCents !== undefined) ? o.valueCents : expense.valueCents;
                         if (rawCents === null || rawCents === undefined) {
                             rawCents = o.valuecents || expense.valuecents || o.amountCents || expense.amountCents;
@@ -2661,14 +2661,18 @@ const openModal = (modalID) => {
 
                         if (rawCents !== null && rawCents !== undefined && Number(rawCents) > 0) {
                             valInReais = Number(rawCents) / 100;
+                            
+                            // Se os centavos vieram do pai (expense) e for parcelado, divide pelo total de parcelas
+                            const installments = o.installments || expense.installments || 1;
+                            if ((o.valueCents === null || o.valueCents === undefined) && installments > 1) {
+                                valInReais = valInReais / installments;
+                            }
                         } else {
-                            // 3. Caso não haja centavos, recupera os valores brutos de parcelas/reais
+                            // 3. Caso não haja centavos em lugar nenhum, usa valores em reais
                             const directVal = o.installmentValue || o.valor || o.value || 
                                                expense.installmentValue || expense.valor || expense.value || expense.totalValue;
-                            
                             if (directVal !== undefined && directVal !== null) {
                                 valInReais = Number(directVal);
-                                // Se for o valor total da compra parcelada no pai, calcula a parcela
                                 const installments = o.installments || expense.installments || 1;
                                 if (valInReais > 0 && !o.installmentValue && installments > 1) {
                                     valInReais = valInReais / installments;
