@@ -2611,78 +2611,78 @@ occurrencesThisMonth.forEach(occ => {
 const openModal = (modalID) => {
     const modal = document.getElementById(modalID);
     if (modal) {
-        if (modalID === 'modalCartaoDetalhes') {
+if (modalID === 'modalCartaoDetalhes') {
             const list = monthOccurrencesSantander().sort((a, b) => b.purchaseDate.localeCompare(a.purchaseDate));
             const container = document.getElementById('cartaoDetalhesContainer');
             if (container) {
                 if (list.length === 0) {
                     container.innerHTML = '<p style="text-align: center; color: var(--ink-soft); padding: 20px;">Nenhum gasto neste mês</p>';
                 } else {
-    const despesasPorData = {};
-    list.forEach(o => {
-        const data = o.purchaseDate || '';
-        if (!despesasPorData[data]) {
-            despesasPorData[data] = [];
-        }
-        despesasPorData[data].push(o);
-    });
+                    const despesasPorData = {};
+                    list.forEach(o => {
+                        const data = o.purchaseDate || '';
+                        if (!despesasPorData[data]) {
+                            despesasPorData[data] = [];
+                        }
+                        despesasPorData[data].push(o);
+                    });
 
-    let html = '';
-    Object.keys(despesasPorData).forEach(data => {
-        const dataFormatada = data.split('-').reverse().join('/');
-        html += `<div style="margin-top: 15px; font-weight: bold; font-size: 13px; color: var(--ink-soft);">🗓️ ${dataFormatada}</div><hr style="border: 0; border-top: 1px solid var(--line); margin: 6px 0 12px 0;">`;
-        
-despesasPorData[data].forEach(o => {
-                // 1. Tenta recuperar a despesa pai no state (se existir)
-                const expenseId = o.expenseId || o.expense_id || o.id;
-                const expense = (typeof state !== 'undefined' && Array.isArray(state.expenses)) 
-                    ? (state.expenses.find(e => e.id === expenseId) || o.expense || {}) 
-                    : (o.expense || {});
+                    let html = '';
+                    Object.keys(despesasPorData).sort((a, b) => b.localeCompare(a)).forEach(data => {
+                        const dateParts = data.split('-');
+                        const dateDisplay = dateParts.length === 3 ? dateParts[2] + '/' + dateParts[1] + '/' + dateParts[0] : '';
+                        html += '<div style="margin-bottom: 16px;">';
+                        html += '  <div style="font-weight: 600; color: var(--ink); margin-bottom: 8px; font-size: 13px; padding: 8px 0; border-bottom: 2px solid var(--line);">📅 ' + dateDisplay + '</div>';
 
-                // 2. Procura em absolutamente TODAS as propriedades possíveis de valor em centavos
-                const centsCandidate = [
-                    o.valuecents, o.valueCents, o.amountCents, o.amount_cents, o.rawCents,
-                    expense.valuecents, expense.valueCents
-                ].find(v => v !== undefined && v !== null && Number(v) > 0);
+                        despesasPorData[data].forEach(o => {
+                            const expenseId = o.expenseId || o.expense_id || o.id;
+                            const expense = (typeof state !== 'undefined' && Array.isArray(state.expenses)) 
+                                ? (state.expenses.find(e => e.id === expenseId) || o.expense || {}) 
+                                : (o.expense || {});
 
-                let valInReais = 0;
+                            // 1. Procura em centavos (> 0)
+                            const centsCandidate = [
+                                o.valuecents, o.valueCents, o.amountCents, o.amount_cents, o.rawCents,
+                                expense.valuecents, expense.valueCents
+                            ].find(v => v !== undefined && v !== null && Number(v) > 0);
 
-                if (centsCandidate !== undefined) {
-                    valInReais = Number(centsCandidate) / 100;
-                } else {
-                    // 3. Procura em TODAS as propriedades de valor direto em reais
-                    const directCandidate = [
-                        o.installmentValue, o.installmentAmount, o.installment_value, o.valorParcela, o.valor_parcela,
-                        o.value, o.amount, o.valor, o.preco, o.val,
-                        expense.installmentValue, expense.valorParcela, expense.valor_parcela, expense.amount, expense.valor
-                    ].find(v => v !== undefined && v !== null && Number(v) > 0);
+                            let valInReais = 0;
 
-                    // 4. Se não achou em nenhuma acima, varre o objeto 'o' procurando qualquer chave que tenha número > 0
-                    if (directCandidate !== undefined) {
-                        valInReais = Number(directCandidate);
-                    } else {
-                        const anyNumericKey = Object.keys(o).find(k => !k.toLowerCase().includes('id') && !k.toLowerCase().includes('date') && !k.toLowerCase().includes('index') && Number(o[k]) > 0);
-                        valInReais = anyNumericKey ? Number(o[anyNumericKey]) : 0;
-                        // Se o número encontrado for muito grande (ex: 15000 para R$ 150,00), converte de centavos
-                        if (valInReais > 50000) valInReais = valInReais / 100;
-                    }
+                            if (centsCandidate !== undefined) {
+                                valInReais = Number(centsCandidate) / 100;
+                            } else {
+                                // 2. Procura em valores diretos em reais (> 0)
+                                const directCandidate = [
+                                    o.installmentValue, o.installmentAmount, o.installment_value, o.valorParcela, o.valor_parcela,
+                                    o.value, o.amount, o.valor, o.preco, o.val,
+                                    expense.installmentValue, expense.valorParcela, expense.valor_parcela, expense.amount, expense.valor
+                                ].find(v => v !== undefined && v !== null && Number(v) > 0);
+
+                                if (directCandidate !== undefined) {
+                                    valInReais = Number(directCandidate);
+                                } else {
+                                    // 3. Varredura automática por qualquer propriedade numérica válida
+                                    const anyNumericKey = Object.keys(o).find(k => !k.toLowerCase().includes('id') && !k.toLowerCase().includes('date') && !k.toLowerCase().includes('index') && Number(o[k]) > 0);
+                                    valInReais = anyNumericKey ? Number(o[anyNumericKey]) : 0;
+                                    if (valInReais > 50000) valInReais = valInReais / 100;
+                                }
+                            }
+
+                            const valFormatado = valInReais.toFixed(2).replace('.', ',');
+                            const descText = o.description || o.descricao || expense.description || o.nome || 'Gasto';
+                            const instText = (o.installments && o.installments > 1) ? ' (' + (o.index || 1) + '/' + o.installments + ')' : '';
+
+                            html += '<div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px;">';
+                            html += '  <span style="color: var(--ink-soft);">' + descText + instText + '</span>';
+                            html += '  <strong style="color: var(--text);">R$ ' + valFormatado + '</strong>';
+                            html += '</div>';
+                        });
+                        html += '</div>';
+                    });
+                    container.innerHTML = html;
                 }
-
-                const valFormatado = valInReais.toFixed(2).replace('.', ',');
-                const descText = o.description || o.descricao || expense.description || o.nome || 'Gasto';
-                const instText = (o.installments && o.installments > 1) ? ' (' + (o.index || 1) + '/' + o.installments + ')' : '';
-
-                html += `
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px;">
-                        <span style="color: var(--ink-soft);">${descText}${instText}</span>
-                        <strong style="color: var(--text);">R$ ${valFormatado}</strong>
-                    </div>
-                `;
-});
-            container.innerHTML = html;
-        }
-    }
-} else if (modalID === 'modalRendaLiquida') {
+            }
+        } else if (modalID === 'modalRendaLiquida') {
 
         const rendaConfig = loadRendaConfig();
         const rendaLiquida = rendaConfig.salarioCarla + rendaConfig.salarioIasmim + rendaConfig.abono + rendaConfig.meritocracia - rendaConfig.emprestimoPersonal;
