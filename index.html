@@ -2635,8 +2635,10 @@ occurrencesThisMonth.forEach(occ => {
               html += '<div style="font-weight: 600; color: var(--ink); margin-bottom: 8px; font-size: 13px; padding: 8px 0; border-bottom: 2px solid var(--line);">📅 ' + dateDisplay + '</div>';
 
 despesasPorData[data].forEach(o => {
-    const instText = o.installments > 1 ? ' (' + o.index + '/' + o.installments + ')' : '';
-    const valCents = parseInt(o.valueCents, 10) || Math.round(parseFloat(o.valor || 0) * 100) || 0;
+  console.log('Objeto Santander:', o);
+const instText = o.installments > 1 ? ' (' + o.index + '/' + o.installments + ')' : '';
+const rawVal = o.valueCents ?? o.installmentValueCents ?? o.valorCents ?? o.value ?? o.valor ?? (o.expense ? (o.expense.valueCents || o.expense.value || o.expense.valor) : 0);
+const valCents = typeof rawVal === 'number' && rawVal > 0 && rawVal < 1000 && !Number.isInteger(rawVal) ? Math.round(rawVal * 100) : (parseInt(rawVal, 10) || 0);
     
     html += '<div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; margin-left: 0;">';
     html += '  <span class="modal-label" style="flex: 1; font-size: 13px;">' + (o.description || 'Sem descrição') + instText + '</span>';
