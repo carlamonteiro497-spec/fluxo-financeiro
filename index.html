@@ -2637,43 +2637,24 @@ const openModal = (modalID) => {
                     html += '<div style="margin-bottom: 16px;">';
                     html += '  <div style="font-weight: 600; color: var(--ink); margin-bottom: 8px; font-size: 13px; padding: 8px 0; border-bottom: 2px solid var(--line);">📅 ' + dateDisplay + '</div>';
 
-                    despesasPorData[data].forEach(o => {
-                        console.log('Objeto completo:', JSON.stringify(o)); // <-- ADICIONADO PARA VERMOS A ESTRUTURA
-                        
-                        const expenseId = o.expenseId || o.expense_id || o.id;
-                        const expense = (typeof state !== 'undefined' && Array.isArray(state.expenses)) 
-                            ? (state.expenses.find(e => e.id === expenseId) || o.expense || {}) 
-                            : (o.expense || {});
+                        despesasPorData[data].forEach(o => {
+                       // Busca a despesa original no state se o valueCents for null na ocorrência
+                    const expenseId = o.expenseId || o.expense_id || o.id;
+                    const expense = (typeof state !== 'undefined' && Array.isArray(state.expenses)) 
+                        ? (state.expenses.find(e => e.id === expenseId) || {}) 
+                        : {};
 
-                        // Procura valor em centavos
-                        const centsCandidate = [
-                            o.valuecents, o.valueCents, o.amountCents, o.amount_cents, o.rawCents,
-                            expense.valuecents, expense.valueCents
-                        ].find(v => v !== undefined && v !== null && Number(v) > 0);
-
+                    // Extrai o valor em centavos (checa primeiro na ocorrência, depois na despesa pai)
+                    let cents = (o.valueCents !== null && o.valueCents !== undefined) ? o.valueCents : expense.valueCents;
+                    if (cents === null || cents === undefined) cents = o.valuecents || expense.valuecents;
                         let valInReais = 0;
 
-                        if (centsCandidate !== undefined) {
-                            valInReais = Number(centsCandidate) / 100;
+                        if (cents !== null && cents !== undefined && Number(cents) > 0) {
+                            valInReais = Number(cents) / 100;
                         } else {
-                            // Procura valor direto em reais
-                            const directCandidate = [
-                                o.installmentValue, o.installmentAmount, o.installment_value, o.valorParcela, o.valor_parcela,
-                                o.value, o.amount, o.valor, o.preco, o.val,
-                                expense.installmentValue, expense.valorParcela, expense.valor_parcela, expense.amount, expense.valor
-                            ].find(v => v !== undefined && v !== null && Number(v) > 0);
-
-                            if (directCandidate !== undefined) {
-                                valInReais = Number(directCandidate);
-                            } else {
-                                // Ignora chaves id, date, index e installment para não pegar número de parcela como dinheiro
-                                const anyNumericKey = Object.keys(o).find(k => {
-                                    const key = k.toLowerCase();
-                                    return !key.includes('id') && !key.includes('date') && !key.includes('index') && !key.includes('installment') && Number(o[k]) > 0;
-                                });
-                                valInReais = anyNumericKey ? Number(o[anyNumericKey]) : 0;
-                                if (valInReais > 50000) valInReais = valInReais / 100;
-                            }
+                            // Busca alternativas em reais caso não encontre centavos
+                            const directVal = o.installmentValue || o.valor || o.value || expense.installmentValue || expense.valor || expense.value;
+                            valInReais = Number(directVal) || 0;
                         }
 
                         const valFormatado = valInReais.toFixed(2).replace('.', ',');
