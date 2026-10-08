@@ -2634,24 +2634,36 @@ let html = '';
                 html += '<div style="margin-bottom: 16px;">';
                 html += '  <div style="font-weight: 600; color: var(--ink); margin-bottom: 8px; font-size: 13px; padding: 8px 0; border-bottom: 2px solid var(--line);">📅 ' + dateDisplay + '</div>';
 
-                despesasPorData[data].forEach(o => {
-                    const instText = o.installments > 1 ? ' (' + o.index + '/' + o.installments + ')' : '';
-                    
-                    const expense = state.expenses.find(e => e.id === o.expenseId || e.id === o.id) || o.expense || {};
-                    
-                    console.log('Ocorrência Santander:', o);
-                    console.log('Despesa encontrada:', expense);
+despesasPorData[data].forEach(o => {
+    const instText = o.installments > 1 ? ' (' + o.index + '/' + o.installments + ')' : '';
 
-                    let rawCents = 0;
-                    if (expense.valueCents !== undefined && expense.valueCents !== null) {
-                        rawCents = expense.valueCents;
-                    } else if (expense.valorCents !== undefined && expense.valorCents !== null) {
-                        rawCents = expense.valorCents;
-                    } else if (expense.valor) {
-                        rawCents = Math.round(parseFloat(expense.valor) * 100);
-                    } else if (expense.value) {
-                        rawCents = Math.round(parseFloat(expense.value) * 100);
-                    }
+    const expense = state.expenses.find(e => e.id === o.expenseId || e.id === o.id) || o.expense || {};
+
+    console.log('Ocorrência Santander:', o);
+    console.log('Despesa encontrada:', expense);
+
+    // Extração do valor bruto considerando 'valuecents' em minúsculas
+    let rawCents = 0;
+    if (expense.valuecents !== undefined && expense.valuecents !== null) {
+        rawCents = expense.valuecents;
+    } else if (expense.valueCents !== undefined && expense.valueCents !== null) {
+        rawCents = expense.valueCents;
+    } else if (expense.valorCents !== undefined && expense.valorCents !== null) {
+        rawCents = expense.valorCents;
+    } else if (expense.valor) {
+        rawCents = Math.round(parseFloat(expense.valor) * 100);
+    } else if (expense.value) {
+        rawCents = Math.round(parseFloat(expense.value) * 100);
+    }
+
+    const totalInstallments = o.installments || expense.installments || 1;
+    const valCents = totalInstallments > 1 ? Math.round(rawCents / totalInstallments) : Math.round(rawCents);
+
+    html += '<div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; margin-left: 0;">';
+    html += '  <span class="modal-label" style="flex: 1; font-size: 13px;">' + (expense.description || o.description || 'Sem descrição') + instText + '</span>';
+    html += '  <span class="modal-value" style="font-size: 13px;">R$ ' + (valCents / 100).toFixed(2).replace('.', ',') + '</span>';
+    html += '</div>';
+});
 
                     const totalInstallments = o.installments || expense.installments || 1;
                     const valCents = totalInstallments > 1 ? Math.round(rawCents / totalInstallments) : Math.round(rawCents);
