@@ -2618,53 +2618,35 @@ const openModal = (modalID) => {
                 if (list.length === 0) {
                     container.innerHTML = '<p style="text-align: center; color: var(--ink-soft); padding: 20px;">Nenhum gasto neste mês</p>';
                 } else {
-                    const despesasPorData = {};
-                    list.forEach(o => {
-                        const data = o.purchaseDate || '';
-                        if (!despesasPorData[data]) {
-                            despesasPorData[data] = [];
-                        }
-                        despesasPorData[data].push(o);
-                    });
+    const despesasPorData = {};
+    list.forEach(o => {
+        const data = o.purchaseDate || '';
+        if (!despesasPorData[data]) {
+            despesasPorData[data] = [];
+        }
+        despesasPorData[data].push(o);
+    });
 
-                    let html = '';
-                    Object.keys(despesasPorData).sort((a, b) => b.localeCompare(a)).forEach(data => {
-                        const dateParts = data.split('-');
-                        const dateDisplay = dateParts.length === 3 ? dateParts[2] + '/' + dateParts[1] + '/' + dateParts[0] : '';
-                        html += '<div style="margin-bottom: 16px;">';
-                        html += '  <div style="font-weight: 600; color: var(--ink); margin-bottom: 8px; font-size: 13px; padding: 8px 0; border-bottom: 2px solid var(--line);">📅 ' + dateDisplay + '</div>';
-
-                        despesasPorData[data].forEach(o => {
-                            const instText = o.installments > 1 ? ' (' + o.index + '/' + o.installments + ')' : '';
-                            const expense = state.expenses.find(e => e.id === o.expenseId || e.id === o.id) || o.expense || {};
-
-                            let rawCents = 0;
-                            if (expense.valuecents !== undefined && expense.valuecents !== null) {
-                                rawCents = expense.valuecents;
-                            } else if (expense.valueCents !== undefined && expense.valueCents !== null) {
-                                rawCents = expense.valueCents;
-                            } else if (expense.valorCents !== undefined && expense.valorCents !== null) {
-                                rawCents = expense.valorCents;
-                            } else if (expense.valor) {
-                                rawCents = Math.round(parseFloat(expense.valor) * 100);
-                            } else if (expense.value) {
-                                rawCents = Math.round(parseFloat(expense.value) * 100);
-                            }
-
-                            const totalInstallments = o.installments || expense.installments || 1;
-                            const valCents = totalInstallments > 1 ? Math.round(rawCents / totalInstallments) : Math.round(rawCents);
-
-                            html += '<div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; margin-left: 0;">';
-                            html += '  <span class="modal-label" style="flex: 1; font-size: 13px;">' + (expense.description || o.description || 'Sem descrição') + instText + '</span>';
-                            html += '  <span class="modal-value" style="font-size: 13px;">R$ ' + (valCents / 100).toFixed(2).replace('.', ',') + '</span>';
-                            html += '</div>';
-                        });
-
-                        html += '</div>';
-                    });
-
-                    container.innerHTML = html;
-                }
+    let html = '';
+    Object.keys(despesasPorData).forEach(data => {
+        const dataFormatada = data.split('-').reverse().join('/');
+        html += `<div style="margin-top: 15px; font-weight: bold; font-size: 13px; color: var(--ink-soft);">🗓️ ${dataFormatada}</div><hr style="border: 0; border-top: 1px solid var(--line); margin: 6px 0 12px 0;">`;
+        
+        despesasPorData[data].forEach(o => {
+            // Pega qualquer propriedade de valor existente no objeto ou converte para número com segurança
+            const val = Number(o.amount || o.valorParcela || o.valor_parcela || o.valor || o.preco || 0);
+            const valFormatado = val.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            
+            html += `
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px;">
+                    <span style="color: var(--ink-soft);">${o.description || o.descricao || o.nome || 'Gasto'}</span>
+                    <strong style="color: var(--text);">R$ ${valFormatado}</strong>
+                </div>
+            `;
+        });
+    });
+    container.innerHTML = html;
+}
             }
         } else if (modalID === 'modalRendaLiquida') {
 
@@ -4277,25 +4259,26 @@ window.adicionarBonus = async () => {
     if (tipo === 'abono') {
         config.abono += valor;
     } else {
-   config.meritocracia += valor;
-}
+        config.meritocracia += valor;
+    }
 
-await saveRendaConfig(config);
+    await saveRendaConfig(config);
 
-const lista = document.getElementById('bonusLista');
-const items = lista.querySelectorAll('.bonus-item');
-if (items.length === 1 && items[0].textContent.includes('Nenhum')) {
-    lista.innerHTML = '';
-}
-
-const item = document.createElement('div');
-item.className = 'bonus-item';
-item.style.cssText = 'padding: 8px; background: var(--paper); border-radius: 6px; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; font-size: 13px;';
-item.innerHTML = '<span>' + (tipo === 'abono' ? '💰 Abono' : '⭐ Meritocracia') + ': R$ ' + valor.toFixed(2).replace('.', ',') + '</span><button type="button" onclick="this.parentElement.remove()" style="background:none;border:none;cursor:pointer;">❌</button>';
-lista.appendChild(item);
-
-document.getElementById('novoValor').value = '';
+    const lista = document.getElementById('bonusLista');
+    const items = lista.querySelectorAll('.bonus-item');
+    if (items.length === 1 && items[0].textContent.includes('Nenhum')) {
+        lista.innerHTML = '';
+    }
 };
+
+    const item = document.createElement('div');
+    item.className = 'bonus-item';
+    item.style.cssText = 'padding: 8px; background: var(--paper); border-radius: 6px; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; font-size: 13px;';
+    item.innerHTML = '<span>' + (tipo === 'abono' ? '💰 Abono' : '⭐ Meritocracia') + ': R$ ' + valor.toFixed(2).replace('.', ',') + '</span><button type="button" onclick="this.parentElement.remove()" style="background: #dc2626; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px;">Remover</button>';
+    lista.appendChild(item);
+
+    document.getElementById('novoValor').value = '';
+  };
 
   const CONTAS_KEY = 'fluxo_contas_fixas';
   const CONTAS_VALORES_MES_KEY = 'fluxo_contas_valores_mes';
