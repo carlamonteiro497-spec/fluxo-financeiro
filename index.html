@@ -1208,58 +1208,15 @@ footer.hint {
 
 /* TOOLS GRID RESPONSIVO */
 .tools-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
 }
 
-@media (max-width: 768px) {
-    /* 1. Ajuste dos 3 Botões de Ferramentas para Celular */
-    .tools-grid {
-        grid-template-columns: repeat(3, 1fr) !important; /* Mantém os 3 lado a lado sem quebrar */
-        gap: 6px !important;
-        width: 100% !important;
-        justify-content: center !important;
-    }
-
-    .tools-grid button,
-    .tools-grid .btn,
-    .tools-grid a {
-        font-size: 0.75rem !important; /* Diminui o texto para caber perfeitamente */
-        padding: 6px 4px !important;    /* Reduz o espaçamento interno */
-        text-align: center !important;
-        white-space: nowrap !important; /* Impede o texto de quebrar linha desajeitadamente */
-    }
-
-    /* 2. Reduz o tamanho do Calendário para não cortar nas laterais */
-    #calendar, .fc {
-        max-width: 100% !important;
-        overflow-x: auto !important;
-    }
-
-    .fc-toolbar {
-        flex-direction: column !important;
-        gap: 6px !important;
-    }
-
-    .fc-toolbar-title {
-        font-size: 0.9rem !important; /* Título do mês menor */
-    }
-
-    .fc-col-header-cell-cushion, 
-    .fc-daygrid-day-number {
-        font-size: 0.7rem !important; /* Dias da semana e números menores */
-        padding: 1px !important;
-    }
-
-    .fc-daygrid-day-frame {
-        min-height: 32px !important; /* Altura reduzida dos quadros do calendário */
-    }
-
-    .fc-button {
-        padding: 3px 6px !important;
-        font-size: 0.7rem !important;
-    }
+@media (min-width: 768px) {
+  .tools-grid {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
 }
 </style>
 </head>
@@ -1836,245 +1793,203 @@ footer.hint {
 
   async function syncToSupabase() {
     if (!supabaseConfig.enabled || !supabaseConfig.url || !supabaseConfig.key) {
-        return false;
+      return false;
     }
 
     try {
-        const deviceId = localStorage.getItem('device_id') || 'device_' + Math.random().toString(36).substr(2, 9);
-        localStorage.setItem('device_id', deviceId);
-        const now = new Date().toISOString();
+      const deviceId = localStorage.getItem('device_id') || 'device_' + Math.random().toString(36).substr(2, 9);
+      localStorage.setItem('device_id', deviceId);
+      const now = new Date().toISOString();
 
-        let expensesSource = [];
-        if (typeof state !== 'undefined' && Array.isArray(state.expenses) && state.expenses.length > 0) {
-            expensesSource = state.expenses;
-        } else {
-            expensesSource = JSON.parse(localStorage.getItem('passou_anotou_expenses') || localStorage.getItem('expenses') || '[]');
+      const expensesSource = JSON.parse(localStorage.getItem('expenses')) || state.expenses || [];
+const dataToSync = expensesSource.map(e => {
+        if (!e.id) {
+          e.id = generateUUID();
         }
+        return {
+          id: e.id,
+          date: e.date || new Date().toISOString().split('T')[0],
+          description: e.description || 'Sem descrição',
+          valuecents: parseInt(e.valueCents || 0),
+          installments: parseInt(e.installments || 1),
+          createdat: e.createdAt || now,
+          datavencimento: e.dataVencimento || e.date || new Date().toISOString().split('T')[0],
+          cartao: e.cartao || 'cartao_santander'
+        };
+      });
 
-        const dataToSync = expensesSource.map(e => {
-            if (!e.id) {
-                e.id = generateUUID();
-            }
+      if (dataToSync.length === 0) {
+        console.log('[SYNC] Nenhum dado para sincronizar');
+        return true;
+      }
 
-            let rawCents = e.valueCents ?? e.valuecents ?? e.amountCents ?? e.amountcents;
-            if (rawCents === null || rawCents === undefined || isNaN(rawCents)) {
-                const directVal = e.valor ?? e.value ?? e.installmentValue ?? e.installmentvalue;
-                if (directVal !== undefined && directVal !== null) {
-                    rawCents = Math.round(Number(directVal) * 100);
-                }
-            }
+      console.log('[SYNC] Preparando envio de', dataToSync.length, 'registros');
 
-            return {
-                id: e.id,
-                date: e.date || new Date().toISOString().split('T')[0],
-                description: e.description || e.descricao || 'Sem descrição',
-                valuecents: parseInt(rawCents || 0, 10),
-                installments: parseInt(e.installments || 1, 10),
-                createdat: e.createdAt || e.createdat || now,
-                datavencimento: e.dataVencimento || e.datavencimento || e.date || new Date().toISOString().split('T')[0],
-                cartao: e.cartao || 'cartao_santander'
-            };
-        });
-
-        if (dataToSync.length === 0) {
-            console.log('[SYNC] Nenhum dado para sincronizar');
-            return true;
+      const response = await fetch(
+        `${supabaseConfig.url}/rest/v1/expenses`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${supabaseConfig.key}`,
+            'apikey': supabaseConfig.key,
+            'Content-Type': 'application/json',
+            'Prefer': 'resolution=merge-duplicates,return=minimal'
+          },
+          body: JSON.stringify(dataToSync)
         }
+      );
 
-        console.log('[SYNC] Preparando envio de', dataToSync.length, 'registros');
+      if (response.ok) {
+        console.log('[SYNC] ✓ Dados sincronizados com sucesso');
+        updateSyncStatus('success');
+        await loadAndMergeFromSupabase();
+        return true;
+      } else {
+        console.error('[SYNC] ❌ Erro ao sincronizar - Status:', response.status);
+        let successCount = 0;
 
-        const response = await fetch(
-            `${supabaseConfig.url}/rest/v1/expenses`,
-            {
+        for (let i = 0; i < dataToSync.length; i++) {
+          try {
+            const record = dataToSync[i];
+            const indvResponse = await fetch(
+              `${supabaseConfig.url}/rest/v1/expenses`,
+              {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${supabaseConfig.key}`,
-                    'apikey': supabaseConfig.key,
-                    'Content-Type': 'application/json',
-                    'Prefer': 'resolution=merge-duplicates,return=minimal'
+                  'Authorization': `Bearer ${supabaseConfig.key}`,
+                  'apikey': supabaseConfig.key,
+                  'Content-Type': 'application/json',
+                  'Prefer': 'return=minimal'
                 },
-                body: JSON.stringify(dataToSync)
+                body: JSON.stringify(record)
+              }
+            );
+
+            if (indvResponse.ok) {
+              successCount++;
             }
-        );
-
-        if (response.ok) {
-            console.log('[SYNC] ✔ Dados sincronizados com sucesso');
-            updateSyncStatus('success');
-            return true;
-        } else {
-            console.error('[SYNC] ❌ Erro ao sincronizar - Status:', response.status);
-            let successCount = 0;
-
-            for (let i = 0; i < dataToSync.length; i++) {
-                try {
-                    const record = dataToSync[i];
-                    const indvResponse = await fetch(
-                        `${supabaseConfig.url}/rest/v1/expenses`,
-                        {
-                            method: 'POST',
-                            headers: {
-                                'Authorization': `Bearer ${supabaseConfig.key}`,
-                                'apikey': supabaseConfig.key,
-                                'Content-Type': 'application/json',
-                                'Prefer': 'resolution=merge-duplicates,return=minimal'
-                            },
-                            body: JSON.stringify(record)
-                        }
-                    );
-
-                    if (indvResponse.ok) {
-                        successCount++;
-                    }
-                } catch (e) {
-                    console.error('[SYNC] Erro ao inserir registro:', e);
-                }
-            }
-
-            if (successCount > 0) {
-                updateSyncStatus('success');
-                return true;
-            } else {
-                updateSyncStatus('error');
-                return false;
-            }
+          } catch (e) {
+            console.error('[SYNC] Erro ao inserir registro:', e);
+          }
         }
-    } catch (err) {
-        console.error('[SYNC] Erro grave ao sincronizar:', err);
-        updateSyncStatus('error');
-        return false;
-    }
-}
 
-async function loadFromSupabase() {
+        if (successCount > 0) {
+          updateSyncStatus('success');
+          await loadAndMergeFromSupabase();
+          return true;
+        } else {
+          updateSyncStatus('error');
+          return false;
+        }
+      }
+    } catch (e) {
+      console.error('[SYNC] Erro ao sincronizar:', e);
+      updateSyncStatus('error');
+      return false;
+    }
+  }
+
+  async function loadFromSupabase() {
     if (!supabaseConfig.enabled || !supabaseConfig.url || !supabaseConfig.key) {
-        return null;
+      return null;
     }
 
     try {
-        const response = await fetch(
-            `${supabaseConfig.url}/rest/v1/expenses?order=createdat.asc`,
-            {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${supabaseConfig.key}`,
-                    'apikey': supabaseConfig.key,
-                    'Content-Type': 'application/json'
-                }
-            }
-        );
-
-        if (response.ok) {
-            const expenses = await response.json();
-            return expenses.filter(e => e.id && e.description);
+      const response = await fetch(
+        `${supabaseConfig.url}/rest/v1/expenses?order=created_at.asc`,
+        {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${supabaseConfig.key}`,
+            'apikey': supabaseConfig.key,
+            'Content-Type': 'application/json'
+          }
         }
+      );
+
+      if (response.ok) {
+        const expenses = await response.json();
+        return expenses.filter(e => e.id && e.description);
+      }
     } catch (e) {
-        console.error('Erro ao carregar da nuvem:', e);
+      console.error('Erro ao carregar da nuvem:', e);
     }
     return null;
-}
+  }
 
-async function loadAndMergeFromSupabase() {
+  async function loadAndMergeFromSupabase() {
     const cloudExpenses = await loadFromSupabase();
 
     if (!cloudExpenses || cloudExpenses.length === 0) {
-        return;
+      return;
     }
 
     const cloudMap = new Map();
     cloudExpenses.forEach(e => {
-        if (e.id) {
-            let rawCents = e.valuecents ?? e.valueCents ?? e.amountcents ?? e.amountCents;
-            if (rawCents === null || rawCents === undefined) {
-                const realVal = e.valor ?? e.value ?? e.installmentvalue ?? e.installmentValue;
-                if (realVal !== null && realVal !== undefined) {
-                    rawCents = Math.round(Number(realVal) * 100);
-                }
-            }
-
-            cloudMap.set(e.id, {
-                id: e.id,
-                date: e.date || e.createdat || '',
-                description: e.description || e.descricao || '',
-                valueCents: parseInt(rawCents || 0, 10),
-                installments: parseInt(e.installments || 1, 10),
-                createdAt: e.createdat || e.createdAt || new Date().toISOString(),
-                cartao: e.cartao || 'cartao_santander',
-                dataVencimento: e.datavencimento || e.dataVencimento || e.date || ''
-            });
-        }
+      if (e.id) {
+        cloudMap.set(e.id, {
+          id: e.id,
+          date: e.date || e.data || '',
+          description: e.description || '',
+          valueCents: parseInt(e.valuecents || e.valueCents || 0),
+          installments: parseInt(e.installments || 1),
+          createdAt: e.createdat || e.createdAt || new Date().toISOString(),
+          cartao: e.cartao || 'cartao_santander',
+          dataVencimento: e.datavencimento || e.dataVencimento || e.date || ''
+        });
+      }
     });
 
     const merged = [];
     const seenIds = new Set();
 
     cloudMap.forEach((cloudExp, id) => {
-        merged.push(cloudExp);
-        seenIds.add(id);
+      merged.push(cloudExp);
+      seenIds.add(id);
     });
 
-    if (typeof state !== 'undefined' && Array.isArray(state.expenses)) {
-        state.expenses.forEach(localExp => {
-            if (localExp.id && !seenIds.has(localExp.id)) {
-                merged.push(localExp);
-            }
-        });
-        state.expenses = merged;
-    }
+    state.expenses.forEach(localExp => {
+      if (localExp.id && !seenIds.has(localExp.id)) {
+        merged.push(localExp);
+      }
+    });
 
+    state.expenses = merged;
     saveToStorage();
-    if (typeof renderAll === 'function') renderAll();
-    if (typeof renderSummary === 'function') renderSummary();
-}
-async function loadInitialDataFromSupabase() {
+    renderAll();
+  }
+
+  async function loadInitialDataFromSupabase() {
     if (!supabaseConfig.enabled || !supabaseConfig.url || !supabaseConfig.key) {
-        return false;
+      return false;
     }
 
     try {
-        const cloudExpenses = await loadFromSupabase();
+      const cloudExpenses = await loadFromSupabase();
 
-        if (!cloudExpenses || cloudExpenses.length === 0) {
-            return false;
-        }
-
-        const normalized = cloudExpenses.map(e => {
-            let rawCents = e.valuecents ?? e.valueCents ?? e.amountcents ?? e.amountCents;
-            if (rawCents === null || rawCents === undefined) {
-                const realVal = e.valor ?? e.value ?? e.installmentvalue ?? e.installmentValue;
-                if (realVal !== null && realVal !== undefined) {
-                    rawCents = Math.round(Number(realVal) * 100);
-                }
-            }
-
-            return {
-                id: e.id,
-                date: e.date || e.createdat || '',
-                description: e.description || e.descricao || '',
-                valueCents: parseInt(rawCents || 0, 10),
-                installments: parseInt(e.installments || 1, 10),
-                createdAt: e.createdat || e.createdAt || new Date().toISOString(),
-                cartao: e.cartao || 'cartao_santander',
-                dataVencimento: e.datavencimento || e.dataVencimento || e.date || ''
-            };
-        });
-
-        if (typeof state !== 'undefined') {
-            state.expenses = normalized;
-        }
-
-        saveToStorage();
-        if (typeof renderSummary === 'function') renderSummary();
-        if (typeof renderAll === 'function') renderAll();
-
-return true;
-    } catch (err) {
-        console.error('[SYNC] Erro ao carregar dados iniciais:', err);
+      if (!cloudExpenses || cloudExpenses.length === 0) {
         return false;
-    }
-}
+      }
 
-let syncPollTimer = null;
-function startSyncPolling() {
+      state.expenses = cloudExpenses.map(e => ({
+        id: e.id,
+        date: e.date || e.data || '',
+        description: e.description || '',
+        valueCents: parseInt(e.valuecents || e.valueCents || 0),
+        installments: parseInt(e.installments || 1),
+        createdAt: e.createdat || e.createdAt || new Date().toISOString(),
+        cartao: e.cartao || 'cartao_santander',
+        dataVencimento: e.datavencimento || e.dataVencimento || e.date || ''
+      }));
+
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  let syncPollTimer = null;
+  function startSyncPolling() {
     if (!supabaseConfig.enabled) return;
 
     syncPollTimer = setInterval(async () => {
@@ -2701,12 +2616,12 @@ const openModal = (modalID) => {
     // Unifica a verificação para cobrir todos os IDs possíveis do modal do Santander e Demais Cartões
     if (modalId === 'modalCartaoDetalhes' || modalId === 'modalCartaoSantander' || modalId === 'modalDemaisCartoes') {
         const isSantander = modalId === 'modalCartaoSantander' || modalId === 'modalCartaoDetalhes';
-        const list = isSantander 
+        const list = isSantander
             ? monthOccurrencesSantander().sort((a, b) => (b.purchaseDate || '').localeCompare(a.purchaseDate || ''))
             : monthOccurrences().filter(occ => occ.cartao && occ.cartao !== 'cartao_santander' && occ.cartao !== 'contas_fixas').sort((a, b) => (b.purchaseDate || '').localeCompare(a.purchaseDate || ''));
 
         const container = document.getElementById('cartaoDetalhesContainer') || modal.querySelector('.modal-body') || modal.querySelector('.container');
-        
+
         if (container) {
             if (list.length === 0) {
                 container.innerHTML = '<p style="text-align: center; color: var(--ink-soft); padding: 20px;">Nenhum gasto neste mês</p>';
@@ -2724,7 +2639,7 @@ const openModal = (modalID) => {
                 Object.keys(despesasPorData).sort((a, b) => b.localeCompare(a)).forEach(data => {
                     const dateParts = data.split('-');
                     const dateDisplay = dateParts.length === 3 ? dateParts[2] + '/' + dateParts[1] + '/' + dateParts[0] : data;
-                    
+
                     html += '<div style="margin-bottom: 16px;">';
                     html += '  <div style="font-weight: 600; color: var(--ink); margin-bottom: 8px; font-size: 13px; padding: 8px 0; border-bottom: 2px solid var(--line);">📅 ' + dateDisplay + '</div>';
 
@@ -2746,7 +2661,7 @@ const openModal = (modalID) => {
 
                         if (rawCents !== null && rawCents !== undefined && Number(rawCents) > 0) {
                             valInReais = Number(rawCents) / 100;
-                            
+
                             // Se os centavos vieram do pai (expense) e for parcelado, divide pelo total de parcelas
                             const installments = o.installments || expense.installments || 1;
                             if ((o.valueCents === null || o.valueCents === undefined) && installments > 1) {
@@ -2754,7 +2669,7 @@ const openModal = (modalID) => {
                             }
                         } else {
                             // 3. Caso não haja centavos em lugar nenhum, usa valores em reais
-                            const directVal = o.installmentValue || o.valor || o.value || 
+                            const directVal = o.installmentValue || o.valor || o.value ||
                                                expense.installmentValue || expense.valor || expense.value || expense.totalValue;
                             if (directVal !== undefined && directVal !== null) {
                                 valInReais = Number(directVal);
@@ -3135,17 +3050,17 @@ const openModal = (modalID) => {
     let total = 0;
 
     list.forEach(o => {
-        const cents = o.valueCents || o.valuecents || o.amountCents || o.rawCents || 
+        const cents = o.valueCents || o.valuecents || o.amountCents || o.rawCents ||
                       (o.installmentValue ? Math.round(Number(o.installmentValue) * 100) : 0) ||
                       (o.valor ? Math.round(Number(o.valor) * 100) : 0) ||
                       (o.value ? Math.round(Number(o.value) * 100) : 0);
-        
+
         total += Number(cents) || 0;
     });
 
     if (typeof summaryTotal !== 'undefined' && summaryTotal) summaryTotal.textContent = formatCentsBRL(total);
     if (typeof summaryCount !== 'undefined' && summaryCount) {
-        summaryCount.textContent = list.length === 0 ? 'Nenhuma compra lançada' : 
+        summaryCount.textContent = list.length === 0 ? 'Nenhuma compra lançada' :
             (list.length === 1 ? '1 compra lançada' : list.length + ' compras lançadas');
     }
 
@@ -3159,8 +3074,8 @@ const openModal = (modalID) => {
     occurrencesThisMonth.forEach(occ => {
         const cartao = occ.cartao || 'cartao_santander';
         if (cartao !== 'cartao_santander' && cartao !== 'contas_fixas') {
-            const valorCents = occ.valueCents || occ.valuecents || 
-                               (occ.valor ? Math.round(Number(occ.valor) * 100) : 0) || 
+            const valorCents = occ.valueCents || occ.valuecents ||
+                               (occ.valor ? Math.round(Number(occ.valor) * 100) : 0) ||
                                (occ.installmentValue ? Math.round(Number(occ.installmentValue) * 100) : 0);
             totalDemaisCartoes += Number(valorCents) || 0;
         }
@@ -3560,7 +3475,7 @@ const deleteExpense = async id => {
                 console.error('[SYNC] Erro ao apagar no Supabase:', response.statusText);
             }
         }
-        
+
         showToast('🗑️ Despesa deletada com sucesso', 'success');
     } catch (err) {
         console.error('[SYNC] Erro na comunicação com o Supabase ao deletar:', err);
@@ -4374,7 +4289,7 @@ window.adicionarBonus = async () => {
     const lista = document.getElementById('bonusLista');
     const items = lista.querySelectorAll('.bonus-item');
     if (items.length === 1 && items[0].textContent.includes('Nenhum')) {
-        
+
     lista.innerHTML = '';
     }
 
@@ -4792,7 +4707,7 @@ const deleteReembolso = async (id) => {
     }
 };
 
-window.saveRendaConfig = saveRendaConfig; 
+window.saveRendaConfig = saveRendaConfig;
 
 document.getElementById('formEditarRenda')?.addEventListener('submit', async (ev) => {
     ev.preventDefault();
@@ -5034,7 +4949,7 @@ window.importData = function(event) {
             if (data.expenses) {
                 // Save complete list to localStorage
                 localStorage.setItem('expenses', JSON.stringify(data.expenses));
-                
+
                 // Update active state in memory
                 if (typeof state !== 'undefined') {
                     state.expenses = data.expenses;
@@ -5101,20 +5016,27 @@ verificarVencimentosProximos();
   window.saveSupabaseConfigViaModal = saveSupabaseConfigViaModal;
   window.manualSyncSupabase = manualSyncSupabase;
   window.updateSyncStatus = updateSyncStatus;
+
   // ==========================================
-// CARREGAMENTO CENTRALIZADO DO SUPABASE
-// Função normalizadora para garantir propriedades em camelCase
-const normalizeExpense = e => ({
+  // NORMALIZAÇÃO DE DESPESAS VINDAS DO SUPABASE
+  // As colunas do Postgres são minúsculas (valuecents, datavencimento...)
+  // e o app usa camelCase (valueCents, dataVencimento). Sem converter,
+  // valueCents fica undefined e os totais zeram.
+  // ==========================================
+  const normalizeExpense = e => ({
     id: e.id,
     date: e.date || '',
     description: e.description || '',
-    valueCents: parseInt(e.valuecents ?? e.valueCents ?? 0, 10),
-    installments: parseInt(e.installments ?? 1, 10),
+    valueCents: parseInt(e.valuecents ?? e.valueCents ?? 0, 10) || 0,
+    installments: parseInt(e.installments ?? 1, 10) || 1,
     createdAt: e.createdat || e.createdAt || new Date().toISOString(),
     cartao: e.cartao || 'cartao_santander',
     dataVencimento: e.datavencimento || e.dataVencimento || e.date || ''
-});
+  });
 
+// ==========================================
+// CARREGAMENTO CENTRALIZADO DO SUPABASE
+// ==========================================
 async function loadAllFromSupabase() {
     const config = JSON.parse(localStorage.getItem('supabase_config') || '{}');
     const url = config.url || (typeof supabaseConfig !== 'undefined' ? supabaseConfig.url : null);
@@ -5132,23 +5054,13 @@ async function loadAllFromSupabase() {
         const resExp = await fetch(`${url}/rest/v1/expenses?select=*`, {
             headers: { 'apikey': key, 'Authorization': `Bearer ${key}` }
         });
-
         if (resExp.ok) {
             const expensesData = await resExp.json();
             if (expensesData && Array.isArray(expensesData)) {
-                const normalized = expensesData.map(normalizeExpense);
-                
-                // Grava no localStorage com as duas chaves para manter retrocompatibilidade
-                localStorage.setItem('expenses', JSON.stringify(normalized));
-                if (typeof STORAGE_KEY !== 'undefined') {
-                    localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized));
-                } else {
-                    localStorage.setItem('passou_anotou_expenses', JSON.stringify(normalized));
-                }
-
-                if (typeof state !== 'undefined') {
-                    state.expenses = normalized;
-                }
+                // Normaliza os campos do Supabase antes de usar no state
+                state.expenses = expensesData.map(normalizeExpense);
+                // Persiste na chave que o app realmente lê
+                saveToStorage();
             }
         }
 
@@ -5156,7 +5068,6 @@ async function loadAllFromSupabase() {
         const resCfg = await fetch(`${url}/rest/v1/app_config?select=*`, {
             headers: { 'apikey': key, 'Authorization': `Bearer ${key}` }
         });
-
         if (resCfg.ok) {
             const configs = await resCfg.json();
             configs.forEach(item => {
@@ -5166,11 +5077,6 @@ async function loadAllFromSupabase() {
                 }
             });
         }
-
-        // Atualiza a interface assim que o download terminar
-        if (typeof renderSummary === 'function') renderSummary();
-        if (typeof renderAll === 'function') renderAll();
-
         console.log('[SYNC] Sincronização de inicialização concluída com sucesso!');
     } catch (err) {
         console.error('[SYNC] Erro ao carregar dados do Supabase na inicialização:', err);
