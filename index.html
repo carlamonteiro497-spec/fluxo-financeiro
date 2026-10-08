@@ -1793,94 +1793,116 @@ footer.hint {
 
   async function syncToSupabase() {
     if (!supabaseConfig.enabled || !supabaseConfig.url || !supabaseConfig.key) {
-      return false;
+        return false;
     }
 
     try {
-      const deviceId = localStorage.getItem('device_id') || 'device_' + Math.random().toString(36).substr(2, 9);
-      localStorage.setItem('device_id', deviceId);
-      const now = new Date().toISOString();
+        const deviceId = localStorage.getItem('device_id') || 'device_' + Math.random().toString(36).substr(2, 9);
+        localStorage.setItem('device_id', deviceId);
+        const now = new Date().toISOString();
 
-      const expensesSource = JSON.parse(localStorage.getItem('expenses')) || state.expenses || [];
-const dataToSync = expensesSource.map(e => {
-        if (!e.id) {
-          e.id = generateUUID();
+        // 1. Tenta obter do estado global normalizado primeiro, fallback para localStorage
+        let expensesSource = [];
+        if (typeof state !== 'undefined' && Array.isArray(state.expenses) && state.expenses.length > 0) {
+            expensesSource = state.expenses;
+        } else {
+            expensesSource = JSON.parse(localStorage.getItem('passou_anotou_expenses') || localStorage.getItem('expenses') || '[]');
         }
-        return {
-          id: e.id,
-          date: e.date || new Date().toISOString().split('T')[0],
-          description: e.description || 'Sem descrição',
-          valuecents: parseInt(e.valueCents || 0),
-          installments: parseInt(e.installments || 1),
-          createdat: e.createdAt || now,
-          datavencimento: e.dataVencimento || e.date || new Date().toISOString().split('T')[0],
-          cartao: e.cartao || 'cartao_santander'
-        };
-      });
 
-      if (dataToSync.length === 0) {
-        console.log('[SYNC] Nenhum dado para sincronizar');
-        return true;
-      }
+        const dataToSync = expensesSource.map(e => {
+            if (!e.id) {
+                e.id = generateUUID();
+            }
 
-      console.log('[SYNC] Preparando envio de', dataToSync.length, 'registros');
+            // Garante que captura o valor numérico em centavos sob qualquer variação de nome
+            let rawCents = e.valueCents ?? e.valuecents ?? e.amountCents ?? e.amountcents;
+            if (rawCents === null || rawCents === undefined || isNaN(rawCents)) {
+                const directVal = e.valor ?? e.value ?? e.installmentValue ?? e.installmentvalue;
+                if (directVal !== undefined && directVal !== null) {
+                    rawCents = Math.round(Number(directVal) * 100);
+                }
+            }
 
-      const response = await fetch(
-        `${supabaseConfig.url}/rest/v1/expenses`,
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${supabaseConfig.key}`,
-            'apikey': supabaseConfig.key,
-            'Content-Type': 'application/json',
-            'Prefer': 'resolution=merge-duplicates,return=minimal'
-          },
-          body: JSON.stringify(dataToSync)
+            return {
+                id: e.id,
+                date: e.date || new Date().toISOString().split('T')[0],
+                description: e.description || e.descricao || 'Sem descrição',
+                valuecents: parseInt(rawCents || 0, 10), // Envia a chave em minúsculas exigida pelo Postgres
+                installments: parseInt(e.installments || 1, 10),
+                createdat: e.createdAt || e.createdat || now,
+                datavencimento: e.dataVencimento || e.datavencimento || e.date || new Date().toISOString().split('T')[0],
+                cartao: e.cartao || 'cartao_santander'
+            };
+        });
+
+        if (dataToSync.length === 0) {
+            console.log('[SYNC] Nenhum dado para sincronizar');
+            return true;
         }
-      );
 
-      if (response.ok) {
-        console.log('[SYNC] ✓ Dados sincronizados com sucesso');
-        updateSyncStatus('success');
-        await loadAndMergeFromSupabase();
-        return true;
-      } else {
-        console.error('[SYNC] ❌ Erro ao sincronizar - Status:', response.status);
-        let successCount = 0;
+        console.log('[SYNC] Preparando envio de', dataToSync.length, 'registros');
 
-        for (let i = 0; i < dataToSync.length; i++) {
-          try {
-            const record = dataToSync[i];
-            const indvResponse = await fetch(
-              `${supabaseConfig.url}/rest/v1/expenses`,
-              {
+        const response = await fetch(
+            `${supabaseConfig.url}/rest/v1/expenses`,
+            {
                 method: 'POST',
                 headers: {
-                  'Authorization': `Bearer ${supabaseConfig.key}`,
-                  'apikey': supabaseConfig.key,
-                  'Content-Type': 'application/json',
-                  'Prefer': 'return=minimal'
+                    'Authorization': `Bearer ${supabaseConfig.key}`,
+                    'apikey': supabaseConfig.key,
+                    'Content-Type': 'application/json',
+                    'Prefer': 'resolution=merge-duplicates,return=minimal'
                 },
-                body: JSON.stringify(record)
-              }
-            );
-
-            if (indvResponse.ok) {
-              successCount++;
+                body: JSON.stringify(dataToSync)
             }
-          } catch (e) {
-            console.error('[SYNC] Erro ao inserir registro:', e);
-          }
-        }
+        );
 
-        if (successCount > 0) {
-          updateSyncStatus('success');
-          await loadAndMergeFromSupabase();
-          return true;
+        if (response.ok) {
+            console.log('[SYNC] ✔ Dados sincronizados com sucesso');
+            updateSyncStatus('success');
+            return true;
         } else {
-          updateSyncStatus('error');
-          return false;
+            console.error('[SYNC] ❌ Erro ao sincronizar - Status:', response.status);
+            let successCount = 0;
+
+            for (let i = 0; i < dataToSync.length; i++) {
+                try {
+                    const record = dataToSync[i];
+                    const indvResponse = await fetch(
+                        `${supabaseConfig.url}/rest/v1/expenses`,
+                        {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': `Bearer ${supabaseConfig.key}`,
+                                'apikey': supabaseConfig.key,
+                                'Content-Type': 'application/json',
+                                'Prefer': 'resolution=merge-duplicates,return=minimal'
+                            },
+                            body: JSON.stringify(record)
+                        }
+                    );
+
+                    if (indvResponse.ok) {
+                        successCount++;
+                    }
+                } catch (e) {
+                    console.error('[SYNC] Erro ao inserir registro:', e);
+                }
+            }
+
+            if (successCount > 0) {
+                updateSyncStatus('success');
+                return true;
+            } else {
+                updateSyncStatus('error');
+                return false;
+            }
         }
+    } catch (err) {
+        console.error('[SYNC] Erro grave ao sincronizar:', err);
+        updateSyncStatus('error');
+        return false;
+    }
+}
       }
     } catch (e) {
       console.error('[SYNC] Erro ao sincronizar:', e);
@@ -1917,70 +1939,107 @@ const dataToSync = expensesSource.map(e => {
     return null;
   }
 
-  async function loadAndMergeFromSupabase() {
+async function loadAndMergeFromSupabase() {
     const cloudExpenses = await loadFromSupabase();
 
     if (!cloudExpenses || cloudExpenses.length === 0) {
-      return;
+        return;
     }
 
     const cloudMap = new Map();
     cloudExpenses.forEach(e => {
-      if (e.id) {
-        cloudMap.set(e.id, {
-          id: e.id,
-          date: e.date || e.data || '',
-          description: e.description || '',
-          valueCents: parseInt(e.valuecents || e.valueCents || 0),
-          installments: parseInt(e.installments || 1),
-          createdAt: e.createdat || e.createdAt || new Date().toISOString(),
-          cartao: e.cartao || 'cartao_santander',
-          dataVencimento: e.datavencimento || e.dataVencimento || e.date || ''
-        });
-      }
+        if (e.id) {
+            // Normaliza para camelCase antes de mapear
+            let rawCents = e.valuecents ?? e.valueCents ?? e.amountcents ?? e.amountCents;
+            if (rawCents === null || rawCents === undefined) {
+                const realVal = e.valor ?? e.value ?? e.installmentvalue ?? e.installmentValue;
+                if (realVal !== null && realVal !== undefined) {
+                    rawCents = Math.round(Number(realVal) * 100);
+                }
+            }
+
+            cloudMap.set(e.id, {
+                id: e.id,
+                date: e.date || e.createdat || '',
+                description: e.description || e.descricao || '',
+                valueCents: parseInt(rawCents || 0, 10),
+                installments: parseInt(e.installments || 1, 10),
+                createdAt: e.createdat || e.createdAt || new Date().toISOString(),
+                cartao: e.cartao || 'cartao_santander',
+                dataVencimento: e.datavencimento || e.dataVencimento || e.date || ''
+            });
+        }
     });
 
     const merged = [];
     const seenIds = new Set();
 
     cloudMap.forEach((cloudExp, id) => {
-      merged.push(cloudExp);
-      seenIds.add(id);
+        merged.push(cloudExp);
+        seenIds.add(id);
     });
 
-    state.expenses.forEach(localExp => {
-      if (localExp.id && !seenIds.has(localExp.id)) {
-        merged.push(localExp);
-      }
-    });
+    if (typeof state !== 'undefined' && Array.isArray(state.expenses)) {
+        state.expenses.forEach(localExp => {
+            if (localExp.id && !seenIds.has(localExp.id)) {
+                merged.push(localExp);
+            }
+        });
+        state.expenses = merged;
+    }
 
-    state.expenses = merged;
     saveToStorage();
-    renderAll();
-  }
+    if (typeof renderAll === 'function') renderAll();
+    if (typeof renderSummary === 'function') renderSummary();
+}
 
-  async function loadInitialDataFromSupabase() {
+async function loadInitialDataFromSupabase() {
     if (!supabaseConfig.enabled || !supabaseConfig.url || !supabaseConfig.key) {
-      return false;
+        return false;
     }
 
     try {
-      const cloudExpenses = await loadFromSupabase();
+        const cloudExpenses = await loadFromSupabase();
 
-      if (!cloudExpenses || cloudExpenses.length === 0) {
+        if (!cloudExpenses || cloudExpenses.length === 0) {
+            return false;
+        }
+
+        const normalized = cloudExpenses.map(e => {
+            let rawCents = e.valuecents ?? e.valueCents ?? e.amountcents ?? e.amountCents;
+            if (rawCents === null || rawCents === undefined) {
+                const realVal = e.valor ?? e.value ?? e.installmentvalue ?? e.installmentValue;
+                if (realVal !== null && realVal !== undefined) {
+                    rawCents = Math.round(Number(realVal) * 100);
+                }
+            }
+
+            return {
+                id: e.id,
+                date: e.date || e.createdat || '',
+                description: e.description || e.descricao || '',
+                valueCents: parseInt(rawCents || 0, 10),
+                installments: parseInt(e.installments || 1, 10),
+                createdAt: e.createdat || e.createdAt || new Date().toISOString(),
+                cartao: e.cartao || 'cartao_santander',
+                dataVencimento: e.datavencimento || e.dataVencimento || e.date || ''
+            };
+        });
+
+        if (typeof state !== 'undefined') {
+            state.expenses = normalized;
+        }
+
+        saveToStorage();
+        if (typeof renderSummary === 'function') renderSummary();
+        if (typeof renderAll === 'function') renderAll();
+
+        return true;
+    } catch (err) {
+        console.error('[SYNC] Erro ao carregar dados iniciais:', err);
         return false;
-      }
-
-      state.expenses = cloudExpenses.map(e => ({
-        id: e.id,
-        date: e.date || e.data || '',
-        description: e.description || '',
-        valueCents: parseInt(e.valuecents || e.valueCents || 0),
-        installments: parseInt(e.installments || 1),
-        createdAt: e.createdat || e.createdAt || new Date().toISOString(),
-        cartao: e.cartao || 'cartao_santander',
-        dataVencimento: e.datavencimento || e.dataVencimento || e.date || ''
-      }));
+    }
+}
 
       return true;
     } catch (e) {
