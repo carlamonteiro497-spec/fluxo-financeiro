@@ -1208,15 +1208,58 @@ footer.hint {
 
 /* TOOLS GRID RESPONSIVO */
 .tools-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
 }
 
-@media (min-width: 768px) {
-  .tools-grid {
-    grid-template-columns: 1fr 1fr 1fr;
-  }
+@media (max-width: 768px) {
+    /* 1. Ajuste dos 3 Botões de Ferramentas para Celular */
+    .tools-grid {
+        grid-template-columns: repeat(3, 1fr) !important; /* Mantém os 3 lado a lado sem quebrar */
+        gap: 6px !important;
+        width: 100% !important;
+        justify-content: center !important;
+    }
+
+    .tools-grid button,
+    .tools-grid .btn,
+    .tools-grid a {
+        font-size: 0.75rem !important; /* Diminui o texto para caber perfeitamente */
+        padding: 6px 4px !important;    /* Reduz o espaçamento interno */
+        text-align: center !important;
+        white-space: nowrap !important; /* Impede o texto de quebrar linha desajeitadamente */
+    }
+
+    /* 2. Reduz o tamanho do Calendário para não cortar nas laterais */
+    #calendar, .fc {
+        max-width: 100% !important;
+        overflow-x: auto !important;
+    }
+
+    .fc-toolbar {
+        flex-direction: column !important;
+        gap: 6px !important;
+    }
+
+    .fc-toolbar-title {
+        font-size: 0.9rem !important; /* Título do mês menor */
+    }
+
+    .fc-col-header-cell-cushion, 
+    .fc-daygrid-day-number {
+        font-size: 0.7rem !important; /* Dias da semana e números menores */
+        padding: 1px !important;
+    }
+
+    .fc-daygrid-day-frame {
+        min-height: 32px !important; /* Altura reduzida dos quadros do calendário */
+    }
+
+    .fc-button {
+        padding: 3px 6px !important;
+        font-size: 0.7rem !important;
+    }
 }
 </style>
 </head>
