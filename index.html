@@ -1801,7 +1801,6 @@ footer.hint {
         localStorage.setItem('device_id', deviceId);
         const now = new Date().toISOString();
 
-        // 1. Tenta obter do estado global normalizado primeiro, fallback para localStorage
         let expensesSource = [];
         if (typeof state !== 'undefined' && Array.isArray(state.expenses) && state.expenses.length > 0) {
             expensesSource = state.expenses;
@@ -1814,7 +1813,6 @@ footer.hint {
                 e.id = generateUUID();
             }
 
-            // Garante que captura o valor numérico em centavos sob qualquer variação de nome
             let rawCents = e.valueCents ?? e.valuecents ?? e.amountCents ?? e.amountcents;
             if (rawCents === null || rawCents === undefined || isNaN(rawCents)) {
                 const directVal = e.valor ?? e.value ?? e.installmentValue ?? e.installmentvalue;
@@ -1827,7 +1825,7 @@ footer.hint {
                 id: e.id,
                 date: e.date || new Date().toISOString().split('T')[0],
                 description: e.description || e.descricao || 'Sem descrição',
-                valuecents: parseInt(rawCents || 0, 10), // Envia a chave em minúsculas exigida pelo Postgres
+                valuecents: parseInt(rawCents || 0, 10),
                 installments: parseInt(e.installments || 1, 10),
                 createdat: e.createdAt || e.createdat || now,
                 datavencimento: e.dataVencimento || e.datavencimento || e.date || new Date().toISOString().split('T')[0],
@@ -1903,41 +1901,34 @@ footer.hint {
         return false;
     }
 }
-      }
-    } catch (e) {
-      console.error('[SYNC] Erro ao sincronizar:', e);
-      updateSyncStatus('error');
-      return false;
-    }
-  }
 
-  async function loadFromSupabase() {
+async function loadFromSupabase() {
     if (!supabaseConfig.enabled || !supabaseConfig.url || !supabaseConfig.key) {
-      return null;
+        return null;
     }
 
     try {
-      const response = await fetch(
-        `${supabaseConfig.url}/rest/v1/expenses?order=created_at.asc`,
-        {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${supabaseConfig.key}`,
-            'apikey': supabaseConfig.key,
-            'Content-Type': 'application/json'
-          }
-        }
-      );
+        const response = await fetch(
+            `${supabaseConfig.url}/rest/v1/expenses?order=createdat.asc`,
+            {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${supabaseConfig.key}`,
+                    'apikey': supabaseConfig.key,
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
 
-      if (response.ok) {
-        const expenses = await response.json();
-        return expenses.filter(e => e.id && e.description);
-      }
+        if (response.ok) {
+            const expenses = await response.json();
+            return expenses.filter(e => e.id && e.description);
+        }
     } catch (e) {
-      console.error('Erro ao carregar da nuvem:', e);
+        console.error('Erro ao carregar da nuvem:', e);
     }
     return null;
-  }
+}
 
 async function loadAndMergeFromSupabase() {
     const cloudExpenses = await loadFromSupabase();
@@ -1949,7 +1940,6 @@ async function loadAndMergeFromSupabase() {
     const cloudMap = new Map();
     cloudExpenses.forEach(e => {
         if (e.id) {
-            // Normaliza para camelCase antes de mapear
             let rawCents = e.valuecents ?? e.valueCents ?? e.amountcents ?? e.amountCents;
             if (rawCents === null || rawCents === undefined) {
                 const realVal = e.valor ?? e.value ?? e.installmentvalue ?? e.installmentValue;
@@ -2005,6 +1995,41 @@ async function loadInitialDataFromSupabase() {
             return false;
         }
 
+        const normalized = cloudExpenses.map(e => {
+            let rawCents = e.valuecents ?? e.valueCents ?? e.amountcents ?? e.amountCents;
+            if (rawCents === null || rawCents === undefined) {
+                const realVal = e.valor ?? e.value ?? e.installmentvalue ?? e.installmentValue;
+                if (realVal !== null && realVal !== undefined) {
+                    rawCents = Math.round(Number(realVal) * 100);
+                }
+            }
+
+            return {
+                id: e.id,
+                date: e.date || e.createdat || '',
+                description: e.description || e.descricao || '',
+                valueCents: parseInt(rawCents || 0, 10),
+                installments: parseInt(e.installments || 1, 10),
+                createdAt: e.createdat || e.createdAt || new Date().toISOString(),
+                cartao: e.cartao || 'cartao_santander',
+                dataVencimento: e.datavencimento || e.dataVencimento || e.date || ''
+            };
+        });
+
+        if (typeof state !== 'undefined') {
+            state.expenses = normalized;
+        }
+
+        saveToStorage();
+        if (typeof renderSummary === 'function') renderSummary();
+        if (typeof renderAll === 'function') renderAll();
+
+        return true;
+    } catch (err) {
+        console.error('[SYNC] Erro ao carregar dados iniciais:', err);
+        return false;
+    }
+}
         const normalized = cloudExpenses.map(e => {
             let rawCents = e.valuecents ?? e.valueCents ?? e.amountcents ?? e.amountCents;
             if (rawCents === null || rawCents === undefined) {
