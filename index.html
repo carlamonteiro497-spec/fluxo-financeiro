@@ -4224,42 +4224,7 @@ window.deletarContaFixa = deletarContaFixa;
     };
   };
 
-const saveRendaConfig = async (configData) => {
-    const renda = configData || (typeof loadRendaConfig === 'function' ? loadRendaConfig() : {});
 
-    localStorage.setItem('rendaConfig', JSON.stringify(renda));
-    if (typeof state !== 'undefined') {
-        state.rendaConfig = renda;
-    }
-
-    try {
-        const config = JSON.parse(localStorage.getItem('supabase_config') || '{}');
-        const url = config.url || (typeof supabaseConfig !== 'undefined' ? supabaseConfig.url : null);
-        const key = config.key || (typeof supabaseConfig !== 'undefined' ? supabaseConfig.key : null);
-
-        if (url && key) {
-            await fetch(`${url}/rest/v1/app_config`, {
-                method: 'POST',
-                headers: {
-                    'apikey': key,
-                    'Authorization': `Bearer ${key}`,
-                    'Content-Type': 'application/json',
-                    'Prefer': 'resolution=merge-duplicates'
-                },
-                body: JSON.stringify({
-                    id: 'rendaConfig',
-                    data: renda,
-                    updated_at: new Date().toISOString()
-                })
-            });
-            console.log('[SYNC] Renda/Salário atualizado no Supabase!');
-        }
-    } catch (err) {
-        console.error('[SYNC] Erro ao sincronizar renda no Supabase:', err);
-    }
-};
-
-window.saveRendaConfig = saveRendaConfig;
 
   window.resetDatabase = () => {
     localStorage.removeItem('passou_anotou_loaded_defaults');
@@ -4670,30 +4635,59 @@ const deleteReembolso = async (id) => {
     totalElement.textContent = 'R$ ' + totalGeral.toFixed(2).replace('.', ',');
   };
 
-  const saveRendaConfig = () => {
-    const config = {
-      salarioCarla: parseFloat(document.getElementById('salarioCarla').value.replace(',', '.')) || 1961.79,
-      salarioIasmim: parseFloat(document.getElementById('salarioIasmim').value.replace(',', '.')) || 5213.57,
-      emprestimoPersonal: parseFloat(document.getElementById('emprestimoPersonal').value.replace(',', '.')) || 597.23,
-      abono: parseFloat(document.getElementById('novoValor').value.replace(',', '.')) || 0,
-      meritocracia: parseFloat(document.getElementById('novoValor').value.replace(',', '.')) || 0
-    };
-    try {
-      localStorage.setItem(RENDA_KEY, JSON.stringify(config));
-      if (supabaseConfig.enabled) scheduleAutoSync();
-    } catch(e) {}
-    return config;
-  };
+ const saveRendaConfig = async (configData) => {
+    const renda = configData || (typeof loadRendaConfig === 'function' ? loadRendaConfig() : {});
 
-  document.getElementById('formEditarRenda')?.addEventListener('submit', (ev) => {
+    localStorage.setItem('rendaConfig', JSON.stringify(renda));
+    if (typeof state !== 'undefined') {
+        state.rendaConfig = renda;
+    }
+
+    try {
+        const config = JSON.parse(localStorage.getItem('supabase_config') || '{}');
+        const url = config.url || (typeof supabaseConfig !== 'undefined' ? supabaseConfig.url : null);
+        const key = config.key || (typeof supabaseConfig !== 'undefined' ? supabaseConfig.key : null);
+
+        if (url && key) {
+            await fetch(`${url}/rest/v1/app_config`, {
+                method: 'POST',
+                headers: {
+                    'apikey': key,
+                    'Authorization': `Bearer ${key}`,
+                    'Content-Type': 'application/json',
+                    'Prefer': 'resolution=merge-duplicates'
+                },
+                body: JSON.stringify({
+                    id: 'rendaConfig',
+                    data: renda,
+                    updated_at: new Date().toISOString()
+                })
+            });
+            console.log('[SYNC] Renda/Salário atualizado no Supabase!');
+        }
+    } catch (err) {
+        console.error('[SYNC] Erro ao sincronizar renda no Supabase:', err);
+    }
+};
+
+window.saveRendaConfig = saveRendaConfig; 
+
+document.getElementById('formEditarRenda')?.addEventListener('submit', async (ev) => {
     ev.preventDefault();
-    saveRendaConfig();
-    saveSummaryConfig();
+    const config = {
+        salarioCarla: parseFloat(document.getElementById('salarioCarla')?.value.replace(',', '.')) || 1961.79,
+        salarioIasmim: parseFloat(document.getElementById('salarioIasmim')?.value.replace(',', '.')) || 5213.57,
+        emprestimoPersonal: parseFloat(document.getElementById('emprestimoPersonal')?.value.replace(',', '.')) || 597.23,
+        abono: parseFloat(document.getElementById('novoValor')?.value.replace(',', '.')) || 0,
+        meritocracia: parseFloat(document.getElementById('novoValor')?.value.replace(',', '.')) || 0
+    };
+    await saveRendaConfig(config);
+    if (typeof saveSummaryConfig === 'function') await saveSummaryConfig();
     alert('Renda atualizada com sucesso!');
     closeModal('modalEditarRenda');
     closeModal('modalRendaLiquida');
-    renderSummary();
-  });
+    if (typeof renderSummary === 'function') renderSummary();
+});
 
   let pollInterval = null;
   let isLoadingFromCloud = false;
