@@ -2636,6 +2636,11 @@ occurrencesThisMonth.forEach(occ => {
 
 despesasPorData[data].forEach(o => {
     const instText = o.installments > 1 ? ' (' + o.index + '/' + o.installments + ')' : '';
+    console.log('Ocorrência Santander:', o);
+    console.log('Despesa encontrada:', state.expenses.find(e => e.id === o.expenseId || e.id === o.id));
+
+    // Procura a despesa pai no estado para recuperar o valor original seguro
+    const expense = state.expenses.find(e => e.id === o.expenseId) || o.expense || {};
     
     // Procura a despesa pai no estado para recuperar o valor original seguro
 const expense = state.expenses.find(e => e.id === o.expenseId) || o.expense || {};
