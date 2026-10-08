@@ -2632,19 +2632,45 @@ const openModal = (modalID) => {
         const dataFormatada = data.split('-').reverse().join('/');
         html += `<div style="margin-top: 15px; font-weight: bold; font-size: 13px; color: var(--ink-soft);">🗓️ ${dataFormatada}</div><hr style="border: 0; border-top: 1px solid var(--line); margin: 6px 0 12px 0;">`;
         
-        despesasPorData[data].forEach(o => {
-            // Pega qualquer propriedade de valor existente no objeto ou converte para número com segurança
-            const val = Number(o.amount || o.valorParcela || o.valor_parcela || o.valor || o.preco || 0);
-            const valFormatado = val.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-            
-            html += `
-                <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px;">
-                    <span style="color: var(--ink-soft);">${o.description || o.descricao || o.nome || 'Gasto'}</span>
-                    <strong style="color: var(--text);">R$ ${valFormatado}</strong>
-                </div>
-            `;
-        });
-    });
+ despesasPorData[data].forEach(o => {
+                // Busca a despesa correspondente no estado global de forma segura
+                const expenseId = o.expenseId || o.expense_id || o.id;
+                const expense = (typeof state !== 'undefined' && Array.isArray(state.expenses)) 
+                    ? (state.expenses.find(e => e.id === expenseId) || o.expense || {}) 
+                    : (o.expense || {});
+
+                // 1. Tenta obter o valor em centavos (apenas se for maior que 0)
+                const cents = [
+                    o.valuecents, o.valueCents, o.amountCents, o.amount_cents, o.rawCents,
+                    expense.valuecents, expense.valueCents
+                ].find(v => v !== undefined && v !== null && Number(v) > 0);
+
+                let valInReais = 0;
+
+                if (cents !== undefined) {
+                    valInReais = Number(cents) / 100;
+                } else {
+                    // 2. Tenta obter o valor direto em reais (primeiro valor > 0 encontrado)
+                    const directValue = [
+                        o.installmentValue, o.installmentAmount, o.installment_value,
+                        o.valorParcela, o.valor_parcela, o.value, o.amount, o.valor,
+                        expense.installmentValue, expense.valorParcela, expense.amount, expense.valor
+                    ].find(v => v !== undefined && v !== null && Number(v) > 0);
+
+                    valInReais = directValue ? Number(directValue) : 0;
+                }
+
+                const valFormatado = valInReais.toFixed(2).replace('.', ',');
+                const descText = o.description || o.descricao || expense.description || o.nome || 'Gasto';
+                const instText = (o.installments && o.installments > 1) ? ' (' + (o.index || 1) + '/' + o.installments + ')' : '';
+
+                html += `
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px;">
+                        <span style="color: var(--ink-soft);">${descText}${instText}</span>
+                        <strong style="color: var(--text);">R$ ${valFormatado}</strong>
+                    </div>
+                `;
+            });
     container.innerHTML = html;
 }
             }
