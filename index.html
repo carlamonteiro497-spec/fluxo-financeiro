@@ -5028,25 +5028,11 @@ async function loadAllFromSupabase() {
 
 window.loadAllFromSupabase = loadAllFromSupabase;
 
-// ==========================================
-// ARRANQUE DA APLICAÇÃO (BOOT)
-// ==========================================
-async function boot() {
-    // 1. Busca os dados mais recentes do Supabase antes de renderizar
+// Inicia a aplicação baixando do Supabase e depois renderizando
+document.addEventListener('DOMContentLoaded', async () => {
     await loadAllFromSupabase();
-
-    // 2. Renderiza a interface do utilizador com os dados atualizados
-    if (typeof renderAll === 'function') {
-        renderAll();
-    }
-    if (typeof renderCalendar === 'function') {
-        renderCalendar();
-    }
-}
-
-// Inicia o sistema assim que a página é carregada
-document.addEventListener('DOMContentLoaded', () => {
-    boot();
+    if (typeof renderAll === 'function') renderAll();
+    if (typeof renderCalendar === 'function') renderCalendar();
 });
 })();
 </script>
