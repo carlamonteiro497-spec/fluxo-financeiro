@@ -3087,8 +3087,14 @@ const dataToSync = expensesSource.map(e => {
       totalEntradaEl.textContent = 'R$ ' + totalEntrada.toFixed(2).replace('.', ',');
     }
 
-    const disponivel = rendaLiquida - contas - totalEmReais - demaisCartoesEmReais + totalReembolsos;
-    const disponibilidadeText = 'R$ ' + disponivel.toFixed(2).replace('.', ',');
+   const vRenda = parseFloat(rendaLiquida) || 0;
+const vContas = parseFloat(contas) || 0;
+const vTotalEmReais = parseFloat(totalEmReais) || 0;
+const vDemaisCartoes = parseFloat(demaisCartoesEmReais) || 0;
+const vReembolsos = parseFloat(totalReembolsos) || 0;
+
+const disponivel = vRenda - vContas - vTotalEmReais - vDemaisCartoes + vReembolsos;
+const disponibilidadeText = 'R$ ' + disponivel.toFixed(2).replace('.', ',');
 
     const disponibilBox = document.getElementById('disponibilBox');
     if (disponivel < 0) {
