@@ -2609,21 +2609,26 @@ occurrencesThisMonth.forEach(occ => {
   };
 
 const openModal = (modalID) => {
-    // 1. Cria a variável modalId igual a modalID para compatibilidade total em todo o bloco
     const modalId = modalID;
     const modal = document.getElementById(modalID) || document.getElementById(modalId);
     if (!modal) return;
 
-    if (modalId === 'modalCartaoDetalhes') {
-        const list = monthOccurrencesSantander().sort((a, b) => b.purchaseDate.localeCompare(a.purchaseDate));
-        const container = document.getElementById('cartaoDetalhesContainer');
+    // Unifica a verificação para cobrir todos os IDs possíveis do modal do Santander e Demais Cartões
+    if (modalId === 'modalCartaoDetalhes' || modalId === 'modalCartaoSantander' || modalId === 'modalDemaisCartoes') {
+        const isSantander = modalId === 'modalCartaoSantander' || modalId === 'modalCartaoDetalhes';
+        const list = isSantander 
+            ? monthOccurrencesSantander().sort((a, b) => (b.purchaseDate || '').localeCompare(a.purchaseDate || ''))
+            : monthOccurrences().filter(occ => occ.cartao && occ.cartao !== 'cartao_santander' && occ.cartao !== 'contas_fixas').sort((a, b) => (b.purchaseDate || '').localeCompare(a.purchaseDate || ''));
+
+        const container = document.getElementById('cartaoDetalhesContainer') || modal.querySelector('.modal-body') || modal.querySelector('.container');
+        
         if (container) {
             if (list.length === 0) {
                 container.innerHTML = '<p style="text-align: center; color: var(--ink-soft); padding: 20px;">Nenhum gasto neste mês</p>';
             } else {
                 const despesasPorData = {};
                 list.forEach(o => {
-                    const data = o.purchaseDate || '';
+                    const data = o.purchaseDate || o.date || 'Sem data';
                     if (!despesasPorData[data]) {
                         despesasPorData[data] = [];
                     }
@@ -2633,35 +2638,42 @@ const openModal = (modalID) => {
                 let html = '';
                 Object.keys(despesasPorData).sort((a, b) => b.localeCompare(a)).forEach(data => {
                     const dateParts = data.split('-');
-                    const dateDisplay = dateParts.length === 3 ? dateParts[2] + '/' + dateParts[1] + '/' + dateParts[0] : '';
+                    const dateDisplay = dateParts.length === 3 ? dateParts[2] + '/' + dateParts[1] + '/' + dateParts[0] : data;
+                    
                     html += '<div style="margin-bottom: 16px;">';
                     html += '  <div style="font-weight: 600; color: var(--ink); margin-bottom: 8px; font-size: 13px; padding: 8px 0; border-bottom: 2px solid var(--line);">📅 ' + dateDisplay + '</div>';
 
-                        despesasPorData[data].forEach(o => {
-                        // Diagnóstico no Console
-                        console.log("Objeto ocorrência:", o);
-
-                        // Busca a despesa original no state se disponível
+                    despesasPorData[data].forEach(o => {
+                        // 1. Localiza a despesa original no state se existir
                         const expenseId = o.expenseId || o.expense_id || o.id;
                         let expense = {};
                         if (typeof state !== 'undefined' && Array.isArray(state.expenses)) {
                             expense = state.expenses.find(e => e.id === expenseId) || {};
-                            console.log("Despesa Pai correspondente:", expense);
                         }
 
-                        // Varre todas as possíveis propriedades de valor (tanto em centavos quanto em reais)
-                        let rawValue = o.valueCents ?? o.valuecents ?? o.amountCents ?? o.rawCents ?? 
-                                       expense.valueCents ?? expense.valuecents ?? expense.amountCents ?? expense.rawCents;
+                        // 2. Tenta obter o valor em centavos (na ocorrência primeiro, depois no pai)
+                        let rawCents = (o.valueCents !== null && o.valueCents !== undefined) ? o.valueCents : expense.valueCents;
+                        if (rawCents === null || rawCents === undefined) {
+                            rawCents = o.valuecents || expense.valuecents || o.amountCents || expense.amountCents;
+                        }
 
                         let valInReais = 0;
 
-                        if (rawValue !== null && rawValue !== undefined && Number(rawValue) > 0) {
-                            valInReais = Number(rawValue) / 100;
+                        if (rawCents !== null && rawCents !== undefined && Number(rawCents) > 0) {
+                            valInReais = Number(rawCents) / 100;
                         } else {
-                            // Se não houver centavos, busca por propriedades diretas em reais
-                            const directVal = o.installmentValue ?? o.valor ?? o.value ?? 
-                                               expense.installmentValue ?? expense.valor ?? expense.value;
-                            valInReais = Number(directVal) || 0;
+                            // 3. Caso não haja centavos, recupera os valores brutos de parcelas/reais
+                            const directVal = o.installmentValue || o.valor || o.value || 
+                                               expense.installmentValue || expense.valor || expense.value || expense.totalValue;
+                            
+                            if (directVal !== undefined && directVal !== null) {
+                                valInReais = Number(directVal);
+                                // Se for o valor total da compra parcelada no pai, calcula a parcela
+                                const installments = o.installments || expense.installments || 1;
+                                if (valInReais > 0 && !o.installmentValue && installments > 1) {
+                                    valInReais = valInReais / installments;
+                                }
+                            }
                         }
 
                         const valFormatado = valInReais.toFixed(2).replace('.', ',');
@@ -2673,6 +2685,8 @@ const openModal = (modalID) => {
                         html += '  <strong style="color: var(--text);">R$ ' + valFormatado + '</strong>';
                         html += '</div>';
                     });
+                    html += '</div>';
+                });
                 container.innerHTML = html;
             }
         }
@@ -2687,7 +2701,6 @@ const openModal = (modalID) => {
         const summaryConfig = loadSummaryConfig();
         const valeCarla = summaryConfig.valeAlimentacaoCarla;
         const valeIasmim = summaryConfig.valeAlimentacaoIasmim;
-        const valeTotal = valeCarla + valeIasmim;
 
         const valeCarlaEl = document.getElementById('valeCarlaDisplay');
         if (valeCarlaEl) valeCarlaEl.textContent = 'R$ ' + valeCarla.toFixed(2).replace('.', ',');
@@ -2696,13 +2709,11 @@ const openModal = (modalID) => {
         if (valeIasmimEl) valeIasmimEl.textContent = 'R$ ' + valeIasmim.toFixed(2).replace('.', ',');
 
         const valeTotalEl = document.getElementById('valeTotalDisplay');
-        if (valeTotalEl) valeTotalEl.textContent = 'R$ ' + valeTotal.toFixed(2).replace('.', ',');
+        if (valeTotalEl) valeTotalEl.textContent = 'R$ ' + (valeCarla + valeIasmim).toFixed(2).replace('.', ',');
     } else if (modalId === 'modalReembolsos') {
         updateReembolsosModal();
     } else if (modalId === 'modalContasFixas') {
         renderContasFixasModal();
-    } else if (modalId === 'modalDemaisCartoes') {
-        renderDemaisCartoesModal();
     }
 
     modal.classList.add('active');
