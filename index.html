@@ -2638,10 +2638,10 @@ despesasPorData[data].forEach(o => {
     const instText = o.installments > 1 ? ' (' + o.index + '/' + o.installments + ')' : '';
     
     // Procura a despesa pai no estado para recuperar o valor original seguro
-    const expense = state.expenses.find(e => e.id === o.expenseId) || o.expense || {};
-    const rawCents = expense.valueCents ?? expense.valorCents ?? (expense.valor ? expense.valor * 100) : (expense.value ? expense.value * 100) : 0;
-    const totalInstallments = o.installments || expense.installments || 1;
-    const valCents = totalInstallments > 1 ? Math.round(rawCents / totalInstallments) : Math.round(rawCents);
+const expense = state.expenses.find(e => e.id === o.expenseId) || o.expense || {};
+const rawCents = expense.valueCents ?? expense.valorCents ?? (expense.valor ? expense.valor * 100 : (expense.value ? expense.value * 100 : 0));
+const totalInstallments = o.installments || expense.installments || 1;
+const valCents = totalInstallments > 1 ? Math.round(rawCents / totalInstallments) : Math.round(rawCents);
 
     html += '<div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; margin-left: 0;">';
     html += '  <span class="modal-label" style="flex: 1; font-size: 13px;">' + (expense.description || o.description || 'Sem descrição') + instText + '</span>';
