@@ -2678,11 +2678,11 @@ despesasPorData[data].forEach(o => {
                         <strong style="color: var(--text);">R$ ${valFormatado}</strong>
                     </div>
                 `;
-            });
-    container.innerHTML = html;
-}
-            }
-        } else if (modalID === 'modalRendaLiquida') {
+});
+            container.innerHTML = html;
+        }
+    }
+} else if (modalID === 'modalRendaLiquida') {
 
         const rendaConfig = loadRendaConfig();
         const rendaLiquida = rendaConfig.salarioCarla + rendaConfig.salarioIasmim + rendaConfig.abono + rendaConfig.meritocracia - rendaConfig.emprestimoPersonal;
