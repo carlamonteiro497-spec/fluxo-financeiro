@@ -3221,6 +3221,7 @@ const openModal = (modalID) => {
   const renderEntry = o => {
     const row = document.createElement('div');
     row.className = 'entry';
+    row.dataset.expenseId = o.expenseId;
     const descText = o.description && o.description.trim() ? o.description.trim() : 'Sem descrição';
     const descClass = o.description && o.description.trim() ? 'entry-desc' : 'entry-desc muted';
     const instChip = o.installments > 1 ? '<span class="chip">' + o.index + '/' + o.installments + '</span>' : '';
@@ -3327,6 +3328,13 @@ const openModal = (modalID) => {
     renderInstallments();
   };
 
+  // Rola a lista até a conta indicada (usado após salvar ou cancelar a edição)
+  const scrollToExpense = id => {
+    if (!id || !el.ledger) return;
+    const target = el.ledger.querySelector('.entry[data-expense-id="' + id + '"]');
+    if (target) target.scrollIntoView({behavior: 'smooth', block: 'center'});
+  };
+
   const startEdit = id => {
     const e = state.expenses.find(x => x.id === id);
     if (!e) return;
@@ -3344,7 +3352,11 @@ const openModal = (modalID) => {
     el.valueInput.focus();
   };
 
-  el.cancelEdit?.addEventListener('click', resetForm);
+  el.cancelEdit?.addEventListener('click', () => {
+    const id = state.editingId;
+    resetForm();
+    scrollToExpense(id);
+  });
 
   el.addForm?.addEventListener('submit', ev => {
     ev.preventDefault();
@@ -3383,9 +3395,11 @@ const openModal = (modalID) => {
       cartao: 'cartao_santander'
     };
     if (state.editingId) {
-      updateExpense(state.editingId, payload);
+      const editedId = state.editingId;
+      updateExpense(editedId, payload);
       resetForm();
       renderAll();
+      scrollToExpense(editedId);
       showToast('✓ Despesa atualizada', 'success');
     } else {
       payload.createdAt = new Date().toISOString();
