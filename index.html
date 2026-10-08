@@ -2549,8 +2549,6 @@ totalCartao += valCents;
               html += '</div>';
 
              html += '<div style="font-weight: 700; font-size: 15px; color: var(--accent); margin-bottom: 6px;">R$ ' + (valCents / 100).toFixed(2).replace('.', ',') + '</div>';
-const valCents = parseInt(occ.valueCents, 10) || Math.round(parseFloat(occ.valor || 0) * 100) || 0;
-html += '<div style="font-weight: 700; font-size: 15px; color: var(--accent); margin-bottom: 6px;">R$ ' + (valCents / 100).toFixed(2).replace('.', ',') + '</div>';
               html += '<button onclick="deleteExpense(\'' + e.id + '\')" style="background: none; border: none; cursor: pointer; font-size: 16px; opacity: 0.5; padding: 0; color: var(--danger);">🗑️</button>';
               html += '</div>';
 
