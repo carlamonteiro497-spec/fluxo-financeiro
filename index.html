@@ -1810,7 +1810,8 @@ footer.hint {
       localStorage.setItem('device_id', deviceId);
       const now = new Date().toISOString();
 
-      const expensesSource = JSON.parse(localStorage.getItem('expenses')) || state.expenses || [];
+      // Usa sempre o estado atual (o que o usuário vê), não a chave antiga 'expenses'
+      const expensesSource = state.expenses || [];
 const dataToSync = expensesSource.map(e => {
         if (!e.id) {
           e.id = generateUUID();
