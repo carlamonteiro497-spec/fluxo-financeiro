@@ -4277,26 +4277,25 @@ window.adicionarBonus = async () => {
     if (tipo === 'abono') {
         config.abono += valor;
     } else {
-        config.meritocracia += valor;
-    }
+   config.meritocracia += valor;
+}
 
-    await saveRendaConfig(config);
+await saveRendaConfig(config);
 
-    const lista = document.getElementById('bonusLista');
-    const items = lista.querySelectorAll('.bonus-item');
-    if (items.length === 1 && items[0].textContent.includes('Nenhum')) {
-        lista.innerHTML = '';
-    }
+const lista = document.getElementById('bonusLista');
+const items = lista.querySelectorAll('.bonus-item');
+if (items.length === 1 && items[0].textContent.includes('Nenhum')) {
+    lista.innerHTML = '';
+}
+
+const item = document.createElement('div');
+item.className = 'bonus-item';
+item.style.cssText = 'padding: 8px; background: var(--paper); border-radius: 6px; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; font-size: 13px;';
+item.innerHTML = '<span>' + (tipo === 'abono' ? '💰 Abono' : '⭐ Meritocracia') + ': R$ ' + valor.toFixed(2).replace('.', ',') + '</span><button type="button" onclick="this.parentElement.remove()" style="background:none;border:none;cursor:pointer;">❌</button>';
+lista.appendChild(item);
+
+document.getElementById('novoValor').value = '';
 };
-
-    const item = document.createElement('div');
-    item.className = 'bonus-item';
-    item.style.cssText = 'padding: 8px; background: var(--paper); border-radius: 6px; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; font-size: 13px;';
-    item.innerHTML = '<span>' + (tipo === 'abono' ? '💰 Abono' : '⭐ Meritocracia') + ': R$ ' + valor.toFixed(2).replace('.', ',') + '</span><button type="button" onclick="this.parentElement.remove()" style="background: #dc2626; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px;">Remover</button>';
-    lista.appendChild(item);
-
-    document.getElementById('novoValor').value = '';
-  };
 
   const CONTAS_KEY = 'fluxo_contas_fixas';
   const CONTAS_VALORES_MES_KEY = 'fluxo_contas_valores_mes';
