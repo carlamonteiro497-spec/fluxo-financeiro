@@ -800,7 +800,7 @@ footer.hint {
 
 .calendar-weekdays {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 6px;
   margin-bottom: 10px;
 }
@@ -817,7 +817,7 @@ footer.hint {
 
 .calendar-grid {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 2px;
   margin-bottom: 20px;
 }
@@ -912,6 +912,49 @@ footer.hint {
   height: 3px;
   border-radius: 50%;
   background: #dc2626;
+}
+
+/* Calendário no celular: cabe nas 7 colunas sem cortar */
+@media (max-width: 479px) {
+  .calendar-weekdays,
+  .calendar-grid {
+    gap: 3px;
+  }
+  .calendar-day {
+    min-height: 0;
+    padding: 0;
+    font-size: 11px;
+    border-radius: 6px;
+    min-width: 0;
+  }
+  .calendar-day-circle {
+    width: 30px;
+    height: 30px;
+    font-size: 12px;
+    margin-bottom: 0;
+  }
+  .calendar-day.today .calendar-day-circle {
+    width: 32px;
+    height: 32px;
+    font-size: 13px;
+  }
+  .calendar-day-number {
+    font-size: 12px;
+  }
+  .calendar-header {
+    padding: 10px;
+    gap: 6px;
+  }
+  .calendar-header button {
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+  .calendar-header h2 {
+    font-size: 14px;
+  }
+  .tab-content {
+    padding: 12px;
+  }
 }
 
 /* Alertas de vencimentos */
