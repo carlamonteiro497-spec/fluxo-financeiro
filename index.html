@@ -1341,7 +1341,7 @@ footer.hint {
 
       <div class="flow-box income" onclick="openModal('modalValeAlimentacao')">
         <div class="flow-label">Vale Alimentação</div>
-        <div class="flow-value">R$ 565,92</div>
+        <div class="flow-value" id="valeAlimentacaoCard">R$ 565,92</div>
       </div>
 
       <div class="flow-box income" onclick="openModal('modalReembolsos')" style="border-color: #10b981; background: #f0fdf4;">
@@ -1385,7 +1385,7 @@ footer.hint {
       </div>
       <div class="summary-row">
         <span>Vale Alimentação (Carla + Iasmim)</span>
-        <span class="positive">+R$ 565,92</span>
+        <span class="positive" id="summaryVale">+R$ 565,92</span>
       </div>
       <div class="summary-row">
         <span>Reembolsos</span>
@@ -3189,22 +3189,43 @@ const openModal = (modalID) => {
         summaryRendaLiquidaEl.textContent = '+R$ ' + rendaLiquida.toFixed(2).replace('.', ',');
     }
 
-    const totalEntrada = rendaLiquida;
-    const totalEntradaEl = document.getElementById('totalEntrada');
-    if (totalEntradaEl) {
-        totalEntradaEl.textContent = 'R$ ' + totalEntrada.toFixed(2).replace('.', ',');
+    // ===== CÁLCULOS DO RESUMO =====
+    // Entradas: renda líquida + vale alimentação + reembolsos
+    const totalEntrada = rendaLiquida + valeAlimentacao + totalReembolsos;
+    // Saídas: contas fixas + cartão Santander + demais cartões
+    const totalSaidas = contas + totalEmReais + demaisCartoesEmReais;
+    // Margem = o que sobra depois de todas as saídas
+    const margemDisponivel = totalEntrada - totalSaidas;
+
+    const fmt = v => 'R$ ' + v.toFixed(2).replace('.', ',');
+
+    const setText = (id, text) => {
+        const node = document.getElementById(id);
+        if (node) node.textContent = text;
+    };
+
+    setText('totalEntrada', fmt(totalEntrada));
+    setText('summaryVale', '+' + fmt(valeAlimentacao));
+    setText('valeAlimentacaoCard', fmt(valeAlimentacao));
+    setText('summaryContas', '-' + fmt(contas));
+    setText('summaryCartao', '-' + fmt(totalEmReais));
+    setText('summaryDemaisCartoes', '-' + fmt(demaisCartoesEmReais));
+
+    const margemFmt = fmt(margemDisponivel);
+    setText('margemSpan', margemFmt);
+    setText('disponivel', margemFmt);
+
+    // Cores: negativo = vermelho forte, positivo = verde
+    const corMargem = margemDisponivel < 0 ? '#b91c1c' : '#16a34a';
+    const margemSpan = document.getElementById('margemSpan');
+    if (margemSpan) {
+        margemSpan.className = '';
+        margemSpan.style.color = corMargem;
+        margemSpan.style.fontWeight = '700';
     }
-
-    const vRenda = parseFloat(rendaLiquida) || 0;
-    const vContas = parseFloat(contas) || 0;
-    const vTotalEmReais = parseFloat(totalEmReais) || 0;
-    const vDemaisCartoes = parseFloat(demaisCartoesEmReais) || 0;
-    const vReembolsos = parseFloat(totalReembolsos) || 0;
-
-    const margemDisponivel = vRenda + vReembolsos - vContas - vTotalEmReais - vDemaisCartoes;
-    const margemEl = document.getElementById('margemDisponivelDisplay');
-    if (margemEl) {
-        margemEl.textContent = 'R$ ' + margemDisponivel.toFixed(2).replace('.', ',');
+    const disponivelEl = document.getElementById('disponivel');
+    if (disponivelEl) {
+        disponivelEl.style.color = corMargem;
     }
 };
 
