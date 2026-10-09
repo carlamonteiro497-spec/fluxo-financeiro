@@ -1736,6 +1736,7 @@ footer.hint {
   <div class="modal-content" style="max-width: 500px;">
     <button class="modal-close" onclick="closeModal('modalCartaoDetalhes')">×</button>
     <div class="modal-header">💰 Detalhamento - Cartão Santander Camila</div>
+    <div id="pagoSantanderWrap" style="margin-bottom: 12px;"></div>
     <div style="max-height: 500px; overflow-y: auto;" id="cartaoDetalhesContainer">
       <p style="text-align: center; color: var(--ink-soft); padding: 20px;">Carregando...</p>
     </div>
@@ -1758,6 +1759,7 @@ footer.hint {
     <div class="modal-header">📥 Exportar dados</div>
     <p style="font-size: 13px; color: var(--ink-soft); margin-bottom: 16px;">Escolha um arquivo. Toque em um de cada vez.</p>
     <button onclick="exportPlanilhaXlsx()" style="width: 100%; padding: 14px 16px; margin-bottom: 10px; background: var(--accent); color: var(--accent-ink); border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer;">📊 Baixar planilha (.xlsx)</button>
+    <button onclick="exportPlanilhaMensal()" style="width: 100%; padding: 14px 16px; margin-bottom: 10px; background: #16a34a; color: #fff; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer;">🗓️ Planilha de pagamentos mensais</button>
     <button onclick="exportJsonBackup()" style="width: 100%; padding: 14px 16px; background: var(--paper); color: var(--ink); border: 1px solid var(--line-strong); border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer;">💾 Baixar backup (.json)</button>
   </div>
 </div>
@@ -2312,6 +2314,107 @@ const dataToSync = expensesSource.map(e => {
     openModal('modalExportar');
   };
 
+  // Lista de meses: do primeiro mês com compras até o último mês com parcelas (ou o mês atual)
+  const listaMesesPlanilha = () => {
+    const now = new Date();
+    let minKey = monthKey(now.getFullYear(), now.getMonth());
+    let maxKey = minKey;
+    allOccurrences().forEach(o => {
+      const k = (o.dataVencimento || o.date || '').slice(0, 7);
+      if (k.length === 7) {
+        if (k < minKey) minKey = k;
+        if (k > maxKey) maxKey = k;
+      }
+    });
+    const meses = [];
+    let [y, m] = minKey.split('-').map(Number);
+    let key = minKey;
+    while (key <= maxKey) {
+      meses.push({ y: y, m: m - 1, key: key, nome: MONTH_NAMES[m - 1] + ' ' + y });
+      m++;
+      if (m > 12) { m = 1; y++; }
+      key = y + '-' + pad2(m);
+    }
+    return meses;
+  };
+
+  // Itens do mês: contas fixas e cartões, com o valor de cada um
+  const itensDoMes = (y, m) => {
+    const itens = [];
+
+    const contasFixas = loadContasFixas();
+    Object.keys(contasFixas).forEach(id => {
+      let conta = contasFixas[id];
+      if (conta.parcelaTotal > 0) {
+        conta = calcularParcelaParaMes(conta, y, m);
+        if (!conta) return;
+      }
+      const valor = valorContaNoMes(id, conta, y, m) || 0;
+      if (valor <= 0) return;
+      itens.push({ tipo: 'Conta fixa', nome: getContaDisplayName(conta), valor: valor, chave: 'conta:' + id });
+    });
+
+    const mk = monthKey(y, m);
+    const porCartao = {};
+    allOccurrences().forEach(o => {
+      const d = (o.dataVencimento || o.date || '');
+      if (d.slice(0, 7) !== mk) return;
+      const c = o.cartao || 'cartao_santander';
+      if (c === 'contas_fixas') return;
+      porCartao[c] = (porCartao[c] || 0) + (o.valueCents || 0);
+    });
+    Object.keys(porCartao).forEach(c => {
+      itens.push({ tipo: 'Cartão', nome: NOMES_CARTAO_PAGAMENTO[c] || c, valor: porCartao[c] / 100, chave: 'cartao:' + c });
+    });
+
+    return itens;
+  };
+
+  // Planilha .xlsx: aba Resumo (total de cada mês) + uma aba por mês com os detalhes e o que foi pago
+  const exportPlanilhaMensal = () => {
+    if (typeof XLSX === 'undefined') {
+      alert('Não consegui carregar a biblioteca da planilha. Verifique sua internet e tente de novo.');
+      return;
+    }
+
+    const pagamentos = loadPagamentos();
+    const resumoLinhas = [['Mês', 'Contas fixas (R$)', 'Cartões (R$)', 'Total do mês (R$)', 'Já pago (R$)', 'Falta pagar (R$)']];
+    const abasMes = [];
+
+    listaMesesPlanilha().forEach(mes => {
+      const itens = itensDoMes(mes.y, mes.m);
+      const pagosMes = pagamentos[mes.key] || {};
+
+      let totalContas = 0, totalCartoes = 0, totalPago = 0, totalGeral = 0;
+      const linhas = [['Tipo', 'Nome', 'Valor (R$)', 'Pago?']];
+      itens.forEach(it => {
+        const pago = !!pagosMes[it.chave];
+        linhas.push([it.tipo, it.nome, it.valor, pago ? 'Sim' : 'Não']);
+        totalGeral += it.valor;
+        if (it.tipo === 'Conta fixa') totalContas += it.valor; else totalCartoes += it.valor;
+        if (pago) totalPago += it.valor;
+      });
+      linhas.push([]);
+      linhas.push(['', 'TOTAL DO MÊS', totalGeral, '']);
+      linhas.push(['', 'Já pago', totalPago, '']);
+      linhas.push(['', 'Falta pagar', totalGeral - totalPago, '']);
+
+      const ws = XLSX.utils.aoa_to_sheet(linhas);
+      ws['!cols'] = [{ wch: 14 }, { wch: 32 }, { wch: 14 }, { wch: 10 }];
+      abasMes.push({ nome: mes.nome, ws: ws });
+
+      resumoLinhas.push([mes.nome, totalContas, totalCartoes, totalGeral, totalPago, totalGeral - totalPago]);
+    });
+
+    const wb = XLSX.utils.book_new();
+    const wsResumo = XLSX.utils.aoa_to_sheet(resumoLinhas);
+    wsResumo['!cols'] = [{ wch: 18 }, { wch: 18 }, { wch: 14 }, { wch: 18 }, { wch: 14 }, { wch: 16 }];
+    XLSX.utils.book_append_sheet(wb, wsResumo, 'Resumo');
+    abasMes.forEach(a => XLSX.utils.book_append_sheet(wb, a.ws, a.nome));
+    XLSX.writeFile(wb, 'fluxo-pagamentos-mensais-' + hojeArquivo() + '.xlsx');
+    showToast('✅ Planilha de pagamentos mensais baixada!', 'success');
+  };
+
   // Backup completo em JSON (mesmo formato que a importação lê)
   const exportJsonBackup = () => {
     const data = {
@@ -2592,7 +2695,10 @@ const dataToSync = expensesSource.map(e => {
         let totalCartao = 0;
 
         html += '<div style="margin-bottom: 20px; border-bottom: 1px solid var(--line); padding-bottom: 16px;">';
-        html += '<div style="font-weight: 600; font-size: 14px; margin-bottom: 10px; color: var(--ink);">' + (cartaoLabels[cartaoKey] || cartaoKey) + '</div>';
+        html += '<div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 10px;">';
+        html += '<div style="font-weight: 600; font-size: 14px; color: var(--ink);">' + (cartaoLabels[cartaoKey] || cartaoKey) + '</div>';
+        html += botaoPagoHtml('cartao:' + cartaoKey);
+        html += '</div>';
 
         despesas.forEach(e => {
           const ocorrencias = purchaseOccurrences(e);
@@ -2687,10 +2793,102 @@ occurrencesThisMonth.forEach(occ => {
     });
   };
 
+// ==========================================
+// PAGAMENTOS MENSAIS (Pago / Não pago por conta e cartão)
+// Guardado por mês: { "2026-10": { "conta:luz": true, "cartao:sicoob": true } }
+// ==========================================
+const PAGAMENTOS_KEY = 'fluxo_pagamentos';
+
+const NOMES_CARTAO_PAGAMENTO = {
+  'cartao_santander': 'Cartão Santander Camila',
+  'sicoob': 'Sicoob',
+  'mercado_pago_carla': 'Mercado Pago (Carla)',
+  'mercado_pago_iasmim': 'Mercado Pago (Iasmim)',
+  'digio': 'Digio'
+};
+
+const loadPagamentos = () => {
+  try {
+    return JSON.parse(localStorage.getItem(PAGAMENTOS_KEY) || '{}');
+  } catch(e) {
+    return {};
+  }
+};
+
+const isPago = (chave, mesKey) => {
+  const p = loadPagamentos();
+  return !!(p[mesKey] && p[mesKey][chave]);
+};
+
+const salvarPagamentosCloud = async (dados) => {
+  try {
+    const config = JSON.parse(localStorage.getItem('supabase_config') || '{}');
+    const url = config.url || (typeof supabaseConfig !== 'undefined' ? supabaseConfig.url : null);
+    const key = config.key || (typeof supabaseConfig !== 'undefined' ? supabaseConfig.key : null);
+    if (!url || !key) return;
+    await fetch(`${url}/rest/v1/app_config`, {
+      method: 'POST',
+      headers: {
+        'apikey': key,
+        'Authorization': `Bearer ${key}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'resolution=merge-duplicates'
+      },
+      body: JSON.stringify({ id: PAGAMENTOS_KEY, data: dados, updated_at: new Date().toISOString() })
+    });
+  } catch (err) {
+    console.error('[SYNC] Erro ao sincronizar pagamentos no Supabase:', err);
+  }
+};
+
+const estiloBotaoPago = (pago) => pago
+  ? 'background: #16a34a; color: #fff; border: none;'
+  : 'background: transparent; color: var(--ink-soft); border: 1px solid var(--line-strong);';
+
+const botaoPagoHtml = (chave) => {
+  const mk = monthKey(state.viewYear, state.viewMonth);
+  const pago = isPago(chave, mk);
+  return '<button type="button" data-pago-key="' + chave + '" onclick="togglePagoItem(\'' + chave + '\')" '
+    + 'style="' + estiloBotaoPago(pago) + ' padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; white-space: nowrap;">'
+    + (pago ? '✅ Pago' : 'Marcar pago') + '</button>';
+};
+
+const atualizarBotoesPago = () => {
+  const mk = monthKey(state.viewYear, state.viewMonth);
+  document.querySelectorAll('[data-pago-key]').forEach(btn => {
+    const chave = btn.getAttribute('data-pago-key');
+    const pago = isPago(chave, mk);
+    btn.textContent = pago ? '✅ Pago' : 'Marcar pago';
+    btn.setAttribute('style', estiloBotaoPago(pago) + ' padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; white-space: nowrap;');
+  });
+};
+
+const togglePagoItem = (chave) => {
+  const mk = monthKey(state.viewYear, state.viewMonth);
+  const p = loadPagamentos();
+  p[mk] = p[mk] || {};
+  if (p[mk][chave]) {
+    delete p[mk][chave];
+  } else {
+    p[mk][chave] = true;
+  }
+  localStorage.setItem(PAGAMENTOS_KEY, JSON.stringify(p));
+  salvarPagamentosCloud(p);
+  atualizarBotoesPago();
+};
+
+const renderBotaoPagoSantander = () => {
+  const wrap = document.getElementById('pagoSantanderWrap');
+  if (wrap) wrap.innerHTML = botaoPagoHtml('cartao:cartao_santander');
+};
+
+window.togglePagoItem = togglePagoItem;
+
 const openModal = (modalID) => {
     const modalId = modalID;
     const modal = document.getElementById(modalID) || document.getElementById(modalId);
     if (!modal) return;
+    renderBotaoPagoSantander();
 
     // Unifica a verificação para cobrir todos os IDs possíveis do modal do Santander e Demais Cartões
     if (modalId === 'modalCartaoDetalhes' || modalId === 'modalCartaoSantander') {
@@ -3729,6 +3927,7 @@ window.deletarContaFixa = deletarContaFixa;
   window.exportData = exportData;
   window.exportJsonBackup = exportJsonBackup;
   window.exportPlanilhaXlsx = exportPlanilhaXlsx;
+  window.exportPlanilhaMensal = exportPlanilhaMensal;
   window.showDayDetailsComplete = showDayDetailsComplete;
   window.importData = importData;
 
@@ -4797,6 +4996,7 @@ const deleteReembolso = async (id) => {
         }
 
         html += '<div style="display: flex; gap: 4px;">';
+        html += botaoPagoHtml('conta:' + id);
         html += '<button onclick="abrirEditarConta(\'' + id + '\')" style="background: none; border: none; cursor: pointer; font-size: 14px; opacity: 0.6; padding: 0; color: var(--ink);">✏️</button>';
 
         if (id.startsWith('conta_')) {
