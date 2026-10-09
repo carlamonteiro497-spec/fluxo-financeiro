@@ -2836,7 +2836,8 @@ const openModal = (modalID) => {
 
   const monthNames = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
 
-  const contasVariaveis = [];
+  // Contas cujo valor muda todo mês (cada mês guarda o seu próprio valor)
+  const contasVariaveis = ['agua', 'luz'];
 
   const showDayDetails = (day, contas) => {
     const container = document.getElementById('dayDetailsContainer');
@@ -3200,7 +3201,7 @@ const openModal = (modalID) => {
             conta = calcularParcelaParaMes(conta, state.viewYear, state.viewMonth);
             if (!conta) return;
         }
-        contas += conta.valor || 0;
+        contas += valorContaNoMes(id, conta) || 0;
     });
 
     const summaryContasEl = document.getElementById('summaryContas');
@@ -4456,6 +4457,37 @@ window.adicionarBonus = async () => {
     }
   };
 
+  const valorContaNoMes = (id, conta, ano = state.viewYear, mes = state.viewMonth) => {
+    if (contasVariaveis.includes(id)) return getValorContaMes(id, ano, mes);
+    return conta.valor || 0;
+  };
+
+  // Envia os valores mensais (luz, água...) para o Supabase, para aparecerem nos outros aparelhos
+  const saveValoresMesCloud = async (valores) => {
+    try {
+      const config = JSON.parse(localStorage.getItem('supabase_config') || '{}');
+      const url = config.url || (typeof supabaseConfig !== 'undefined' ? supabaseConfig.url : null);
+      const key = config.key || (typeof supabaseConfig !== 'undefined' ? supabaseConfig.key : null);
+      if (!url || !key) return;
+      await fetch(`${url}/rest/v1/app_config`, {
+        method: 'POST',
+        headers: {
+          'apikey': key,
+          'Authorization': `Bearer ${key}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'resolution=merge-duplicates'
+        },
+        body: JSON.stringify({
+          id: CONTAS_VALORES_MES_KEY,
+          data: valores,
+          updated_at: new Date().toISOString()
+        })
+      });
+    } catch (err) {
+      console.error('[SYNC] Erro ao sincronizar valores mensais no Supabase:', err);
+    }
+  };
+
   const setValorContaMes = (contaId, ano, mes, valor) => {
     if (!contasVariaveis.includes(contaId)) return;
 
@@ -4464,14 +4496,15 @@ window.adicionarBonus = async () => {
       const chave = contaId + '_' + ano + '-' + pad2(mes + 1);
       valores[chave] = valor;
       localStorage.setItem(CONTAS_VALORES_MES_KEY, JSON.stringify(valores));
+      saveValoresMesCloud(valores);
       if (supabaseConfig.enabled) scheduleAutoSync();
     } catch(e) {}
   };
 
   const contasFixasDefault = {
     'aluguel': { nome: 'Aluguel + IPTU', valor: 2346.00, parcelaAtual: 0, parcelaTotal: 0, dia: 10 },
-    'agua': { nome: 'Água', valor: 0.00, parcelaAtual: 0, parcelaTotal: 0, dia: 8 },
-    'luz': { nome: 'Luz', valor: 0.00, parcelaAtual: 0, parcelaTotal: 0, dia: 10 },
+    'agua': { nome: 'Água', valor: 0.00, parcelaAtual: 0, parcelaTotal: 0, dia: 10 },
+    'luz': { nome: 'Luz', valor: 0.00, parcelaAtual: 0, parcelaTotal: 0, dia: 5 },
     'internet': { nome: 'Internet', valor: 220.00, parcelaAtual: 0, parcelaTotal: 0, dia: 10 },
     'vivo_celular': { nome: 'Vivo Celular (Iasmim)', valor: 72.00, parcelaAtual: 0, parcelaTotal: 0, dia: 6 },
     'vivo_telefone': { nome: 'Vivo Telefone (Carla)', valor: 39.00, parcelaAtual: 0, parcelaTotal: 0, dia: 10 },
@@ -4492,6 +4525,9 @@ window.adicionarBonus = async () => {
 
       if (stored && storedContasVersion === CURRENT_VERSION) {
         const parsed = JSON.parse(stored);
+        // Vencimentos corretos: luz dia 5, água dia 10
+        if (parsed.luz) parsed.luz.dia = 5;
+        if (parsed.agua) parsed.agua.dia = 10;
         return JSON.parse(JSON.stringify(parsed));
       }
     } catch(e) {}
@@ -4608,7 +4644,7 @@ const deleteReembolso = async (id) => {
 
     contaEmEdicao = contaId;
     document.getElementById('editarContaNome').textContent = 'Editar ' + conta.nome;
-    document.getElementById('editarContaValorInput').value = conta.valor.toFixed(2).replace('.', ',');
+    document.getElementById('editarContaValorInput').value = valorContaNoMes(contaId, conta).toFixed(2).replace('.', ',');
     document.getElementById('editarContaValorInput').focus();
     openModal('modalEditarContaFixa');
   };
@@ -4676,8 +4712,8 @@ const deleteReembolso = async (id) => {
 
     const contasInfo = [
       { id: 'aluguel', nome: 'Aluguel + IPTU', dia: 10 },
-      { id: 'agua', nome: 'Água', dia: 8 },
-      { id: 'luz', nome: 'Luz', dia: 10 },
+      { id: 'agua', nome: 'Água', dia: 10 },
+      { id: 'luz', nome: 'Luz', dia: 5 },
       { id: 'internet', nome: 'Internet', dia: 10 },
       { id: 'vivo_celular', nome: 'Vivo Celular (Iasmim)', dia: 6 },
       { id: 'vivo_telefone', nome: 'Vivo Telefone (Carla)', dia: 10 },
@@ -4704,13 +4740,13 @@ const deleteReembolso = async (id) => {
       const dia = info.dia === null ? '00' : (info.dia === 'quinto_util' ? 'quinto_util' : ('0' + info.dia).slice(-2));
       if (!contasPorDia[dia]) contasPorDia[dia] = [];
       contasPorDia[dia].push({ id: info.id, info, conta });
-      totalGeral += conta.valor;
+      totalGeral += valorContaNoMes(info.id, conta);
     });
 
     Object.keys(contasFixas).forEach(id => {
       if (id.startsWith('conta_')) {
         const conta = contasFixas[id];
-        totalGeral += conta.valor;
+        totalGeral += valorContaNoMes(id, conta);
 
         let dia = '00';
         if (conta.dataVencimento) {
@@ -4755,8 +4791,9 @@ const deleteReembolso = async (id) => {
         html += '</div>';
 
         html += '<div style="text-align: right; flex-shrink: 0; display: flex; flex-direction: column; gap: 6px; align-items: flex-end;">';
-        if (conta.valor > 0) {
-          html += '<div style="font-weight: 700; font-size: 14px; color: var(--accent);">R$ ' + conta.valor.toFixed(2).replace('.', ',') + '</div>';
+        const valorMes = valorContaNoMes(id, conta);
+        if (valorMes > 0) {
+          html += '<div style="font-weight: 700; font-size: 14px; color: var(--accent);">R$ ' + valorMes.toFixed(2).replace('.', ',') + '</div>';
         }
 
         html += '<div style="display: flex; gap: 4px;">';
@@ -4798,7 +4835,7 @@ const deleteReembolso = async (id) => {
         if (!conta) return;
       }
 
-      totalGeral += conta.valor || 0;
+      totalGeral += valorContaNoMes(id, conta) || 0;
     });
 
     totalElement.textContent = 'R$ ' + totalGeral.toFixed(2).replace('.', ',');
@@ -5031,7 +5068,8 @@ document.getElementById('formEditarRenda')?.addEventListener('submit', async (ev
 
     Object.keys(contasFixas).forEach(id => {
       const conta = contasFixas[id];
-      if (conta.valor <= 0) return;
+      const valorHoje = valorContaNoMes(id, conta, hoje.getFullYear(), hoje.getMonth());
+      if (valorHoje <= 0) return;
 
       let venceHoje = false;
       let venceAmanha = false;
@@ -5055,13 +5093,13 @@ document.getElementById('formEditarRenda')?.addEventListener('submit', async (ev
         vencimentosHoje.push({
           id,
           nome: getContaDisplayName(conta),
-          valor: conta.valor
+          valor: valorHoje
         });
       } else if (venceAmanha) {
         vencimentosAmanha.push({
           id,
           nome: getContaDisplayName(conta),
-          valor: conta.valor
+          valor: valorHoje
         });
       }
     });
