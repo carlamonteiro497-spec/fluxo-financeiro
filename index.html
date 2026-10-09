@@ -2667,8 +2667,8 @@ const openModal = (modalID) => {
     if (!modal) return;
 
     // Unifica a verificação para cobrir todos os IDs possíveis do modal do Santander e Demais Cartões
-    if (modalId === 'modalCartaoDetalhes' || modalId === 'modalCartaoSantander' || modalId === 'modalDemaisCartoes') {
-        const isSantander = modalId === 'modalCartaoSantander' || modalId === 'modalCartaoDetalhes';
+    if (modalId === 'modalCartaoDetalhes' || modalId === 'modalCartaoSantander') {
+        const isSantander = true;
         const list = isSantander
             ? monthOccurrencesSantander().sort((a, b) => (b.purchaseDate || '').localeCompare(a.purchaseDate || ''))
             : monthOccurrences().filter(occ => occ.cartao && occ.cartao !== 'cartao_santander' && occ.cartao !== 'contas_fixas').sort((a, b) => (b.purchaseDate || '').localeCompare(a.purchaseDate || ''));
@@ -2747,6 +2747,9 @@ const openModal = (modalID) => {
                 container.innerHTML = html;
             }
         }
+    } else if (modalId === 'modalDemaisCartoes') {
+        // Preenche o modal de Demais Cartões no próprio container dele
+        renderDemaisCartoesModal();
     } else if (modalId === 'modalRendaLiquida') {
         const rendaConfig = loadRendaConfig();
         const rendaLiquida = rendaConfig.salarioCarla + rendaConfig.salarioIasmim + rendaConfig.abono + rendaConfig.meritocracia - rendaConfig.emprestimoPersonal;
