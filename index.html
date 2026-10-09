@@ -3035,7 +3035,8 @@ const openModal = (modalID) => {
   const monthNames = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
 
   // Contas cujo valor muda todo mês (cada mês guarda o seu próprio valor)
-  const contasVariaveis = ['agua', 'luz'];
+  // Todas as contas têm valor próprio em cada mês (se o mês não tiver valor, usa o valor cadastrado)
+  const contasVariaveis = { includes: () => true };
 
   const showDayDetails = (day, contas) => {
     const container = document.getElementById('dayDetailsContainer');
@@ -3140,7 +3141,7 @@ const openModal = (modalID) => {
               html += '<div style="flex: 1;">';
               html += '<div style="font-weight: 600; font-size: 14px; color: var(--ink); margin-bottom: 2px;">' + item.nome + '</div>';
               if (item.isVariavel) {
-                html += '<div style="font-size: 12px; color: #8b5cf6;">Valor Variável ✏️</div>';
+                html += '<div style="font-size: 12px; color: #8b5cf6;">Valor deste mês ✏️</div>';
               }
               html += '</div>';
               html += '<div style="text-align: right; flex-shrink: 0;">';
@@ -4027,10 +4028,7 @@ window.deletarContaFixa = deletarContaFixa;
 
         if (!contasAtivas[diaParaAdicionar]) contasAtivas[diaParaAdicionar] = [];
         const displayName = getContaDisplayName(conta);
-        let valorPraExibir = conta.valor;
-        if (contasVariaveis.includes(id)) {
-          valorPraExibir = getValorContaMes(id, year, month);
-        }
+        const valorPraExibir = valorContaNoMes(id, conta, year, month);
 
         contasAtivas[diaParaAdicionar].push({
           nome: conta.nome,
@@ -4659,8 +4657,12 @@ window.adicionarBonus = async () => {
   };
 
   const valorContaNoMes = (id, conta, ano = state.viewYear, mes = state.viewMonth) => {
-    if (contasVariaveis.includes(id)) return getValorContaMes(id, ano, mes);
-    return conta.valor || 0;
+    try {
+      const valores = JSON.parse(localStorage.getItem(CONTAS_VALORES_MES_KEY) || '{}');
+      const chave = id + '_' + ano + '-' + pad2(mes + 1);
+      if (valores[chave] !== undefined) return valores[chave];
+    } catch(e) {}
+    return (conta && conta.valor) || 0;
   };
 
   // Envia os valores mensais (luz, água...) para o Supabase, para aparecerem nos outros aparelhos
@@ -4993,7 +4995,7 @@ const deleteReembolso = async (id) => {
         html += '<div style="font-weight: 600; font-size: 14px; color: var(--ink); margin-bottom: 2px;">' + displayName + '</div>';
 
         if (contasVariaveis.includes(id)) {
-          html += '<div style="font-size: 12px; color: #8b5cf6;">Valor Variável ✏️</div>';
+          html += '<div style="font-size: 12px; color: #8b5cf6;">Valor deste mês ✏️</div>';
         }
 
         html += '</div>';
