@@ -1751,6 +1751,17 @@ footer.hint {
   </div>
 </div>
 
+<!-- MODAL EXPORTAR -->
+<div id="modalExportar" class="modal-overlay">
+  <div class="modal-content" style="max-width: 420px;">
+    <button class="modal-close" onclick="closeModal('modalExportar')">×</button>
+    <div class="modal-header">📥 Exportar dados</div>
+    <p style="font-size: 13px; color: var(--ink-soft); margin-bottom: 16px;">Escolha um arquivo. Toque em um de cada vez.</p>
+    <button onclick="exportPlanilhaXlsx()" style="width: 100%; padding: 14px 16px; margin-bottom: 10px; background: var(--accent); color: var(--accent-ink); border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer;">📊 Baixar planilha (.xlsx)</button>
+    <button onclick="exportJsonBackup()" style="width: 100%; padding: 14px 16px; background: var(--paper); color: var(--ink); border: 1px solid var(--line-strong); border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer;">💾 Baixar backup (.json)</button>
+  </div>
+</div>
+
 <!-- MODAL DETALHES DO DIA (CALENDÁRIO) -->
 <div id="modalDayDetails" class="modal-overlay">
   <div class="modal-content" style="max-width: 400px;">
@@ -1794,6 +1805,8 @@ footer.hint {
   </div>
 </div>
 
+<!-- Biblioteca para gerar planilha .xlsx (SheetJS) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
 (function(){
   let state = {
@@ -2280,7 +2293,27 @@ const dataToSync = expensesSource.map(e => {
     }, duration);
   };
 
+  const baixarArquivo = (conteudo, nomeArquivo, tipo) => {
+    const blob = new Blob([conteudo], { type: tipo });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = nomeArquivo;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
+
+  const hojeArquivo = () => new Date().toISOString().slice(0, 10);
+
+  // Botão "Exportar": abre a escolha entre planilha e backup
   const exportData = () => {
+    openModal('modalExportar');
+  };
+
+  // Backup completo em JSON (mesmo formato que a importação lê)
+  const exportJsonBackup = () => {
     const data = {
       version: '6.2',
       exported: new Date().toISOString(),
@@ -2290,72 +2323,67 @@ const dataToSync = expensesSource.map(e => {
       rendaConfig: loadRendaConfig(),
       reembolsos: loadReembolsos()
     };
+    baixarArquivo(JSON.stringify(data, null, 2), 'fluxo-financeiro-backup-' + hojeArquivo() + '.json', 'application/json');
+    showToast('✅ Backup em JSON baixado!', 'success');
+  };
 
-    const cartaoNomes = {
+  // Planilha .xlsx com duas abas: Despesas e Resumo por cartão
+  const exportPlanilhaXlsx = () => {
+    if (typeof XLSX === 'undefined') {
+      alert('Não consegui carregar a biblioteca da planilha. Verifique sua internet e tente de novo.');
+      return;
+    }
+
+    const nomesCartao = {
       'cartao_santander': 'Cartão Santander Camila',
-      'cartao_sicoob': 'Sicoob',
-      'cartao_mercado_pago': 'Mercado Pago',
-      'cartao_digio': 'Digio',
+      'sicoob': 'Sicoob',
+      'mercado_pago_carla': 'Mercado Pago (Carla)',
+      'mercado_pago_iasmim': 'Mercado Pago (Iasmim)',
+      'digio': 'Digio',
       'contas_fixas': 'Contas Fixas'
     };
+    const nomeCartao = c => nomesCartao[c] || c || 'Sem cartão';
+    const dataBR = iso => (iso && iso.length >= 10) ? iso.slice(8, 10) + '/' + iso.slice(5, 7) + '/' + iso.slice(0, 4) : '';
 
-    const despesasPorCartao = {};
-    state.expenses.forEach(e => {
-      const cartaoType = e.cartao || 'cartao_santander';
-      if (!despesasPorCartao[cartaoType]) despesasPorCartao[cartaoType] = [];
-      despesasPorCartao[cartaoType].push(e);
+    // Usa cada parcela como uma linha (mesma lógica da tela)
+    const ocorrencias = allOccurrences().slice().sort((a, b) =>
+      (b.purchaseDate || '').localeCompare(a.purchaseDate || '') || (a.description || '').localeCompare(b.description || '')
+    );
+
+    const cabecalho = ['Data da compra', 'Descrição', 'Valor (R$)', 'Parcela', 'Total de parcelas', 'Cartão', 'Vencimento da parcela'];
+    const linhas = ocorrencias.map(o => [
+      dataBR(o.purchaseDate),
+      o.description || '',
+      o.valueCents / 100,
+      o.installments > 1 ? o.index : 1,
+      o.installments > 1 ? o.installments : 1,
+      nomeCartao(o.cartao),
+      dataBR(o.dataVencimento || o.date)
+    ]);
+
+    const wsDespesas = XLSX.utils.aoa_to_sheet([cabecalho, ...linhas]);
+    wsDespesas['!cols'] = [{ wch: 16 }, { wch: 36 }, { wch: 14 }, { wch: 10 }, { wch: 16 }, { wch: 26 }, { wch: 20 }];
+
+    // Resumo: total por cartão somando todas as parcelas exportadas
+    const totais = {};
+    ocorrencias.forEach(o => {
+      const nome = nomeCartao(o.cartao);
+      totais[nome] = (totais[nome] || 0) + o.valueCents;
     });
+    const linhasResumo = Object.keys(totais).sort().map(nome => [nome, totais[nome] / 100]);
+    const totalGeral = Object.values(totais).reduce((a, b) => a + b, 0) / 100;
+    const wsResumo = XLSX.utils.aoa_to_sheet([
+      ['Cartão', 'Total (R$)'],
+      ...linhasResumo,
+      ['TOTAL GERAL', totalGeral]
+    ]);
+    wsResumo['!cols'] = [{ wch: 30 }, { wch: 16 }];
 
-    let csv = 'FLUXO FINANCEIRO - EXPORTAÇÃO DE DESPESAS\n';
-    csv += 'Exportado em: ' + new Date().toLocaleString('pt-BR') + '\n\n';
-
-    csv += 'RESUMO POR CARTÃO\n';
-    csv += 'Cartão,Quantidade,Total\n';
-    let totalGeral = 0;
-    Object.entries(despesasPorCartao).forEach(([cartaoType, despesas]) => {
-      const total = despesas.reduce((sum, e) => sum + e.valueCents, 0) / 100;
-      csv += `"${cartaoNomes[cartaoType] || cartaoType}","${despesas.length}","R$ ${total.toFixed(2)}"\n`;
-      totalGeral += total;
-    });
-    csv += `"TOTAL GERAL","${state.expenses.length}","R$ ${totalGeral.toFixed(2)}"\n\n`;
-
-    csv += 'DETALHES DAS DESPESAS\n';
-    csv += 'Data,Descrição,Valor,Parcelamento,Cartão,Data Vencimento\n';
-
-    Object.entries(despesasPorCartao).forEach(([cartaoType, despesas]) => {
-      csv += `\n# ${cartaoNomes[cartaoType] || cartaoType}\n`;
-      despesas.sort((a, b) => (b.purchaseDate || b.date).localeCompare(a.purchaseDate || a.date));
-
-      despesas.forEach(e => {
-        const data_compra = e.purchaseDate || e.date || '';
-        const data_vencimento = e.dataVencimento || '';
-        const inst = e.installments > 1 ? e.index + '/' + e.installments : '1/1';
-        csv += `"${data_compra}","${e.description}","${(e.valueCents / 100).toFixed(2)}","${inst}","${cartaoNomes[cartaoType] || cartaoType}","${data_vencimento}"\n`;
-      });
-    });
-
-    const json = JSON.stringify(data, null, 2);
-    const jsonBlob = new Blob([json], { type: 'application/json' });
-    const jsonUrl = URL.createObjectURL(jsonBlob);
-    const jsonLink = document.createElement('a');
-    jsonLink.href = jsonUrl;
-    jsonLink.download = 'fluxo-financeiro-backup-' + new Date().toISOString().slice(0, 10) + '.json';
-    document.body.appendChild(jsonLink);
-    jsonLink.click();
-    document.body.removeChild(jsonLink);
-    URL.revokeObjectURL(jsonUrl);
-
-    const csvBlob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const csvUrl = URL.createObjectURL(csvBlob);
-    const csvLink = document.createElement('a');
-    csvLink.href = csvUrl;
-    csvLink.download = 'fluxo-financeiro-' + new Date().toISOString().slice(0, 10) + '.csv';
-    document.body.appendChild(csvLink);
-    csvLink.click();
-    document.body.removeChild(csvLink);
-    URL.revokeObjectURL(csvUrl);
-
-    showToast('✅ Dados exportados (JSON + CSV com todos os cartões)!', 'success');
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, wsDespesas, 'Despesas');
+    XLSX.utils.book_append_sheet(wb, wsResumo, 'Resumo');
+    XLSX.writeFile(wb, 'fluxo-financeiro-' + hojeArquivo() + '.xlsx');
+    showToast('✅ Planilha .xlsx baixada!', 'success');
   };
 
   const importData = (event) => {
@@ -3698,6 +3726,8 @@ window.deletarContaFixa = deletarContaFixa;
   window.openModal = openModal;
   window.closeModal = closeModal;
   window.exportData = exportData;
+  window.exportJsonBackup = exportJsonBackup;
+  window.exportPlanilhaXlsx = exportPlanilhaXlsx;
   window.showDayDetailsComplete = showDayDetailsComplete;
   window.importData = importData;
 
