@@ -4699,7 +4699,7 @@ const deleteReembolso = async (id) => {
  const saveRendaConfig = async (configData) => {
     const renda = configData || (typeof loadRendaConfig === 'function' ? loadRendaConfig() : {});
 
-    localStorage.setItem('rendaConfig', JSON.stringify(renda));
+    localStorage.setItem(RENDA_KEY, JSON.stringify(renda));
     if (typeof state !== 'undefined') {
         state.rendaConfig = renda;
     }
@@ -4733,21 +4733,56 @@ const deleteReembolso = async (id) => {
 
 window.saveRendaConfig = saveRendaConfig;
 
+// Salva vale alimentação também na nuvem (app_config)
+const saveSummaryCloud = async (data) => {
+    try {
+        const config = JSON.parse(localStorage.getItem('supabase_config') || '{}');
+        if (!config.url || !config.key) return;
+        await fetch(`${config.url}/rest/v1/app_config`, {
+            method: 'POST',
+            headers: {
+                'apikey': config.key,
+                'Authorization': `Bearer ${config.key}`,
+                'Content-Type': 'application/json',
+                'Prefer': 'resolution=merge-duplicates'
+            },
+            body: JSON.stringify({ id: 'summaryConfig', data: data, updated_at: new Date().toISOString() })
+        });
+    } catch (err) {
+        console.error('[SYNC] Erro ao sincronizar vale alimentação no Supabase:', err);
+    }
+};
+
 document.getElementById('formEditarRenda')?.addEventListener('submit', async (ev) => {
     ev.preventDefault();
+    // Lê um campo numérico no formato brasileiro (ex: 5.213,57). Se estiver vazio/inválido, mantém o valor atual.
+    const lerNum = id => parseFloat((document.getElementById(id)?.value || '').replace(/\./g, '').replace(',', '.'));
+    const numOr = (id, atual) => { const v = lerNum(id); return isNaN(v) ? atual : v; };
+
+    const rendaAtual = loadRendaConfig();
+    const summaryAtual = loadSummaryConfig();
+
     const config = {
-        salarioCarla: parseFloat(document.getElementById('salarioCarla')?.value.replace(',', '.')) || 1961.79,
-        salarioIasmim: parseFloat(document.getElementById('salarioIasmim')?.value.replace(',', '.')) || 5213.57,
-        emprestimoPersonal: parseFloat(document.getElementById('emprestimoPersonal')?.value.replace(',', '.')) || 597.23,
-        abono: parseFloat(document.getElementById('novoValor')?.value.replace(',', '.')) || 0,
-        meritocracia: parseFloat(document.getElementById('novoValor')?.value.replace(',', '.')) || 0
+        salarioCarla: numOr('salarioCarla', rendaAtual.salarioCarla),
+        salarioIasmim: numOr('salarioIasmim', rendaAtual.salarioIasmim),
+        emprestimoPersonal: numOr('emprestimoPersonal', rendaAtual.emprestimoPersonal),
+        // abono e meritocracia são adicionados pelo botão próprio; não zerar aqui
+        abono: rendaAtual.abono || 0,
+        meritocracia: rendaAtual.meritocracia || 0
     };
     await saveRendaConfig(config);
-    if (typeof saveSummaryConfig === 'function') await saveSummaryConfig();
+
+    const summary = {
+        valeAlimentacaoCarla: numOr('valeAlimentacaoCarla', summaryAtual.valeAlimentacaoCarla),
+        valeAlimentacaoIasmim: numOr('valeAlimentacaoIasmim', summaryAtual.valeAlimentacaoIasmim)
+    };
+    localStorage.setItem(SUMMARY_KEY, JSON.stringify(summary));
+    await saveSummaryCloud(summary);
+
     alert('Renda atualizada com sucesso!');
     closeModal('modalEditarRenda');
     closeModal('modalRendaLiquida');
-    if (typeof renderSummary === 'function') renderSummary();
+    renderAll();
 });
 
   let pollInterval = null;
@@ -5095,7 +5130,8 @@ async function loadAllFromSupabase() {
         if (resCfg.ok) {
             const configs = await resCfg.json();
             configs.forEach(item => {
-                localStorage.setItem(item.id, JSON.stringify(item.data));
+                const chaveLocal = item.id === 'rendaConfig' ? RENDA_KEY : (item.id === 'summaryConfig' ? SUMMARY_KEY : item.id);
+                localStorage.setItem(chaveLocal, JSON.stringify(item.data));
                 if (typeof state !== 'undefined') {
                     state[item.id] = item.data;
                 }
