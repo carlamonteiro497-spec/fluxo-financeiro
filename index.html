@@ -1349,14 +1349,14 @@ footer.hint {
         <div class="flow-value" id="reembolsosTotal" style="color: #10b981;">R$ 0,00</div>
       </div>
 
-      <div class="flow-box expense" onclick="openModal('modalContasFixas')">
+      <div class="flow-box expense" onclick="openModal('modalContasFixas')" style="border-color: #475569; background: #f8fafc;">
         <div class="flow-label">Contas Fixas</div>
-        <div class="flow-value" id="contasFixasTotal">R$ 5.736,78</div>
+        <div class="flow-value" id="contasFixasTotal" style="color: #475569;">R$ 5.736,78</div>
       </div>
 
-      <div class="flow-box expense" onclick="openModal('modalCartaoDetalhes')" style="cursor: pointer;">
+      <div class="flow-box expense" onclick="openModal('modalCartaoDetalhes')" style="cursor: pointer; border-color: #475569; background: #f8fafc;">
         <div class="flow-label">Cartão Santander Camila</div>
-        <div class="flow-value" id="cartaoTotal">R$ 0,00</div>
+        <div class="flow-value" id="cartaoTotal" style="color: #475569;">R$ 0,00</div>
       </div>
 
       <div class="flow-box" onclick="openModal('modalDemaisCartoes')" style="cursor: pointer; border-color: #8b5cf6; background: #faf5ff;">
@@ -1366,7 +1366,7 @@ footer.hint {
     </div>
 
     <div class="flow-box" id="disponibilBox" style="grid-column: 1 / -1; border-color: #f59e0b; background: #fffbeb; border-width: 2px; margin-bottom: 16px;">
-      <div class="flow-label">DISPONÍVEL (COMIDA + TRANSPORTE + EMERGÊNCIA)</div>
+      <div class="flow-label" id="disponivelLabel">DISPONÍVEL (COMIDA + TRANSPORTE + EMERGÊNCIA)</div>
       <div class="flow-value" style="color: #f59e0b;" id="disponivel">R$ 2.369,82</div>
     </div>
 
@@ -1408,7 +1408,7 @@ footer.hint {
         <span class="negative" id="summaryDemaisCartoes">-R$ 0,00</span>
       </div>
       <div class="summary-row total">
-        <span>MARGEM DISPONÍVEL</span>
+        <span id="margemLabel">MARGEM DISPONÍVEL</span>
         <span id="margemSpan" class="neutral">R$ 2.369,82</span>
       </div>
     </div>
@@ -3190,12 +3190,12 @@ const openModal = (modalID) => {
     }
 
     // ===== CÁLCULOS DO RESUMO =====
-    // Entradas: renda líquida + vale alimentação + reembolsos
-    const totalEntrada = rendaLiquida + valeAlimentacao + totalReembolsos;
+    // Total que entra: somente renda líquida + reembolsos
+    const totalEntrada = rendaLiquida + totalReembolsos;
     // Saídas: contas fixas + cartão Santander + demais cartões
     const totalSaidas = contas + totalEmReais + demaisCartoesEmReais;
-    // Margem = o que sobra depois de todas as saídas
-    const margemDisponivel = totalEntrada - totalSaidas;
+    // Margem = renda + vale alimentação + reembolsos − saídas
+    const margemDisponivel = (rendaLiquida + valeAlimentacao + totalReembolsos) - totalSaidas;
 
     const fmt = v => 'R$ ' + v.toFixed(2).replace('.', ',');
 
@@ -3215,8 +3215,21 @@ const openModal = (modalID) => {
     setText('margemSpan', margemFmt);
     setText('disponivel', margemFmt);
 
-    // Cores: negativo = vermelho forte, positivo = verde
-    const corMargem = margemDisponivel < 0 ? '#b91c1c' : '#16a34a';
+    // Cores: negativo = vermelho forte + alerta, positivo = verde
+    const negativo = margemDisponivel < 0;
+    const corMargem = negativo ? '#b91c1c' : '#16a34a';
+    const alerta = negativo ? '⚠️ ' : '';
+    const disponivelBoxEl = document.getElementById('disponibilBox');
+    if (disponivelBoxEl) {
+        disponivelBoxEl.style.borderColor = corMargem;
+        disponivelBoxEl.style.background = negativo ? '#fef2f2' : '#f0fdf4';
+    }
+    setText('disponivelLabel', alerta + 'DISPONÍVEL (COMIDA + TRANSPORTE + EMERGÊNCIA)');
+    const margemLabelEl = document.getElementById('margemLabel');
+    if (margemLabelEl) {
+        margemLabelEl.textContent = alerta + 'MARGEM DISPONÍVEL';
+        margemLabelEl.style.color = corMargem;
+    }
     const margemSpan = document.getElementById('margemSpan');
     if (margemSpan) {
         margemSpan.className = '';
