@@ -2673,10 +2673,13 @@ const dataToSync = expensesSource.map(e => {
   };
 
   // Cartão Santander: vencimento sempre dia 10 do mês seguinte à compra
+  // Compras até o dia 5 entram na fatura que vence dia 10 do mesmo mês; a partir do dia 6, dia 10 do mês seguinte
+  const DIA_CORTE_SANTANDER = 5;
   const vencimentoSantander = dateISO => {
-    const [y, m] = dateISO.split('-').map(Number);
-    const proximo = new Date(y, m, 10); // m (base 0) já é o mês seguinte
-    return proximo.getFullYear() + '-' + pad2(proximo.getMonth() + 1) + '-' + pad2(proximo.getDate());
+    const [y, m, d] = dateISO.split('-').map(Number);
+    const mesBase = d <= DIA_CORTE_SANTANDER ? m - 1 : m; // Date usa mês base 0: m-1 = mesmo mês, m = mês seguinte
+    const venc = new Date(y, mesBase, 10);
+    return venc.getFullYear() + '-' + pad2(venc.getMonth() + 1) + '-' + pad2(venc.getDate());
   };
 
   const addMonthsClamped = (dateStr, months) => {
@@ -3540,7 +3543,8 @@ const openModal = (modalID) => {
   };
 
   const renderLedger = () => {
-    const monthList = state.activeTab === 'despesas' ? monthOccurrencesSantander() : monthOccurrences();
+    // A lista do Passou, Anotou é só do cartão Santander; os demais cartões ficam no detalhamento deles
+    const monthList = monthOccurrencesSantander();
     const list = monthList.slice().sort((a, b) => {
       if (a.purchaseDate !== b.purchaseDate) return a.purchaseDate < b.purchaseDate ? 1 : -1;
       return (b.createdAt || '').localeCompare(a.createdAt || '');
