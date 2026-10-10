@@ -2672,6 +2672,13 @@ const dataToSync = expensesSource.map(e => {
     saveToStorage();
   };
 
+  // Cartão Santander: vencimento sempre dia 10 do mês seguinte à compra
+  const vencimentoSantander = dateISO => {
+    const [y, m] = dateISO.split('-').map(Number);
+    const proximo = new Date(y, m, 10); // m (base 0) já é o mês seguinte
+    return proximo.getFullYear() + '-' + pad2(proximo.getMonth() + 1) + '-' + pad2(proximo.getDate());
+  };
+
   const addMonthsClamped = (dateStr, months) => {
     const parts = dateStr.split('-').map(Number);
     let y = parts[0], m = parts[1] - 1, day = parts[2];
@@ -2689,7 +2696,8 @@ const dataToSync = expensesSource.map(e => {
     const remainder = e.valueCents - base * n;
     const occs = [];
 
-    const baseDate = e.dataVencimento || e.date;
+    const ehSantander = !e.cartao || e.cartao === 'cartao_santander';
+    const baseDate = (ehSantander && e.date) ? vencimentoSantander(e.date) : (e.dataVencimento || e.date);
 
     for (let i = 0; i < n; i++) {
       occs.push({
@@ -3734,10 +3742,8 @@ const openModal = (modalID) => {
       return;
     }
 
-    let dataVencimentoISO = dateISO;
-    if (el.dataVencimentoInput && el.dataVencimentoInput.value.trim()) {
-      dataVencimentoISO = formatDateToISO(el.dataVencimentoInput.value);
-    }
+    // Cartão Santander: o vencimento é sempre dia 10 do mês seguinte à compra
+    const dataVencimentoISO = vencimentoSantander(dateISO);
 
     const payload = {
       valueCents: cents,
