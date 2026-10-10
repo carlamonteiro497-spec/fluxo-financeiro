@@ -2186,6 +2186,51 @@ const dataToSync = expensesSource.map(e => {
     }
   }
 
+  // Marca quando este aparelho alterou uma configuração (para não ser sobrescrita por uma cópia antiga da nuvem)
+  const marcarAlteracaoLocal = (chaveLocal) => {
+    try { localStorage.setItem(chaveLocal + '__alterado', new Date().toISOString()); } catch(e) {}
+  };
+
+  // Envia uma configuração para a nuvem (tabela app_config)
+  const enviarAppConfig = async (id, dados) => {
+    try {
+      const config = JSON.parse(localStorage.getItem('supabase_config') || '{}');
+      const url = config.url || (typeof supabaseConfig !== 'undefined' ? supabaseConfig.url : null);
+      const key = config.key || (typeof supabaseConfig !== 'undefined' ? supabaseConfig.key : null);
+      if (!url || !key) return false;
+      const res = await fetch(`${url}/rest/v1/app_config`, {
+        method: 'POST',
+        headers: {
+          'apikey': key,
+          'Authorization': `Bearer ${key}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'resolution=merge-duplicates'
+        },
+        body: JSON.stringify({ id: id, data: dados, updated_at: new Date().toISOString() })
+      });
+      return res.ok;
+    } catch (err) {
+      console.error('[SYNC] Erro ao enviar ' + id + ':', err);
+      return false;
+    }
+  };
+
+  // Envia para a nuvem as versões deste aparelho de contas fixas, valores do mês e pagamentos
+  const enviarConfigsLocais = async () => {
+    const itens = [
+      { id: 'contasFixas', chave: CONTAS_KEY },
+      { id: CONTAS_VALORES_MES_KEY, chave: CONTAS_VALORES_MES_KEY },
+      { id: PAGAMENTOS_KEY, chave: PAGAMENTOS_KEY }
+    ];
+    for (const it of itens) {
+      const raw = localStorage.getItem(it.chave);
+      if (raw === null) continue;
+      try {
+        await enviarAppConfig(it.id, JSON.parse(raw));
+      } catch(e) {}
+    }
+  };
+
   async function manualSyncSupabase() {
     if (!supabaseConfig.enabled) {
       showToast('Configure Supabase primeiro!', 'warning');
@@ -2193,6 +2238,7 @@ const dataToSync = expensesSource.map(e => {
     }
 
     updateSyncStatus('syncing');
+    await enviarConfigsLocais();
     const result = await syncToSupabase();
 
     if (result) {
@@ -2873,6 +2919,7 @@ const togglePagoItem = (chave) => {
     p[mk][chave] = true;
   }
   localStorage.setItem(PAGAMENTOS_KEY, JSON.stringify(p));
+  marcarAlteracaoLocal(PAGAMENTOS_KEY);
   salvarPagamentosCloud(p);
   atualizarBotoesPago();
 };
@@ -3818,6 +3865,7 @@ const deleteExpense = async id => {
     // 1. Salva localmente
     localStorage.setItem(CONTAS_KEY, JSON.stringify(contas));
     localStorage.setItem(CONTAS_VERSION_KEY, CURRENT_VERSION);
+    marcarAlteracaoLocal(CONTAS_KEY);
     contasFixas = contas;
     if (typeof state !== 'undefined') {
         state.contasFixas = contas;
@@ -4699,6 +4747,7 @@ window.adicionarBonus = async () => {
       const chave = contaId + '_' + ano + '-' + pad2(mes + 1);
       valores[chave] = valor;
       localStorage.setItem(CONTAS_VALORES_MES_KEY, JSON.stringify(valores));
+      marcarAlteracaoLocal(CONTAS_VALORES_MES_KEY);
       saveValoresMesCloud(valores);
       if (supabaseConfig.enabled) scheduleAutoSync();
     } catch(e) {}
@@ -5487,9 +5536,18 @@ async function loadAllFromSupabase() {
         if (resCfg.ok) {
             const configs = await resCfg.json();
             configs.forEach(item => {
-                if (item.id === 'contasFixas') {
-                    localStorage.setItem(CONTAS_KEY, JSON.stringify(item.data));
-                    localStorage.setItem(CONTAS_VERSION_KEY, CURRENT_VERSION);
+                const protegidos = { 'contasFixas': CONTAS_KEY, [CONTAS_VALORES_MES_KEY]: CONTAS_VALORES_MES_KEY, [PAGAMENTOS_KEY]: PAGAMENTOS_KEY };
+                if (protegidos[item.id]) {
+                    const chaveProtegida = protegidos[item.id];
+                    const alteradoLocal = localStorage.getItem(chaveProtegida + '__alterado');
+                    if (alteradoLocal && item.updated_at && new Date(alteradoLocal) > new Date(item.updated_at)) {
+                        // Este aparelho tem uma alteração mais nova: mantém e envia para a nuvem
+                        enviarAppConfig(item.id, JSON.parse(localStorage.getItem(chaveProtegida) || 'null'));
+                        return;
+                    }
+                    localStorage.setItem(chaveProtegida, JSON.stringify(item.data));
+                    if (item.id === 'contasFixas') localStorage.setItem(CONTAS_VERSION_KEY, CURRENT_VERSION);
+                    localStorage.removeItem(chaveProtegida + '__alterado');
                     return;
                 }
                 const chaveLocal = item.id === 'rendaConfig' ? RENDA_KEY : (item.id === 'summaryConfig' ? SUMMARY_KEY : item.id);
