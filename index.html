@@ -1760,6 +1760,7 @@ footer.hint {
     <p style="font-size: 13px; color: var(--ink-soft); margin-bottom: 16px;">Escolha um arquivo. Toque em um de cada vez.</p>
     <button onclick="exportPlanilhaXlsx()" style="width: 100%; padding: 14px 16px; margin-bottom: 10px; background: var(--accent); color: var(--accent-ink); border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer;">📊 Baixar planilha (.xlsx)</button>
     <button onclick="exportPlanilhaMensal()" style="width: 100%; padding: 14px 16px; margin-bottom: 10px; background: #16a34a; color: #fff; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer;">🗓️ Planilha de pagamentos mensais</button>
+    <button onclick="exportLembretesIcs()" style="width: 100%; padding: 14px 16px; margin-bottom: 10px; background: #2563eb; color: #fff; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer;">📅 Lembretes de vencimento (iPhone)</button>
     <button onclick="exportJsonBackup()" style="width: 100%; padding: 14px 16px; background: var(--paper); color: var(--ink); border: 1px solid var(--line-strong); border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer;">💾 Baixar backup (.json)</button>
   </div>
 </div>
@@ -2460,6 +2461,97 @@ const dataToSync = expensesSource.map(e => {
     abasMes.forEach(a => XLSX.utils.book_append_sheet(wb, a.ws, a.nome));
     XLSX.writeFile(wb, 'fluxo-pagamentos-mensais-' + hojeArquivo() + '.xlsx');
     showToast('✅ Planilha de pagamentos mensais baixada!', 'success');
+  };
+
+  // Lembretes de vencimento em arquivo .ics (abre no Calendário do iPhone)
+  const exportLembretesIcs = () => {
+    const y = state.viewYear, m = state.viewMonth;
+    const mk = monthKey(y, m);
+    const eventos = [];
+    const fmtR = v => 'R$ ' + (v || 0).toFixed(2).replace('.', ',');
+    const diaDeISO = iso => parseInt(String(iso).slice(8, 10), 10);
+
+    // Contas fixas do mês (com o valor de cada mês)
+    const contasDoMes = getContasForMonth(y, m);
+    Object.keys(contasDoMes).forEach(dia => {
+      contasDoMes[dia].forEach(c => {
+        eventos.push({
+          uid: 'conta-' + c.id + '-' + mk,
+          dia: parseInt(dia, 10),
+          titulo: '🧾 ' + c.nomeCompleto + ' — ' + (c.valor > 0 ? fmtR(c.valor) : 'valor a lançar'),
+          desc: 'Conta fixa'
+        });
+      });
+    });
+
+    // Fatura do Santander: soma as compras por dia de vencimento
+    const santanderPorDia = {};
+    monthOccurrencesSantander().forEach(o => {
+      const d = diaDeISO(o.dataVencimento || o.date);
+      santanderPorDia[d] = (santanderPorDia[d] || 0) + (o.valueCents || 0);
+    });
+    Object.keys(santanderPorDia).forEach(d => {
+      eventos.push({
+        uid: 'santander-' + d + '-' + mk,
+        dia: parseInt(d, 10),
+        titulo: '💳 Fatura Santander Camila — ' + fmtR(santanderPorDia[d] / 100),
+        desc: 'Vencimento da fatura do cartão Santander'
+      });
+    });
+
+    // Demais cartões: um lembrete por cartão e dia
+    const cartoesPorDia = {};
+    allOccurrences().forEach(o => {
+      const iso = o.dataVencimento || o.date || '';
+      if (iso.slice(0, 7) !== mk) return;
+      const c = o.cartao || 'cartao_santander';
+      if (c === 'cartao_santander' || c === 'contas_fixas') return;
+      const chave = c + '|' + diaDeISO(iso);
+      cartoesPorDia[chave] = (cartoesPorDia[chave] || 0) + (o.valueCents || 0);
+    });
+    Object.keys(cartoesPorDia).forEach(chave => {
+      const [c, d] = chave.split('|');
+      eventos.push({
+        uid: 'cartao-' + c + '-' + d + '-' + mk,
+        dia: parseInt(d, 10),
+        titulo: '💳 ' + (NOMES_CARTAO_PAGAMENTO[c] || c) + ' — ' + fmtR(cartoesPorDia[chave] / 100),
+        desc: 'Vencimento da fatura'
+      });
+    });
+
+    eventos.sort((a, b) => a.dia - b.dia);
+
+    const escIcs = t => String(t).replace(/\\/g, '\\\\').replace(/;/g, '\;').replace(/,/g, '\\,').replace(/\n/g, '\\n');
+    const agora = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
+    const dataCurta = (ano, mes0, dia) => {
+      const dt = new Date(ano, mes0, dia);
+      return dt.getFullYear() + pad2(dt.getMonth() + 1) + pad2(dt.getDate());
+    };
+
+    const linhas = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Fluxo Financeiro//PT', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH'];
+    eventos.forEach(ev => {
+      linhas.push('BEGIN:VEVENT');
+      linhas.push('UID:' + ev.uid + '@fluxo-financeiro');
+      linhas.push('DTSTAMP:' + agora);
+      linhas.push('DTSTART;VALUE=DATE:' + dataCurta(y, m, ev.dia));
+      linhas.push('DTEND;VALUE=DATE:' + dataCurta(y, m, ev.dia + 1));
+      linhas.push('SUMMARY:' + escIcs(ev.titulo));
+      linhas.push('DESCRIPTION:' + escIcs(ev.desc));
+      linhas.push('BEGIN:VALARM');
+      linhas.push('ACTION:DISPLAY');
+      linhas.push('DESCRIPTION:' + escIcs('Vence hoje: ' + ev.titulo));
+      linhas.push('TRIGGER:PT9H');
+      linhas.push('END:VALARM');
+      linhas.push('END:VEVENT');
+    });
+    linhas.push('END:VCALENDAR');
+
+    if (eventos.length === 0) {
+      showToast('Nenhum vencimento neste mês', 'warning');
+      return;
+    }
+    baixarArquivo(linhas.join('\r\n'), 'fluxo-vencimentos-' + mk + '.ics', 'text/calendar;charset=utf-8');
+    showToast('📅 ' + eventos.length + ' lembretes prontos para o calendário', 'success');
   };
 
   // Backup completo em JSON (mesmo formato que a importação lê)
@@ -4032,6 +4124,7 @@ window.deletarContaFixa = deletarContaFixa;
   window.exportJsonBackup = exportJsonBackup;
   window.exportPlanilhaXlsx = exportPlanilhaXlsx;
   window.exportPlanilhaMensal = exportPlanilhaMensal;
+  window.exportLembretesIcs = exportLembretesIcs;
   window.showDayDetailsComplete = showDayDetailsComplete;
   window.importData = importData;
 
