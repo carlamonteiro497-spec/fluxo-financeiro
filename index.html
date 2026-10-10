@@ -3652,6 +3652,15 @@ const openModal = (modalID) => {
     el.dateInput.value = formatted;
   });
 
+  // Ao digitar a data da compra, preenche o vencimento do Santander (dia 10 do mês seguinte)
+  el.dateInput?.addEventListener('input', () => {
+    const valor = el.dateInput.value.trim();
+    if (valor.length !== 10) return;
+    const iso = formatDateToISO(valor);
+    if (!iso || iso === 'NaN-NaN-NaN') return;
+    if (el.dataVencimentoInput) el.dataVencimentoInput.value = formatDateToDMY(vencimentoSantander(iso));
+  });
+
   el.dataVencimentoInput?.addEventListener('input', () => {
     let v = el.dataVencimentoInput.value.replace(/\D/g, '');
     if (v.length > 8) v = v.slice(0, 8);
@@ -3706,7 +3715,7 @@ const openModal = (modalID) => {
     el.valueInput.value = brl.format(e.valueCents / 100).replace('R$', '').trim();
     el.descInput.value = e.description || '';
     el.dateInput.value = formatDateToDMY(e.date);
-    el.dataVencimentoInput.value = e.dataVencimento ? formatDateToDMY(e.dataVencimento) : '';
+    el.dataVencimentoInput.value = e.date ? formatDateToDMY(vencimentoSantander(e.date)) : '';
     state.installments = e.installments || 1;
     renderInstallments();
     el.addForm.scrollIntoView({behavior: 'smooth', block: 'center'});
