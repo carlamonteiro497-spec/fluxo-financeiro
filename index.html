@@ -2220,7 +2220,8 @@ const dataToSync = expensesSource.map(e => {
     const itens = [
       { id: 'contasFixas', chave: CONTAS_KEY },
       { id: CONTAS_VALORES_MES_KEY, chave: CONTAS_VALORES_MES_KEY },
-      { id: PAGAMENTOS_KEY, chave: PAGAMENTOS_KEY }
+      { id: PAGAMENTOS_KEY, chave: PAGAMENTOS_KEY },
+      { id: VENC_MANUAL_KEY, chave: VENC_MANUAL_KEY }
     ];
     for (const it of itens) {
       const raw = localStorage.getItem(it.chave);
@@ -2682,6 +2683,29 @@ const dataToSync = expensesSource.map(e => {
     return venc.getFullYear() + '-' + pad2(venc.getMonth() + 1) + '-' + pad2(venc.getDate());
   };
 
+  const loadVencManual = () => {
+    try { return JSON.parse(localStorage.getItem(VENC_MANUAL_KEY) || '{}'); } catch(e) { return {}; }
+  };
+
+  const vencimentoDaCompra = e => {
+    const manual = loadVencManual()[e.id];
+    if (manual) return manual;
+    return vencimentoSantander(e.date);
+  };
+
+  // Guarda a data corrigida só quando ela é diferente da regra; se voltar a ser a regra, remove a correção
+  const salvarVencManual = (idCompra, dataISO, autoISO) => {
+    const mapa = loadVencManual();
+    if (dataISO && dataISO !== autoISO) {
+      mapa[idCompra] = dataISO;
+    } else {
+      delete mapa[idCompra];
+    }
+    localStorage.setItem(VENC_MANUAL_KEY, JSON.stringify(mapa));
+    marcarAlteracaoLocal(VENC_MANUAL_KEY);
+    enviarAppConfig(VENC_MANUAL_KEY, mapa);
+  };
+
   const addMonthsClamped = (dateStr, months) => {
     const parts = dateStr.split('-').map(Number);
     let y = parts[0], m = parts[1] - 1, day = parts[2];
@@ -2700,7 +2724,7 @@ const dataToSync = expensesSource.map(e => {
     const occs = [];
 
     const ehSantander = !e.cartao || e.cartao === 'cartao_santander';
-    const baseDate = (ehSantander && e.date) ? vencimentoSantander(e.date) : (e.dataVencimento || e.date);
+    const baseDate = (ehSantander && e.date) ? vencimentoDaCompra(e) : (e.dataVencimento || e.date);
 
     for (let i = 0; i < n; i++) {
       occs.push({
@@ -2855,6 +2879,8 @@ occurrencesThisMonth.forEach(occ => {
 // Guardado por mês: { "2026-10": { "conta:luz": true, "cartao:sicoob": true } }
 // ==========================================
 const PAGAMENTOS_KEY = 'fluxo_pagamentos';
+// Vencimentos corrigidos à mão, por compra: { idDaCompra: 'AAAA-MM-DD' }
+const VENC_MANUAL_KEY = 'fluxo_venc_manual';
 
 const NOMES_CARTAO_PAGAMENTO = {
   'cartao_santander': 'Cartão Santander Camila',
@@ -3719,7 +3745,7 @@ const openModal = (modalID) => {
     el.valueInput.value = brl.format(e.valueCents / 100).replace('R$', '').trim();
     el.descInput.value = e.description || '';
     el.dateInput.value = formatDateToDMY(e.date);
-    el.dataVencimentoInput.value = e.date ? formatDateToDMY(vencimentoSantander(e.date)) : '';
+    el.dataVencimentoInput.value = e.date ? formatDateToDMY(vencimentoDaCompra(e)) : '';
     state.installments = e.installments || 1;
     renderInstallments();
     el.addForm.scrollIntoView({behavior: 'smooth', block: 'center'});
@@ -3756,9 +3782,17 @@ const openModal = (modalID) => {
     }
 
     // Cartão Santander: o vencimento é sempre dia 10 do mês seguinte à compra
-    const dataVencimentoISO = vencimentoSantander(dateISO);
+    const autoISO = vencimentoSantander(dateISO);
+    let dataVencimentoISO = autoISO;
+    if (el.dataVencimentoInput && el.dataVencimentoInput.value.trim().length === 10) {
+      const digitado = formatDateToISO(el.dataVencimentoInput.value);
+      if (digitado && digitado !== 'NaN-NaN-NaN') dataVencimentoISO = digitado;
+    }
+    const idCompra = state.editingId || generateUUID();
+    salvarVencManual(idCompra, dataVencimentoISO, autoISO);
 
     const payload = {
+      id: idCompra,
       valueCents: cents,
       description: el.descInput.value.trim(),
       installments: state.installments,
@@ -5555,7 +5589,7 @@ async function loadAllFromSupabase() {
         if (resCfg.ok) {
             const configs = await resCfg.json();
             configs.forEach(item => {
-                const protegidos = { 'contasFixas': CONTAS_KEY, [CONTAS_VALORES_MES_KEY]: CONTAS_VALORES_MES_KEY, [PAGAMENTOS_KEY]: PAGAMENTOS_KEY };
+                const protegidos = { 'contasFixas': CONTAS_KEY, [CONTAS_VALORES_MES_KEY]: CONTAS_VALORES_MES_KEY, [PAGAMENTOS_KEY]: PAGAMENTOS_KEY, [VENC_MANUAL_KEY]: VENC_MANUAL_KEY };
                 if (protegidos[item.id]) {
                     const chaveProtegida = protegidos[item.id];
                     const alteradoLocal = localStorage.getItem(chaveProtegida + '__alterado');
