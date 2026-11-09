@@ -1104,7 +1104,7 @@ footer.hint {
   animation: slideOut 0.3s ease-out forwards;
 }
 
-/* Modal Supabase */
+/* Modal */
 .modal {
   display: none;
   position: fixed;
@@ -1496,10 +1496,8 @@ footer.hint {
   <div style="background: linear-gradient(135deg, rgba(53, 70, 122, 0.05) 0%, rgba(132, 150, 214, 0.05) 100%); border: 1px solid var(--line-strong); border-radius: 12px; padding: 20px; margin-top: 20px;">
     <h3 style="font-size: 13px; font-weight: 600; color: var(--ink-soft); margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.5px;">⚙️ Ferramentas</h3>
     <div class="tools-grid">
-      <button onclick="manualSyncSupabase()" style="background: var(--accent); color: var(--accent-ink); border: none; padding: 12px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.3s;" title="Sincronizar dados com Supabase" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">🔄 Sincronizar</button>
       <button onclick="exportData()" style="background: var(--accent); color: var(--accent-ink); border: none; padding: 12px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.3s;" title="Exportar dados para backup" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">📥 Exportar</button>
       <button onclick="document.getElementById('importFile').click()" style="background: var(--accent); color: var(--accent-ink); border: none; padding: 12px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.3s;" title="Importar dados de backup" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">📤 Importar</button>
-      <button onclick="openSupabaseModal()" style="background: var(--accent); color: var(--accent-ink); border: none; padding: 12px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.3s;" title="Configurar URL e chave do Supabase" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">☁️ Configurar Nuvem</button>
       <input type="file" id="importFile" accept=".json" style="display:none;" onchange="importData(event)">
     </div>
   </div>
@@ -1775,38 +1773,6 @@ footer.hint {
   </div>
 </div>
 
-<!-- MODAL SUPABASE -->
-<div id="supabaseModal" class="modal">
-  <div class="modal-dialog">
-    <div class="modal-header">🔄 Configurar Sincronização em Nuvem</div>
-
-    <div style="background: #eff6ff; border-left: 4px solid #2563eb; padding: 12px; border-radius: 6px; margin-bottom: 16px; font-size: 13px; color: #1e40af; line-height: 1.5;">
-      ℹ️ Você já criou a tabela no Supabase? Se não, volte e siga os passos anteriores primeiro!
-    </div>
-
-    <div class="modal-form-group">
-      <label>URL do Projeto Supabase</label>
-      <input type="text" id="supabaseUrl" placeholder="https://seu-projeto.supabase.co">
-    </div>
-
-    <div class="modal-form-group">
-      <label>Chave Anon (Pública)</label>
-      <input type="password" id="supabaseKey" placeholder="sb_publishable_...">
-    </div>
-
-    <div class="modal-checkbox-group">
-      <input type="checkbox" id="showKeyCheckbox" onchange="toggleSupabaseKeyVisibility()">
-      <label for="showKeyCheckbox" style="cursor: pointer;">Mostrar chave</label>
-    </div>
-
-    <div id="supabaseStatus" class="modal-status"></div>
-
-    <div class="modal-buttons">
-      <button type="button" class="modal-btn modal-btn-secondary" onclick="closeSupabaseModal()">Cancelar</button>
-      <button type="button" class="modal-btn modal-btn-primary" onclick="saveSupabaseConfigViaModal()">Salvar e Conectar</button>
-    </div>
-  </div>
-</div>
 
 <!-- Biblioteca para gerar planilha .xlsx (SheetJS) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -1822,7 +1788,7 @@ footer.hint {
   };
 
   // ============================================================================
-  // UUID GENERATOR - Para IDs compatíveis com Supabase
+  // UUID GENERATOR - Gera IDs únicos
   // ============================================================================
   function generateUUID() {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
@@ -1833,457 +1799,245 @@ footer.hint {
   }
 
   // ============================================================================
-  // SUPABASE CLOUD SYNC
+  // SINCRONIZAÇÃO COM PLANILHA GOOGLE (via Apps Script)
+  // ----------------------------------------------------------------------------
+  // O app continua usando o localStorage como "cópia de trabalho" (rápido, funciona
+  // offline). Toda vez que um dado muda, ele é enviado para a planilha; e de tempos
+  // em tempos o app confere se a planilha tem algo mais novo (outro aparelho).
   // ============================================================================
-  let supabaseConfig = {
-    url: null,
-    key: null,
-    enabled: false
+
+  // Link da planilha (Apps Script). O app conecta sozinho, sem tela de configuração.
+  const PLANILHA_URL = 'https://script.google.com/macros/s/AKfycbzjdz38lHrsd7laBlxS8d8ctzghK2YPAYgcssZakhU0sN0FhuGtex0kMW1ndHj8ou0THw/exec';
+
+    const PLANILHA_PENDENTES_KEY = 'fluxo_planilha_pendentes';
+  const PLANILHA_VISTO_KEY = 'fluxo_planilha_visto';
+  const PLANILHA_INTERVALO_MS = 30000;
+  const CHAVES_SINCRONIZADAS = [
+    'passou_anotou_expenses',   // despesas
+    'fluxo_contas_fixas',       // contas fixas
+    'fluxo_contas_valores_mes', // valores mensais (luz, água...)
+    'fluxo_pagamentos',         // pago / não pago
+    'fluxo_venc_manual',        // vencimentos corrigidos à mão
+    'fluxo_renda_config',       // renda
+    'fluxo_summary_config',     // vale alimentação
+    'fluxo_reembolsos'          // reembolsos
+  ];
+
+  const _lsSetItem = Storage.prototype.setItem;
+  const lerJsonLocal = (k, padrao) => {
+    try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : padrao; } catch (e) { return padrao; }
+  };
+  const gravarSemSincronizar = (k, v) => _lsSetItem.call(localStorage, k, v);
+
+  let planilhaConfig = { url: PLANILHA_URL, senha: '' };
+  let planilhaPronta = false;      // true depois que o app começou a sincronizar
+  let planilhaEnviando = false;
+  let planilhaReenviar = false;
+  let planilhaTimerEnvio = null;
+  let planilhaTimerBusca = null;
+  let planilhaBuscando = false;
+
+  const carregarConfigPlanilha = () => {
+    planilhaConfig = { url: PLANILHA_URL, senha: '' };
+    return !!planilhaConfig.url;
+  };
+  const planilhaConfigurada = () => !!planilhaConfig.url;
+
+  // Lista de chaves alteradas neste aparelho e ainda não confirmadas pela planilha
+  const lerPendentes = () => lerJsonLocal(PLANILHA_PENDENTES_KEY, []);
+  const gravarPendentes = (lista) => gravarSemSincronizar(PLANILHA_PENDENTES_KEY, JSON.stringify(lista));
+  const lerVisto = () => lerJsonLocal(PLANILHA_VISTO_KEY, {});
+  const gravarVisto = (obj) => gravarSemSincronizar(PLANILHA_VISTO_KEY, JSON.stringify(obj));
+
+  // Toda gravação numa das chaves do app dispara o envio para a planilha automaticamente
+  Storage.prototype.setItem = function (chave, valor) {
+    _lsSetItem.call(this, chave, valor);
+    if (this === localStorage && planilhaPronta && CHAVES_SINCRONIZADAS.indexOf(chave) !== -1) {
+      const pend = lerPendentes();
+      if (pend.indexOf(chave) === -1) { pend.push(chave); gravarPendentes(pend); }
+      agendarEnvioPlanilha();
+    }
   };
 
-function loadSupabaseConfig() {
-  supabaseConfig = {
-    url: "https://nklszryrglsrzsgkyzob.supabase.co",
-    key: "sb_publishable_NQd9TQurcr-w20Z1YUi6Qw_gnUdQ7d5",
-    enabled: true
-  };
-  localStorage.setItem('supabase_config', JSON.stringify(supabaseConfig));
-  return true;
-}
-
-  function saveSupabaseConfig(url, key) {
-    supabaseConfig = { url, key, enabled: true };
-    localStorage.setItem('supabase_config', JSON.stringify(supabaseConfig));
-  }
-
-  async function syncToSupabase() {
-    if (!supabaseConfig.enabled || !supabaseConfig.url || !supabaseConfig.key) {
-      return false;
-    }
-
-    try {
-      const deviceId = localStorage.getItem('device_id') || 'device_' + Math.random().toString(36).substr(2, 9);
-      localStorage.setItem('device_id', deviceId);
-      const now = new Date().toISOString();
-
-      // Usa sempre o estado atual (o que o usuário vê), não a chave antiga 'expenses'
-      const expensesSource = state.expenses || [];
-const dataToSync = expensesSource.map(e => {
-        if (!e.id) {
-          e.id = generateUUID();
-        }
-        return {
-          id: e.id,
-          date: e.date || new Date().toISOString().split('T')[0],
-          description: e.description || 'Sem descrição',
-          valuecents: parseInt(e.valueCents || 0),
-          installments: parseInt(e.installments || 1),
-          createdat: e.createdAt || now,
-          datavencimento: e.dataVencimento || e.date || new Date().toISOString().split('T')[0],
-          cartao: e.cartao || 'cartao_santander'
-        };
-      });
-
-      if (dataToSync.length === 0) {
-        console.log('[SYNC] Nenhum dado para sincronizar');
-        return true;
-      }
-
-      console.log('[SYNC] Preparando envio de', dataToSync.length, 'registros');
-
-      const response = await fetch(
-        `${supabaseConfig.url}/rest/v1/expenses`,
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${supabaseConfig.key}`,
-            'apikey': supabaseConfig.key,
-            'Content-Type': 'application/json',
-            'Prefer': 'resolution=merge-duplicates,return=minimal'
-          },
-          body: JSON.stringify(dataToSync)
-        }
-      );
-
-      if (response.ok) {
-        console.log('[SYNC] ✓ Dados sincronizados com sucesso');
-        updateSyncStatus('success');
-        await loadAndMergeFromSupabase();
-        return true;
-      } else {
-        console.error('[SYNC] ❌ Erro ao sincronizar - Status:', response.status);
-        let successCount = 0;
-
-        for (let i = 0; i < dataToSync.length; i++) {
-          try {
-            const record = dataToSync[i];
-            const indvResponse = await fetch(
-              `${supabaseConfig.url}/rest/v1/expenses`,
-              {
-                method: 'POST',
-                headers: {
-                  'Authorization': `Bearer ${supabaseConfig.key}`,
-                  'apikey': supabaseConfig.key,
-                  'Content-Type': 'application/json',
-                  'Prefer': 'return=minimal'
-                },
-                body: JSON.stringify(record)
-              }
-            );
-
-            if (indvResponse.ok) {
-              successCount++;
-            }
-          } catch (e) {
-            console.error('[SYNC] Erro ao inserir registro:', e);
-          }
-        }
-
-        if (successCount > 0) {
-          updateSyncStatus('success');
-          await loadAndMergeFromSupabase();
-          return true;
-        } else {
-          updateSyncStatus('error');
-          return false;
-        }
-      }
-    } catch (e) {
-      console.error('[SYNC] Erro ao sincronizar:', e);
-      updateSyncStatus('error');
-      return false;
-    }
-  }
-
-  async function loadFromSupabase() {
-    if (!supabaseConfig.enabled || !supabaseConfig.url || !supabaseConfig.key) {
-      return null;
-    }
-
-    try {
-      const response = await fetch(
-        `${supabaseConfig.url}/rest/v1/expenses?order=created_at.asc`,
-        {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${supabaseConfig.key}`,
-            'apikey': supabaseConfig.key,
-            'Content-Type': 'application/json'
-          }
-        }
-      );
-
-      if (response.ok) {
-        const expenses = await response.json();
-        return expenses.filter(e => e.id && e.description);
-      }
-    } catch (e) {
-      console.error('Erro ao carregar da nuvem:', e);
-    }
-    return null;
-  }
-
-  async function loadAndMergeFromSupabase() {
-    const cloudExpenses = await loadFromSupabase();
-
-    if (!cloudExpenses || cloudExpenses.length === 0) {
-      return;
-    }
-
-    const cloudMap = new Map();
-    cloudExpenses.forEach(e => {
-      if (e.id) {
-        cloudMap.set(e.id, {
-          id: e.id,
-          date: e.date || e.data || '',
-          description: e.description || '',
-          valueCents: parseInt(e.valuecents || e.valueCents || 0),
-          installments: parseInt(e.installments || 1),
-          createdAt: e.createdat || e.createdAt || new Date().toISOString(),
-          cartao: e.cartao || 'cartao_santander',
-          dataVencimento: e.datavencimento || e.dataVencimento || e.date || ''
-        });
-      }
-    });
-
-    const merged = [];
-    const seenIds = new Set();
-
-    cloudMap.forEach((cloudExp, id) => {
-      merged.push(cloudExp);
-      seenIds.add(id);
-    });
-
-    state.expenses.forEach(localExp => {
-      if (localExp.id && !seenIds.has(localExp.id)) {
-        merged.push(localExp);
-      }
-    });
-
-    state.expenses = merged;
-    saveToStorage();
-    renderAll();
-  }
-
-  async function loadInitialDataFromSupabase() {
-    if (!supabaseConfig.enabled || !supabaseConfig.url || !supabaseConfig.key) {
-      return false;
-    }
-
-    try {
-      const cloudExpenses = await loadFromSupabase();
-
-      if (!cloudExpenses || cloudExpenses.length === 0) {
-        return false;
-      }
-
-      state.expenses = cloudExpenses.map(e => ({
-        id: e.id,
-        date: e.date || e.data || '',
-        description: e.description || '',
-        valueCents: parseInt(e.valuecents || e.valueCents || 0),
-        installments: parseInt(e.installments || 1),
-        createdAt: e.createdat || e.createdAt || new Date().toISOString(),
-        cartao: e.cartao || 'cartao_santander',
-        dataVencimento: e.datavencimento || e.dataVencimento || e.date || ''
-      }));
-
-      return true;
-    } catch (e) {
-      return false;
-    }
-  }
-
-  let syncPollTimer = null;
-  function startSyncPolling() {
-    if (!supabaseConfig.enabled) return;
-
-    syncPollTimer = setInterval(async () => {
-      try {
-        const cloudExpenses = await loadFromSupabase();
-        if (!cloudExpenses) return;
-
-        const currentHash = getDataHash();
-        const cloudHash = getHashFromExpenses(cloudExpenses);
-
-        if (currentHash !== cloudHash) {
-          await loadAndMergeFromSupabase();
-          showToast('📱 Dados sincronizados de outro dispositivo', 'info', 3000);
-        }
-      } catch (e) {}
-    }, 30000);
-  }
-
-  function getHashFromExpenses(expenses) {
-    if (!expenses || !Array.isArray(expenses)) return '';
-    const sorted = expenses.sort((a, b) => (a.id || '').localeCompare(b.id || ''));
-    const data = sorted.map(e => `${e.id}:${e.valuecents}:${e.date}`).join('|');
-    return JSON.stringify(data);
-  }
-
-  function openSupabaseModal() {
-    const modal = document.getElementById('supabaseModal');
-    const urlInput = document.getElementById('supabaseUrl');
-    const keyInput = document.getElementById('supabaseKey');
-    const statusDiv = document.getElementById('supabaseStatus');
-
-    if (supabaseConfig.enabled) {
-      urlInput.value = supabaseConfig.url;
-      keyInput.value = supabaseConfig.key;
-    } else {
-      urlInput.value = '';
-      keyInput.value = '';
-    }
-
-    statusDiv.textContent = '';
-    statusDiv.classList.remove('show', 'success', 'error');
-    document.getElementById('showKeyCheckbox').checked = false;
-    keyInput.type = 'password';
-
-    modal.classList.add('show');
-  }
-
-  function closeSupabaseModal() {
-    const modal = document.getElementById('supabaseModal');
-    modal.classList.remove('show');
-  }
-
-  function toggleSupabaseKeyVisibility() {
-    const keyInput = document.getElementById('supabaseKey');
-    const checkbox = document.getElementById('showKeyCheckbox');
-    keyInput.type = checkbox.checked ? 'text' : 'password';
-  }
-
-  function saveSupabaseConfigViaModal() {
-    const url = document.getElementById('supabaseUrl').value.trim();
-    const key = document.getElementById('supabaseKey').value.trim();
-    const statusDiv = document.getElementById('supabaseStatus');
-
-    if (!url || !key) {
-      statusDiv.textContent = '❌ Preencha URL e Chave!';
-      statusDiv.className = 'modal-status show error';
-      return;
-    }
-
-    if (!url.includes('supabase.co')) {
-      statusDiv.textContent = '❌ URL deve conter "supabase.co"';
-      statusDiv.className = 'modal-status show error';
-      return;
-    }
-
-    if (!key.startsWith('sb_')) {
-      statusDiv.textContent = '❌ Chave deve começar com "sb_"';
-      statusDiv.className = 'modal-status show error';
-      return;
-    }
-
-    saveSupabaseConfig(url, key);
-
-    statusDiv.textContent = '✅ Configurado com sucesso!';
-    statusDiv.className = 'modal-status show success';
-
-    setTimeout(() => {
-      closeSupabaseModal();
-      showToast('✓ Supabase configurado! Sincronizando...', 'success');
-      syncToSupabase().catch(e => {});
-    }, 1500);
-  }
-
-  function showSupabaseSetup() {
-    openSupabaseModal();
-  }
 
   function updateSyncStatus(status) {
     const statusEl = document.getElementById('syncStatus');
     if (!statusEl) return;
-
+    const voltarPronto = () => {
+      statusEl.textContent = '⏳ Pronto';
+      statusEl.style.color = 'rgba(255,255,255,0.7)';
+    };
     if (status === 'syncing') {
       statusEl.textContent = '🔄 Sincronizando...';
       statusEl.style.color = 'rgba(255,255,255,0.9)';
     } else if (status === 'success') {
       statusEl.textContent = '✅ Sincronizado';
       statusEl.style.color = '#10b981';
-      setTimeout(() => {
-        if (statusEl) {
-          statusEl.textContent = '⏳ Pronto';
-          statusEl.style.color = 'rgba(255,255,255,0.7)';
-        }
-      }, 3000);
+      setTimeout(voltarPronto, 3000);
     } else if (status === 'error') {
       statusEl.textContent = '❌ Erro';
       statusEl.style.color = '#dc2626';
-      setTimeout(() => {
-        if (statusEl) {
-          statusEl.textContent = '⏳ Pronto';
-          statusEl.style.color = 'rgba(255,255,255,0.7)';
-        }
-      }, 3000);
+      setTimeout(voltarPronto, 4000);
     } else if (status === 'offline') {
       statusEl.textContent = '📴 Offline';
       statusEl.style.color = '#f59e0b';
     }
   }
 
-  // Marca quando este aparelho alterou uma configuração (para não ser sobrescrita por uma cópia antiga da nuvem)
-  const marcarAlteracaoLocal = (chaveLocal) => {
-    try { localStorage.setItem(chaveLocal + '__alterado', new Date().toISOString()); } catch(e) {}
-  };
-
-  // Envia uma configuração para a nuvem (tabela app_config)
-  const enviarAppConfig = async (id, dados) => {
-    try {
-      const config = JSON.parse(localStorage.getItem('supabase_config') || '{}');
-      const url = config.url || (typeof supabaseConfig !== 'undefined' ? supabaseConfig.url : null);
-      const key = config.key || (typeof supabaseConfig !== 'undefined' ? supabaseConfig.key : null);
-      if (!url || !key) return false;
-      const res = await fetch(`${url}/rest/v1/app_config`, {
+  // ---- Comunicação com o Apps Script ---------------------------------------
+  const chamarPlanilha = async (acao, dados) => {
+    if (!planilhaConfigurada()) throw new Error('Planilha não configurada');
+    let resp;
+    if (acao === 'salvar') {
+      // text/plain evita a "pré-verificação" (CORS) que o Apps Script não responde
+      resp = await fetch(planilhaConfig.url, {
         method: 'POST',
-        headers: {
-          'apikey': key,
-          'Authorization': `Bearer ${key}`,
-          'Content-Type': 'application/json',
-          'Prefer': 'resolution=merge-duplicates'
-        },
-        body: JSON.stringify({ id: id, data: dados, updated_at: new Date().toISOString() })
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(Object.assign({ action: acao }, dados || {}))
       });
-      return res.ok;
-    } catch (err) {
-      console.error('[SYNC] Erro ao enviar ' + id + ':', err);
-      return false;
-    }
-  };
-
-  // Envia para a nuvem as versões deste aparelho de contas fixas, valores do mês e pagamentos
-  const enviarConfigsLocais = async () => {
-    const itens = [
-      { id: 'contasFixas', chave: CONTAS_KEY },
-      { id: CONTAS_VALORES_MES_KEY, chave: CONTAS_VALORES_MES_KEY },
-      { id: PAGAMENTOS_KEY, chave: PAGAMENTOS_KEY },
-      { id: VENC_MANUAL_KEY, chave: VENC_MANUAL_KEY }
-    ];
-    for (const it of itens) {
-      const raw = localStorage.getItem(it.chave);
-      if (raw === null) continue;
-      try {
-        await enviarAppConfig(it.id, JSON.parse(raw));
-      } catch(e) {}
-    }
-  };
-
-  async function manualSyncSupabase() {
-    if (!supabaseConfig.enabled) {
-      showToast('Configure Supabase primeiro!', 'warning');
-      return;
-    }
-
-    updateSyncStatus('syncing');
-    await enviarConfigsLocais();
-    const result = await syncToSupabase();
-
-    if (result) {
-      updateSyncStatus('success');
-      showToast('✓ Sincronização concluída!', 'success');
     } else {
-      updateSyncStatus('error');
-      showToast('❌ Erro na sincronização', 'error');
+      resp = await fetch(planilhaConfig.url + '?action=' + acao);
     }
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const json = await resp.json();
+    if (!json.ok) throw new Error(json.erro || 'Erro na planilha');
+    return json;
+  };
+
+  // ---- Enviar (app → planilha) ---------------------------------------------
+  function agendarEnvioPlanilha() {
+    if (!planilhaConfigurada()) return;
+    if (planilhaTimerEnvio) clearTimeout(planilhaTimerEnvio);
+    planilhaTimerEnvio = setTimeout(() => { enviarParaPlanilha().catch(() => {}); }, 1500);
   }
 
-  let lastSyncHash = '';
-  let syncDebounceTimer = null;
-  let hasChanges = false;
+  async function enviarParaPlanilha(todas) {
+    if (!planilhaConfigurada()) return false;
+    if (planilhaEnviando) { planilhaReenviar = true; return false; }
 
-  function getDataHash() {
-    return JSON.stringify(state.expenses.map(e => ({
-      id: e.id,
-      date: e.date,
-      description: e.description,
-      valueCents: e.valueCents,
-      installments: e.installments,
-      cartao: e.cartao
-    })));
-  }
+    let chaves = todas ? CHAVES_SINCRONIZADAS.slice() : lerPendentes();
+    chaves = chaves.filter(k => localStorage.getItem(k) !== null);
+    if (chaves.length === 0) return true;
 
-  function scheduleAutoSync() {
-    hasChanges = true;
-
-    if (syncDebounceTimer) {
-      clearTimeout(syncDebounceTimer);
-    }
-
-    syncDebounceTimer = setTimeout(() => {
-      if (supabaseConfig.enabled && state.expenses.length > 0 && hasChanges) {
-        const currentHash = getDataHash();
-        if (currentHash !== lastSyncHash) {
-          lastSyncHash = currentHash;
-          hasChanges = false;
-          syncToSupabase().catch(e => console.log('Auto-sync error:', e));
+    planilhaEnviando = true;
+    updateSyncStatus('syncing');
+    const itens = chaves.map(k => ({ chave: k, valor: localStorage.getItem(k) }));
+    try {
+      const r = await chamarPlanilha('salvar', { itens });
+      const visto = lerVisto();
+      const pend = lerPendentes();
+      itens.forEach(it => {
+        if (r.versoes && r.versoes[it.chave]) visto[it.chave] = r.versoes[it.chave];
+        // só tira da fila se não mudou de novo enquanto enviava
+        if (localStorage.getItem(it.chave) === it.valor) {
+          const i = pend.indexOf(it.chave);
+          if (i !== -1) pend.splice(i, 1);
         }
-      }
-    }, 5000);
+      });
+      gravarVisto(visto);
+      gravarPendentes(pend);
+      updateSyncStatus('success');
+      return true;
+    } catch (e) {
+      console.error('[PLANILHA] Erro ao enviar:', e);
+      updateSyncStatus(navigator.onLine ? 'error' : 'offline');
+      return false;
+    } finally {
+      planilhaEnviando = false;
+      if (planilhaReenviar) { planilhaReenviar = false; agendarEnvioPlanilha(); }
+    }
   }
 
-  lastSyncHash = getDataHash();
+  // ---- Receber (planilha → app) --------------------------------------------
+  const aplicarDadoDaPlanilha = (chave, texto) => {
+    gravarSemSincronizar(chave, texto);
+    let valor = null;
+    try { valor = JSON.parse(texto); } catch (e) { return; }
+    if (typeof state === 'undefined') return;
+    if (chave === 'passou_anotou_expenses') {
+      state.expenses = Array.isArray(valor) ? valor : [];
+      gravarSemSincronizar('passou_anotou_version', CURRENT_VERSION);
+    } else if (chave === 'fluxo_contas_fixas') {
+      state.contasFixas = valor;
+      gravarSemSincronizar('passou_anotou_contas_version', CURRENT_VERSION);
+    } else if (chave === 'fluxo_renda_config') {
+      state.rendaConfig = valor;
+    } else if (chave === 'fluxo_summary_config') {
+      state.summaryConfig = valor;
+    } else if (chave === 'fluxo_reembolsos') {
+      state.reembolsos = valor;
+    }
+  };
+
+  const redesenharTudo = () => {
+    try { if (typeof renderAll === 'function') renderAll(); } catch (e) { console.error(e); }
+    try { if (typeof renderCalendar === 'function') renderCalendar(); } catch (e) { console.error(e); }
+    try { if (typeof updateContasFixasTotal === 'function') updateContasFixasTotal(); } catch (e) {}
+  };
+
+  async function buscarDaPlanilha(primeiraVez) {
+    if (!planilhaConfigurada() || planilhaBuscando) return false;
+    planilhaBuscando = true;
+    try {
+      const r = await chamarPlanilha('listar');
+      const naNuvem = {};
+      (r.itens || []).forEach(it => { naNuvem[it.chave] = it; });
+
+      const visto = lerVisto();
+      const pend = lerPendentes();
+      let mudou = false;
+
+      CHAVES_SINCRONIZADAS.forEach(chave => {
+        const item = naNuvem[chave];
+        const local = localStorage.getItem(chave);
+        if (!item) {
+          // A planilha ainda não tem isto: o que existe neste aparelho sobe
+          if (local !== null && pend.indexOf(chave) === -1) pend.push(chave);
+          return;
+        }
+        if (pend.indexOf(chave) !== -1) return; // alteração local ainda não enviada: ela vence
+        if (visto[chave] === item.atualizado && !primeiraVez) return; // nada novo
+        if (local !== item.valor) {
+          aplicarDadoDaPlanilha(chave, item.valor);
+          mudou = true;
+        }
+        visto[chave] = item.atualizado;
+      });
+
+      gravarVisto(visto);
+      gravarPendentes(pend);
+      if (mudou) {
+        redesenharTudo();
+        if (!primeiraVez) showToast('📱 Dados atualizados pela planilha', 'info', 3000);
+      }
+      if (pend.length) await enviarParaPlanilha();
+      return true;
+    } catch (e) {
+      console.error('[PLANILHA] Erro ao buscar:', e);
+      updateSyncStatus(navigator.onLine ? 'error' : 'offline');
+      return false;
+    } finally {
+      planilhaBuscando = false;
+    }
+  }
+
+  function iniciarSincronizacaoPlanilha() {
+    planilhaPronta = true; // a partir daqui, mudanças feitas pelo usuário vão para a planilha
+    if (!carregarConfigPlanilha()) return;
+    updateSyncStatus('syncing');
+    buscarDaPlanilha(true).then(ok => { if (ok) updateSyncStatus('success'); });
+
+    if (planilhaTimerBusca) clearInterval(planilhaTimerBusca);
+    planilhaTimerBusca = setInterval(() => {
+      if (!document.hidden && !planilhaEnviando) buscarDaPlanilha(false);
+    }, PLANILHA_INTERVALO_MS);
+  }
+
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && planilhaPronta && planilhaConfigurada()) buscarDaPlanilha(false);
+  });
+  window.addEventListener('online', () => { if (planilhaPronta) { buscarDaPlanilha(false); } });
+
 
   let db = null;
   let expensesCol = null;
@@ -2554,13 +2308,16 @@ const dataToSync = expensesSource.map(e => {
   // Backup completo em JSON (mesmo formato que a importação lê)
   const exportJsonBackup = () => {
     const data = {
-      version: '6.2',
+      version: '6.3',
       exported: new Date().toISOString(),
       expenses: state.expenses,
       contasFixas: loadContasFixas(),
       summaryConfig: loadSummaryConfig(),
       rendaConfig: loadRendaConfig(),
-      reembolsos: loadReembolsos()
+      reembolsos: loadReembolsos(),
+      pagamentos: lerJsonLocal('fluxo_pagamentos', {}),
+      valoresMes: lerJsonLocal('fluxo_contas_valores_mes', {}),
+      vencimentosManuais: lerJsonLocal('fluxo_venc_manual', {})
     };
     baixarArquivo(JSON.stringify(data, null, 2), 'fluxo-financeiro-backup-' + hojeArquivo() + '.json', 'application/json');
     showToast('✅ Backup em JSON baixado!', 'success');
@@ -2658,10 +2415,6 @@ const dataToSync = expensesSource.map(e => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state.expenses));
       localStorage.setItem(VERSION_KEY, CURRENT_VERSION);
-
-      if (supabaseConfig.enabled) {
-        scheduleAutoSync();
-      }
     } catch(e) {}
   };
 
@@ -2791,8 +2544,6 @@ const dataToSync = expensesSource.map(e => {
       delete mapa[idCompra];
     }
     localStorage.setItem(VENC_MANUAL_KEY, JSON.stringify(mapa));
-    marcarAlteracaoLocal(VENC_MANUAL_KEY);
-    enviarAppConfig(VENC_MANUAL_KEY, mapa);
   };
 
   const addMonthsClamped = (dateStr, months) => {
@@ -2992,27 +2743,6 @@ const isPago = (chave, mesKey) => {
   return !!(p[mesKey] && p[mesKey][chave]);
 };
 
-const salvarPagamentosCloud = async (dados) => {
-  try {
-    const config = JSON.parse(localStorage.getItem('supabase_config') || '{}');
-    const url = config.url || (typeof supabaseConfig !== 'undefined' ? supabaseConfig.url : null);
-    const key = config.key || (typeof supabaseConfig !== 'undefined' ? supabaseConfig.key : null);
-    if (!url || !key) return;
-    await fetch(`${url}/rest/v1/app_config`, {
-      method: 'POST',
-      headers: {
-        'apikey': key,
-        'Authorization': `Bearer ${key}`,
-        'Content-Type': 'application/json',
-        'Prefer': 'resolution=merge-duplicates'
-      },
-      body: JSON.stringify({ id: PAGAMENTOS_KEY, data: dados, updated_at: new Date().toISOString() })
-    });
-  } catch (err) {
-    console.error('[SYNC] Erro ao sincronizar pagamentos no Supabase:', err);
-  }
-};
-
 const estiloBotaoPago = (pago) => pago
   ? 'background: #16a34a; color: #fff; border: none;'
   : 'background: transparent; color: var(--ink-soft); border: 1px solid var(--line-strong);';
@@ -3045,8 +2775,6 @@ const togglePagoItem = (chave) => {
     p[mk][chave] = true;
   }
   localStorage.setItem(PAGAMENTOS_KEY, JSON.stringify(p));
-  marcarAlteracaoLocal(PAGAMENTOS_KEY);
-  salvarPagamentosCloud(p);
   atualizarBotoesPago();
 };
 
@@ -3912,9 +3640,6 @@ const openModal = (modalID) => {
     renderAll();
     renderCalendar();
 
-    if (supabaseConfig.enabled) {
-      syncToSupabase().catch(e => console.error('[SYNC] Erro ao sincronizar:', e));
-    }
 
     if (db && expensesCol) {
       expensesCol.add(payload).then(ref => {
@@ -3931,37 +3656,12 @@ const openModal = (modalID) => {
     if (e) {
       Object.assign(e, payload);
       saveToStorage();
-      if (supabaseConfig.enabled) {
-        syncToSupabase().catch(e => console.error('[SYNC] Erro ao sincronizar:', e));
-      }
     }
 
     if (db && expensesCol && id.indexOf('local-') !== 0) {
       expensesCol.doc(id).update(payload).catch(err => {});
     }
   };
-
-  async function deletarDoSupabase(id) {
-    if (!supabaseConfig.url || !supabaseConfig.key) return;
-    try {
-      const response = await fetch(
-        `${supabaseConfig.url}/rest/v1/expenses?id=eq.${id}`,
-        {
-          method: 'DELETE',
-          headers: {
-            'Authorization': `Bearer ${supabaseConfig.key}`,
-            'apikey': supabaseConfig.key,
-            'Content-Type': 'application/json'
-          }
-        }
-      );
-      if (!response.ok) {
-        console.error('Erro ao deletar do Supabase:', response.status);
-      }
-    } catch (e) {
-      console.error('Erro de conexão ao deletar:', e);
-    }
-  }
 
 const deleteExpense = async id => {
     if (!confirm('⚠️ Tem certeza que deseja deletar esta despesa?\n\nEsta ação não pode ser desfeita.')) {
@@ -3973,32 +3673,8 @@ const deleteExpense = async id => {
     saveToStorage();
     renderAll();
 
-    // 2. Propaga a exclusão para o Supabase (Nuvem)
-    try {
-        const config = JSON.parse(localStorage.getItem('supabase_config') || '{}');
-        const url = config.url || (typeof supabaseConfig !== 'undefined' ? supabaseConfig.url : null);
-        const key = config.key || (typeof supabaseConfig !== 'undefined' ? supabaseConfig.key : null);
-
-        if (url && key) {
-            const response = await fetch(`${url}/rest/v1/expenses?id=eq.${id}`, {
-                method: 'DELETE',
-                headers: {
-                    'apikey': key,
-                    'Authorization': `Bearer ${key}`
-                }
-            });
-
-            if (response.ok) {
-                console.log('[SYNC] Registado e apagado com sucesso na nuvem:', id);
-            } else {
-                console.error('[SYNC] Erro ao apagar no Supabase:', response.statusText);
-            }
-        }
-
-        showToast('🗑️ Despesa deletada com sucesso', 'success');
-    } catch (err) {
-        console.error('[SYNC] Erro na comunicação com o Supabase ao deletar:', err);
-    }
+    // 2. A exclusão vai para a planilha automaticamente (via saveToStorage)
+    showToast('🗑️ Despesa deletada com sucesso', 'success');
 };
 
   window.deleteExpense = deleteExpense;
@@ -4007,38 +3683,11 @@ const deleteExpense = async id => {
     // 1. Salva localmente
     localStorage.setItem(CONTAS_KEY, JSON.stringify(contas));
     localStorage.setItem(CONTAS_VERSION_KEY, CURRENT_VERSION);
-    marcarAlteracaoLocal(CONTAS_KEY);
     contasFixas = contas;
     if (typeof state !== 'undefined') {
         state.contasFixas = contas;
     }
 
-    // 2. Envia para o Supabase (Nuvem)
-    try {
-        const config = JSON.parse(localStorage.getItem('supabase_config') || '{}');
-        const url = config.url || (typeof supabaseConfig !== 'undefined' ? supabaseConfig.url : null);
-        const key = config.key || (typeof supabaseConfig !== 'undefined' ? supabaseConfig.key : null);
-
-        if (url && key) {
-            await fetch(`${url}/rest/v1/app_config`, {
-                method: 'POST',
-                headers: {
-                    'apikey': key,
-                    'Authorization': `Bearer ${key}`,
-                    'Content-Type': 'application/json',
-                    'Prefer': 'resolution=merge-duplicates'
-                },
-                body: JSON.stringify({
-                    id: 'contasFixas',
-                    data: contas,
-                    updated_at: new Date().toISOString()
-                })
-            });
-            console.log('[SYNC] Contas fixas sincronizadas no Supabase com sucesso!');
-        }
-    } catch (err) {
-        console.error('[SYNC] Erro ao sincronizar contas fixas no Supabase:', err);
-    }
 };
 
 window.saveContasFixas = saveContasFixas;
@@ -4856,32 +4505,6 @@ window.adicionarBonus = async () => {
     return (conta && conta.valor) || 0;
   };
 
-  // Envia os valores mensais (luz, água...) para o Supabase, para aparecerem nos outros aparelhos
-  const saveValoresMesCloud = async (valores) => {
-    try {
-      const config = JSON.parse(localStorage.getItem('supabase_config') || '{}');
-      const url = config.url || (typeof supabaseConfig !== 'undefined' ? supabaseConfig.url : null);
-      const key = config.key || (typeof supabaseConfig !== 'undefined' ? supabaseConfig.key : null);
-      if (!url || !key) return;
-      await fetch(`${url}/rest/v1/app_config`, {
-        method: 'POST',
-        headers: {
-          'apikey': key,
-          'Authorization': `Bearer ${key}`,
-          'Content-Type': 'application/json',
-          'Prefer': 'resolution=merge-duplicates'
-        },
-        body: JSON.stringify({
-          id: CONTAS_VALORES_MES_KEY,
-          data: valores,
-          updated_at: new Date().toISOString()
-        })
-      });
-    } catch (err) {
-      console.error('[SYNC] Erro ao sincronizar valores mensais no Supabase:', err);
-    }
-  };
-
   const setValorContaMes = (contaId, ano, mes, valor) => {
     if (!contasVariaveis.includes(contaId)) return;
 
@@ -4890,9 +4513,6 @@ window.adicionarBonus = async () => {
       const chave = contaId + '_' + ano + '-' + pad2(mes + 1);
       valores[chave] = valor;
       localStorage.setItem(CONTAS_VALORES_MES_KEY, JSON.stringify(valores));
-      marcarAlteracaoLocal(CONTAS_VALORES_MES_KEY);
-      saveValoresMesCloud(valores);
-      if (supabaseConfig.enabled) scheduleAutoSync();
     } catch(e) {}
   };
 
@@ -4954,32 +4574,6 @@ window.adicionarBonus = async () => {
         }
     } catch(e) {}
 
-    // 2. Envia para o Supabase (Nuvem)
-    try {
-        const config = JSON.parse(localStorage.getItem('supabase_config') || '{}');
-        const url = config.url || (typeof supabaseConfig !== 'undefined' ? supabaseConfig.url : null);
-        const key = config.key || (typeof supabaseConfig !== 'undefined' ? supabaseConfig.key : null);
-
-        if (url && key) {
-            await fetch(`${url}/rest/v1/app_config`, {
-                method: 'POST',
-                headers: {
-                    'apikey': key,
-                    'Authorization': `Bearer ${key}`,
-                    'Content-Type': 'application/json',
-                    'Prefer': 'resolution=merge-duplicates'
-                },
-                body: JSON.stringify({
-                    id: REEMBOLSOS_KEY,
-                    data: reembolsos,
-                    updated_at: new Date().toISOString()
-                })
-            });
-            console.log('[SYNC] Reembolsos sincronizados no Supabase com sucesso!');
-        }
-    } catch (err) {
-        console.error('[SYNC] Erro ao sincronizar reembolsos no Supabase:', err);
-    }
 };
 
 window.saveReembolsos = saveReembolsos;
@@ -5252,54 +4846,9 @@ const deleteReembolso = async (id) => {
         state.rendaConfig = renda;
     }
 
-    try {
-        const config = JSON.parse(localStorage.getItem('supabase_config') || '{}');
-        const url = config.url || (typeof supabaseConfig !== 'undefined' ? supabaseConfig.url : null);
-        const key = config.key || (typeof supabaseConfig !== 'undefined' ? supabaseConfig.key : null);
-
-        if (url && key) {
-            await fetch(`${url}/rest/v1/app_config`, {
-                method: 'POST',
-                headers: {
-                    'apikey': key,
-                    'Authorization': `Bearer ${key}`,
-                    'Content-Type': 'application/json',
-                    'Prefer': 'resolution=merge-duplicates'
-                },
-                body: JSON.stringify({
-                    id: 'rendaConfig',
-                    data: renda,
-                    updated_at: new Date().toISOString()
-                })
-            });
-            console.log('[SYNC] Renda/Salário atualizado no Supabase!');
-        }
-    } catch (err) {
-        console.error('[SYNC] Erro ao sincronizar renda no Supabase:', err);
-    }
 };
 
 window.saveRendaConfig = saveRendaConfig;
-
-// Salva vale alimentação também na nuvem (app_config)
-const saveSummaryCloud = async (data) => {
-    try {
-        const config = JSON.parse(localStorage.getItem('supabase_config') || '{}');
-        if (!config.url || !config.key) return;
-        await fetch(`${config.url}/rest/v1/app_config`, {
-            method: 'POST',
-            headers: {
-                'apikey': config.key,
-                'Authorization': `Bearer ${config.key}`,
-                'Content-Type': 'application/json',
-                'Prefer': 'resolution=merge-duplicates'
-            },
-            body: JSON.stringify({ id: 'summaryConfig', data: data, updated_at: new Date().toISOString() })
-        });
-    } catch (err) {
-        console.error('[SYNC] Erro ao sincronizar vale alimentação no Supabase:', err);
-    }
-};
 
 document.getElementById('formEditarRenda')?.addEventListener('submit', async (ev) => {
     ev.preventDefault();
@@ -5325,7 +4874,6 @@ document.getElementById('formEditarRenda')?.addEventListener('submit', async (ev
         valeAlimentacaoIasmim: numOr('valeAlimentacaoIasmim', summaryAtual.valeAlimentacaoIasmim)
     };
     localStorage.setItem(SUMMARY_KEY, JSON.stringify(summary));
-    await saveSummaryCloud(summary);
 
     alert('Renda atualizada com sucesso!');
     closeModal('modalEditarRenda');
@@ -5333,114 +4881,8 @@ document.getElementById('formEditarRenda')?.addEventListener('submit', async (ev
     renderAll();
 });
 
-  let pollInterval = null;
-  let isLoadingFromCloud = false;
-
-  async function startRealtimeSync() {
-    if (!supabaseConfig.enabled) {
-      return;
-    }
-
-    if (pollInterval) clearInterval(pollInterval);
-
-    pollInterval = setInterval(async () => {
-      if (isLoadingFromCloud) return;
-      await checkAndMergeCloudChanges();
-    }, 3000);
-  }
-
-  async function checkAndMergeCloudChanges() {
-    if (!supabaseConfig.enabled || !supabaseConfig.url || !supabaseConfig.key) {
-      return;
-    }
-
-    try {
-      isLoadingFromCloud = true;
-
-      const response = await fetch(
-        `${supabaseConfig.url}/rest/v1/expenses?order=created_at.asc`,
-        {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${supabaseConfig.key}`,
-            'apikey': supabaseConfig.key,
-            'Content-Type': 'application/json'
-          }
-        }
-      );
-
-      if (!response.ok) {
-        return;
-      }
-
-      const cloudExpenses = await response.json();
-      if (!cloudExpenses || cloudExpenses.length === 0) {
-        return;
-      }
-
-      const cloudMap = new Map();
-      cloudExpenses.forEach(e => {
-        if (e.id) {
-          cloudMap.set(e.id, {
-            id: e.id,
-            date: e.date || e.data || '',
-            description: e.description || '',
-            valueCents: parseInt(e.valuecents || e.valueCents || 0),
-            installments: parseInt(e.installments || 1),
-            createdAt: e.createdat || e.createdAt || new Date().toISOString(),
-            cartao: e.cartao || 'cartao_santander',
-            dataVencimento: e.datavencimento || e.dataVencimento || e.date || ''
-          });
-        }
-      });
-
-      const localMap = new Map();
-      state.expenses.forEach(e => {
-        if (e.id) localMap.set(e.id, e);
-      });
-
-      let hasChanges = false;
-      cloudMap.forEach((cloudExp, id) => {
-        if (!localMap.has(id)) {
-          hasChanges = true;
-        }
-      });
-
-      localMap.forEach((localExp, id) => {
-        if (!cloudMap.has(id)) {
-          hasChanges = true;
-        }
-      });
-
-      if (hasChanges) {
-        const merged = new Map();
-        cloudMap.forEach((val, key) => merged.set(key, val));
-        localMap.forEach((val, key) => {
-          if (!cloudMap.has(key)) {
-            merged.set(key, val);
-          }
-        });
-
-        state.expenses = Array.from(merged.values());
-        saveToStorage();
-        renderAll();
-        renderCalendar();
-        updateSyncStatus('success');
-      }
-    } catch (e) {
-    } finally {
-      isLoadingFromCloud = false;
-    }
-  }
-
   const boot = async () => {
     loadFromStorage();
-
-    loadSupabaseConfig();
-    if (supabaseConfig.enabled) {
-      await loadInitialDataFromSupabase();
-      startRealtimeSync();
-    }
 
     el.dateInput.value = formatDateToDMY(todayISO());
     renderInstallments();
@@ -5450,6 +4892,8 @@ document.getElementById('formEditarRenda')?.addEventListener('submit', async (ev
     updateDespesasMonthYear();
     updateContasFixasTotal();
     renderCalendar();
+
+    iniciarSincronizacaoPlanilha();
 
     if (window.claude && typeof window.claude.use === 'function') {
       window.claude.use('db').then(dbNs => {
@@ -5556,7 +5000,8 @@ window.importData = function(event) {
 
             if (data.expenses) {
                 // Save complete list to localStorage
-                localStorage.setItem('expenses', JSON.stringify(data.expenses));
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(data.expenses));
+                localStorage.setItem(VERSION_KEY, CURRENT_VERSION);
 
                 // Update active state in memory
                 if (typeof state !== 'undefined') {
@@ -5564,18 +5009,16 @@ window.importData = function(event) {
                 }
             }
             if (data.contasFixas) { localStorage.setItem(CONTAS_KEY, JSON.stringify(data.contasFixas)); localStorage.setItem(CONTAS_VERSION_KEY, CURRENT_VERSION); }
-            if (data.summaryConfig) localStorage.setItem('summaryConfig', JSON.stringify(data.summaryConfig));
-            if (data.rendaConfig) localStorage.setItem('rendaConfig', JSON.stringify(data.rendaConfig));
-            if (data.reembolsos) localStorage.setItem('reembolsos', JSON.stringify(data.reembolsos));
+            if (data.summaryConfig) localStorage.setItem(SUMMARY_KEY, JSON.stringify(data.summaryConfig));
+            if (data.rendaConfig) localStorage.setItem(RENDA_KEY, JSON.stringify(data.rendaConfig));
+            if (data.reembolsos) localStorage.setItem('fluxo_reembolsos', JSON.stringify(data.reembolsos));
+            if (data.pagamentos) localStorage.setItem('fluxo_pagamentos', JSON.stringify(data.pagamentos));
+            if (data.valoresMes) localStorage.setItem('fluxo_contas_valores_mes', JSON.stringify(data.valoresMes));
+            if (data.vencimentosManuais) localStorage.setItem('fluxo_venc_manual', JSON.stringify(data.vencimentosManuais));
 
             alert('✅ Backup restaurado com sucesso!');
 
-            // Dispara a sincronização total com o Supabase
-            if (typeof syncToSupabase === 'function') {
-                await syncToSupabase();
-            } else if (typeof manualSyncSupabase === 'function') {
-                await manualSyncSupabase();
-            }
+            // As gravações acima já sobem para a planilha automaticamente
 
             // Recarrega a interface
             if (typeof boot === 'function') {
@@ -5617,103 +5060,9 @@ verificarVencimentosProximos();
     }
   });
 
-  window.showSupabaseSetup = showSupabaseSetup;
-  window.openSupabaseModal = openSupabaseModal;
-  window.closeSupabaseModal = closeSupabaseModal;
-  window.toggleSupabaseKeyVisibility = toggleSupabaseKeyVisibility;
-  window.saveSupabaseConfigViaModal = saveSupabaseConfigViaModal;
-  window.manualSyncSupabase = manualSyncSupabase;
   window.updateSyncStatus = updateSyncStatus;
 
-  // ==========================================
-  // NORMALIZAÇÃO DE DESPESAS VINDAS DO SUPABASE
-  // As colunas do Postgres são minúsculas (valuecents, datavencimento...)
-  // e o app usa camelCase (valueCents, dataVencimento). Sem converter,
-  // valueCents fica undefined e os totais zeram.
-  // ==========================================
-  const normalizeExpense = e => ({
-    id: e.id,
-    date: e.date || '',
-    description: e.description || '',
-    valueCents: parseInt(e.valuecents ?? e.valueCents ?? 0, 10) || 0,
-    installments: parseInt(e.installments ?? 1, 10) || 1,
-    createdAt: e.createdat || e.createdAt || new Date().toISOString(),
-    cartao: e.cartao || 'cartao_santander',
-    dataVencimento: e.datavencimento || e.dataVencimento || e.date || ''
-  });
 
-// ==========================================
-// CARREGAMENTO CENTRALIZADO DO SUPABASE
-// ==========================================
-async function loadAllFromSupabase() {
-    const config = JSON.parse(localStorage.getItem('supabase_config') || '{}');
-    const url = config.url || (typeof supabaseConfig !== 'undefined' ? supabaseConfig.url : null);
-    const key = config.key || (typeof supabaseConfig !== 'undefined' ? supabaseConfig.key : null);
-
-    if (!url || !key) {
-        console.warn('[SYNC] Configuração do Supabase não encontrada.');
-        return;
-    }
-
-    try {
-        console.log('[SYNC] Baixando dados mais recentes da nuvem...');
-
-        // 1. Carrega Despesas Variáveis (Tabela 'expenses')
-        const resExp = await fetch(`${url}/rest/v1/expenses?select=*`, {
-            headers: { 'apikey': key, 'Authorization': `Bearer ${key}` }
-        });
-        if (resExp.ok) {
-            const expensesData = await resExp.json();
-            if (expensesData && Array.isArray(expensesData)) {
-                // Normaliza os campos do Supabase antes de usar no state
-                state.expenses = expensesData.map(normalizeExpense);
-                // Persiste na chave que o app realmente lê
-                saveToStorage();
-            }
-        }
-
-        // 2. Carrega Modularmente as Abas (contasFixas, rendaConfig, summaryConfig, fluxo_reembolsos)
-        const resCfg = await fetch(`${url}/rest/v1/app_config?select=*`, {
-            headers: { 'apikey': key, 'Authorization': `Bearer ${key}` }
-        });
-        if (resCfg.ok) {
-            const configs = await resCfg.json();
-            configs.forEach(item => {
-                const protegidos = { 'contasFixas': CONTAS_KEY, [CONTAS_VALORES_MES_KEY]: CONTAS_VALORES_MES_KEY, [PAGAMENTOS_KEY]: PAGAMENTOS_KEY, [VENC_MANUAL_KEY]: VENC_MANUAL_KEY };
-                if (protegidos[item.id]) {
-                    const chaveProtegida = protegidos[item.id];
-                    const alteradoLocal = localStorage.getItem(chaveProtegida + '__alterado');
-                    if (alteradoLocal && item.updated_at && new Date(alteradoLocal) > new Date(item.updated_at)) {
-                        // Este aparelho tem uma alteração mais nova: mantém e envia para a nuvem
-                        enviarAppConfig(item.id, JSON.parse(localStorage.getItem(chaveProtegida) || 'null'));
-                        return;
-                    }
-                    localStorage.setItem(chaveProtegida, JSON.stringify(item.data));
-                    if (item.id === 'contasFixas') localStorage.setItem(CONTAS_VERSION_KEY, CURRENT_VERSION);
-                    localStorage.removeItem(chaveProtegida + '__alterado');
-                    return;
-                }
-                const chaveLocal = item.id === 'rendaConfig' ? RENDA_KEY : (item.id === 'summaryConfig' ? SUMMARY_KEY : item.id);
-                localStorage.setItem(chaveLocal, JSON.stringify(item.data));
-                if (typeof state !== 'undefined') {
-                    state[item.id] = item.data;
-                }
-            });
-        }
-        console.log('[SYNC] Sincronização de inicialização concluída com sucesso!');
-    } catch (err) {
-        console.error('[SYNC] Erro ao carregar dados do Supabase na inicialização:', err);
-    }
-}
-
-window.loadAllFromSupabase = loadAllFromSupabase;
-
-// Inicia a aplicação baixando do Supabase e depois renderizando
-document.addEventListener('DOMContentLoaded', async () => {
-    await loadAllFromSupabase();
-    if (typeof renderAll === 'function') renderAll();
-    if (typeof renderCalendar === 'function') renderCalendar();
-});
 })();
 </script>
 </body>
