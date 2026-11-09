@@ -1841,18 +1841,15 @@ footer.hint {
     enabled: false
   };
 
-  function loadSupabaseConfig() {
-    const saved = localStorage.getItem('supabase_config');
-    if (saved) {
-      try {
-        supabaseConfig = JSON.parse(saved);
-        return supabaseConfig.url && supabaseConfig.key;
-      } catch (e) {
-        return false;
-      }
-    }
-    return false;
-  }
+function loadSupabaseConfig() {
+  supabaseConfig = {
+    url: "https://nklszryrglsrzsgkyzob.supabase.co",
+    key: "sb_publishable_NQd9TQurcr-w20Z1YUi6Qw_gnUdQ7d5",
+    enabled: true
+  };
+  localStorage.setItem('supabase_config', JSON.stringify(supabaseConfig));
+  return true;
+}
 
   function saveSupabaseConfig(url, key) {
     supabaseConfig = { url, key, enabled: true };
