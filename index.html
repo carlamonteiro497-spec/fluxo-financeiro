@@ -1251,8 +1251,9 @@ footer.hint {
 
 /* TOOLS GRID RESPONSIVO */
 .tools-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 10px;
 }
 
@@ -1261,13 +1262,8 @@ footer.hint {
   align-items: center;
   justify-content: center;
   text-align: center;
-  width: 100%;
-}
-
-@media (min-width: 768px) {
-  .tools-grid {
-    grid-template-columns: 1fr 1fr 1fr 1fr;
-  }
+  flex: 1 1 140px;
+  max-width: 220px;
 }
 </style>
 </head>
@@ -1494,7 +1490,7 @@ footer.hint {
 
   <!-- CARD DE FERRAMENTAS E CONFIGURAÇÃO -->
   <div style="background: linear-gradient(135deg, rgba(53, 70, 122, 0.05) 0%, rgba(132, 150, 214, 0.05) 100%); border: 1px solid var(--line-strong); border-radius: 12px; padding: 20px; margin-top: 20px;">
-    <h3 style="font-size: 13px; font-weight: 600; color: var(--ink-soft); margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.5px;">⚙️ Ferramentas</h3>
+    <h3 style="font-size: 13px; font-weight: 600; color: var(--ink-soft); margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.5px; text-align: center;">⚙️ Ferramentas</h3>
     <div class="tools-grid">
       <button onclick="exportData()" style="background: var(--accent); color: var(--accent-ink); border: none; padding: 12px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.3s;" title="Exportar dados para backup" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">📥 Exportar</button>
       <button onclick="document.getElementById('importFile').click()" style="background: var(--accent); color: var(--accent-ink); border: none; padding: 12px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.3s;" title="Importar dados de backup" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">📤 Importar</button>
@@ -1888,7 +1884,7 @@ footer.hint {
   const chamarPlanilha = async (acao, dados) => {
     if (!planilhaConfigurada()) throw new Error('Planilha não configurada');
     let resp;
-    if (acao === 'salvar') {
+    if (acao === 'salvar' || acao === 'agenda') {
       // text/plain evita a "pré-verificação" (CORS) que o Apps Script não responde
       resp = await fetch(planilhaConfig.url, {
         method: 'POST',
@@ -1937,6 +1933,7 @@ footer.hint {
       gravarVisto(visto);
       gravarPendentes(pend);
       updateSyncStatus('success');
+      agendarAtualizacaoAgenda();
       return true;
     } catch (e) {
       console.error('[PLANILHA] Erro ao enviar:', e);
@@ -1945,6 +1942,45 @@ footer.hint {
     } finally {
       planilhaEnviando = false;
       if (planilhaReenviar) { planilhaReenviar = false; agendarEnvioPlanilha(); }
+    }
+  }
+
+
+  // ---- Google Agenda (planilha → agenda "Fluxo Financeiro") -----------------
+  const AGENDA_HASH_KEY = 'fluxo_agenda_hash';
+  let agendaTimer = null;
+  let agendaEnviando = false;
+
+  function agendarAtualizacaoAgenda(espera) {
+    if (!planilhaConfigurada()) return;
+    if (agendaTimer) clearTimeout(agendaTimer);
+    agendaTimer = setTimeout(() => { atualizarAgenda().catch(() => {}); }, espera || 8000);
+  }
+
+  async function atualizarAgenda() {
+    if (!planilhaConfigurada() || agendaEnviando || typeof calcularEventosAgenda !== 'function') return;
+    let eventos;
+    try { eventos = calcularEventosAgenda(); } catch (e) { console.error('[AGENDA] cálculo:', e); return; }
+    const marca = JSON.stringify(eventos);
+    if (localStorage.getItem(AGENDA_HASH_KEY) === marca) return; // nada mudou desde o último envio
+
+    const hoje = new Date();
+    const iso = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    const de = iso(new Date(hoje.getFullYear(), hoje.getMonth(), 1));
+    const ate = iso(new Date(hoje.getFullYear(), hoje.getMonth() + AGENDA_MESES, 0));
+
+    agendaEnviando = true;
+    try {
+      const r = await chamarPlanilha('agenda', { eventos: eventos, de: de, ate: ate });
+      if (r.parcial) {
+        agendarAtualizacaoAgenda(60000); // faltou tempo: continua de onde parou
+      } else {
+        gravarSemSincronizar(AGENDA_HASH_KEY, marca);
+      }
+    } catch (e) {
+      console.warn('[AGENDA] não atualizou:', e.message);
+    } finally {
+      agendaEnviando = false;
     }
   }
 
@@ -2011,6 +2047,7 @@ footer.hint {
         if (!primeiraVez) showToast('📱 Dados atualizados pela planilha', 'info', 3000);
       }
       if (pend.length) await enviarParaPlanilha();
+      if (primeiraVez || mudou) agendarAtualizacaoAgenda();
       return true;
     } catch (e) {
       console.error('[PLANILHA] Erro ao buscar:', e);
@@ -2303,6 +2340,80 @@ footer.hint {
     }
     baixarArquivo(linhas.join('\r\n'), 'fluxo-vencimentos-' + mk + '.ics', 'text/calendar;charset=utf-8');
     showToast('📅 ' + eventos.length + ' lembretes prontos para o calendário', 'success');
+  };
+
+  // Google Agenda: vencimentos dos próximos meses (mesma conta dos lembretes .ics)
+  const AGENDA_MESES = 4;
+  const calcularEventosAgenda = () => {
+    const fmtR = v => 'R$ ' + (v || 0).toFixed(2).replace('.', ',');
+    const diaDeISO = iso => parseInt(String(iso).slice(8, 10), 10);
+    const pagamentos = loadPagamentos();
+    const ocorrencias = allOccurrences();
+    const eventos = [];
+    const hoje = new Date();
+
+    for (let i = 0; i < AGENDA_MESES; i++) {
+      const ref = new Date(hoje.getFullYear(), hoje.getMonth() + i, 1);
+      const y = ref.getFullYear(), m = ref.getMonth();
+      const mk = monthKey(y, m);
+      const pagos = pagamentos[mk] || {};
+      const dataISO = dia => {
+        const d = new Date(y, m, dia);
+        return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
+      };
+      const add = (uid, dia, titulo, desc, chavePago) => {
+        const pago = !!pagos[chavePago];
+        const ev = {
+          uid: uid,
+          data: dataISO(dia),
+          titulo: (pago ? '✅ ' : '') + titulo,
+          desc: desc + (pago ? ' (pago)' : '')
+        };
+        eventos.push(ev);
+        return ev;
+      };
+
+      const jaNaAgenda = {}; // dia|valor das contas fixas (evita repetir a fatura do mesmo cartão)
+      const contasDoMes = getContasForMonth(y, m);
+      Object.keys(contasDoMes).forEach(dia => {
+        contasDoMes[dia].forEach(c => {
+          const nome = String(c.nomeCompleto || '');
+          const temEmoji = /^\p{Extended_Pictographic}/u.test(nome);
+          const ev = add('conta-' + c.id + '-' + mk, parseInt(dia, 10),
+            (temEmoji ? '' : '🧾 ') + nome + ' — ' + (c.valor > 0 ? fmtR(c.valor) : 'valor a lançar'),
+            'Conta fixa', 'conta:' + c.id);
+          if (c.valor > 0) jaNaAgenda[parseInt(dia, 10) + '|' + fmtR(c.valor)] = ev;
+        });
+      });
+
+      const porCartaoDia = {};
+      ocorrencias.forEach(o => {
+        const iso = o.dataVencimento || o.date || '';
+        if (iso.slice(0, 7) !== mk) return;
+        const c = o.cartao || 'cartao_santander';
+        if (c === 'contas_fixas') return;
+        const k = c + '|' + diaDeISO(iso);
+        porCartaoDia[k] = (porCartaoDia[k] || 0) + (o.valueCents || 0);
+      });
+      Object.keys(porCartaoDia).forEach(k => {
+        const partes = k.split('|');
+        const c = partes[0], d = partes[1];
+        const nome = c === 'cartao_santander' ? 'Fatura Santander Camila' : (NOMES_CARTAO_PAGAMENTO[c] || c);
+        const repetido = jaNaAgenda[parseInt(d, 10) + '|' + fmtR(porCartaoDia[k] / 100)];
+        if (repetido) {
+          // mesma fatura já listada como conta fixa: só herda o "pago", se houver
+          if (pagos['cartao:' + c] && repetido.titulo.indexOf('✅') !== 0) {
+            repetido.titulo = '✅ ' + repetido.titulo;
+            repetido.desc += ' (pago)';
+          }
+          return;
+        }
+        add('cartao-' + c + '-' + d + '-' + mk, parseInt(d, 10),
+          '💳 ' + nome + ' — ' + fmtR(porCartaoDia[k] / 100),
+          'Vencimento da fatura', 'cartao:' + c);
+      });
+    }
+    return eventos;
   };
 
   // Backup completo em JSON (mesmo formato que a importação lê)
